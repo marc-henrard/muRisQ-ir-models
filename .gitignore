@@ -3,3 +3,6 @@
 .project
 test-output/*
 .settings/*
+
+# MAC OS
+.DS_Store
