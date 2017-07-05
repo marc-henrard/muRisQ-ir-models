@@ -6,6 +6,18 @@
   <name>RisQ IR Models</name>
   <description>RisQ libraries - Interest rate derivatives pricing implementations</description>
   
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.joda</groupId>
+          <artifactId>joda-beans-maven-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  
   <!-- ==========          Dependencies          ========== -->
   <dependencies>
     <dependency>
@@ -35,11 +47,45 @@
       <version>${opencsv.version}</version>
     </dependency>
   </dependencies>
+  
+  <!-- ==================================================================== -->
+  <profiles>
+    <profile>
+      <id>joda-beans-eclipse</id>
+      <activation>
+        <property>
+          <name>eclipse.buildId</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.joda</groupId>
+            <artifactId>joda-beans-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>generate</goal>
+                </goals>
+                <configuration>
+                  <eclipse>true</eclipse>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <!-- ==================================================================== -->
   <properties>
     <og.version>1.1.0</og.version>
     <opencsv.version>2.3</opencsv.version>
+    <joda-convert.version>1.8.1</joda-convert.version>
+    <joda-beans.version>1.7</joda-beans.version>
+    <joda.beans.indent>2</joda.beans.indent>
     <!-- Properties for maven-compiler-plugin -->
     <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
     <maven.compiler.source>1.8</maven.compiler.source>
