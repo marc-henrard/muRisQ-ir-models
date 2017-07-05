@@ -10,10 +10,8 @@ Comments and suggestions for improvements are welcomed.
 
 Foundations
 =======
-The pricers proposed in this repository are based on OpenGamma strata library:
+The pricers proposed in this repository are based on OpenGamma Strata (version 1.3.0) library:
 http://strata.opengamma.io/
-	
-The Strata release currently used in this library is Strata 1.1.
 
 Contributions
 ======
