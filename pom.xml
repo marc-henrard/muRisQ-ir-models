@@ -21,6 +21,27 @@
   <!-- ==========          Dependencies          ========== -->
   <dependencies>
     <dependency>
+      <groupId>com.opengamma.strata</groupId>
+      <artifactId>strata-basics</artifactId>
+      <version>${og-strata.version}</version>
+    </dependency> 
+    <dependency>
+      <groupId>com.opengamma.strata</groupId>
+      <artifactId>strata-product</artifactId>
+      <version>${og-strata.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.opengamma.strata</groupId>
+      <artifactId>strata-pricer</artifactId>
+      <version>${og-strata.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>${opencsv.version}</version>
+    </dependency>
+    <!--  Dependency used in tests -->
+    <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
       <version>6.9.10</version>
@@ -28,23 +49,10 @@
     </dependency>
     <dependency>
       <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-basics</artifactId>
-      <version>${og.version}</version>
-    </dependency> 
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-product</artifactId>
-      <version>${og.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-pricer</artifactId>
-      <version>${og.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.opencsv</groupId>
-      <artifactId>opencsv</artifactId>
-      <version>${opencsv.version}</version>
+      <artifactId>strata-collect</artifactId>
+      <version>${og-strata.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   
@@ -81,7 +89,7 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <og.version>1.3.0</og.version>
+    <og-strata.version>1.3.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>1.8.1</joda-convert.version>
     <joda-beans.version>1.7</joda-beans.version>
