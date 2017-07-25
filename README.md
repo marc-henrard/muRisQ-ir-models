@@ -1,5 +1,10 @@
 # RisQ-ir-models by Marc Henrard
 
+You can find more information about me:
+* Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
+* Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
+* Blog: [Multi-curve framework] (http://multi-curve-framework.blogspot.be)
+
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
 The models implemented are based on personal research and academic literature as described in each pricer.
@@ -25,7 +30,7 @@ If you are interested in collaborating in research on interest rate modeling and
 Explicit formula for implicit volatility.
 
 #### References
-* Le Floc'€™h, F (2016). Fast and Accurate Analytic Basis Point Volatility. Working paper.
+* Le Floc'h, F (2016). Fast and Accurate Analytic Basis Point Volatility. Working paper.
 
 ### 2. Rational Model
 
