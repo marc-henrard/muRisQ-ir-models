@@ -1,11 +1,7 @@
-sudo: required
+sudo: false
 language: java
-mvn test -B
-mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jdk:
   - oraclejdk8
-sudo: false
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
+script:
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn test -B
