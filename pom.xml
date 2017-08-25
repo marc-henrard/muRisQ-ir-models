@@ -9,11 +9,24 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!--  Automatically generate Jodabeans code -->
         <plugin>
           <groupId>org.joda</groupId>
           <artifactId>joda-beans-maven-plugin</artifactId>
           <version>1.1</version>
         </plugin>
+        <!--  Running Maven's test without slow HTML reports -->
+        <plugin>
+	      <artifactId>maven-surefire-plugin</artifactId>
+	      <configuration>
+	        <properties>
+	            <property>
+	                <name>usedefaultlisteners</name>
+	                <value>false</value>
+	            </property>
+	        </properties>
+	      </configuration>
+	    </plugin>
       </plugins>
     </pluginManagement>
   </build>

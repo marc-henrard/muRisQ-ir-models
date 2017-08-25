@@ -3,11 +3,15 @@
  */
 package marc.henrard.risq.model.rationalmulticurve;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.rate.FixedRateComputation;
 import com.opengamma.strata.product.rate.IborRateComputation;
@@ -41,6 +45,115 @@ public class RationalOneFactorFormulas {
   
   // Private constructor
   private RationalOneFactorFormulas(){
+  }
+  
+  /**
+   * Returns the evolved discount factor to a forward date for a given value of the underlying normal random variable.
+   * <p>
+   * Evolution in the M measure.
+   * 
+   * @param maturityDate  the maturity date of the discount factor to evolve
+   * @param forwardDateTime  the forward date and time to which the discount factor will be evolved
+   * @param startingDiscountFactors  the starting discount factors
+   * @param x  the value of the standard normal distribution for the evolution
+   * @param parameters  the rational model parameters
+   * @return  the evolved discount factor
+   */
+  public double evolvedDiscountFactor(
+      LocalDate maturityDate,
+      ZonedDateTime forwardDateTime,
+      DiscountFactors startingDiscountFactors,
+      double x,
+      RationalOneFactorParameters parameters){
+
+    double t = parameters.relativeTime(forwardDateTime);
+    ArgChecker.isTrue(t >=0, "the evolution time must be positive or zero");
+    double a = parameters.a();
+    double p0u = startingDiscountFactors.discountFactor(maturityDate);
+    LocalDate forwardDate = forwardDateTime.toLocalDate();
+    double p0t = startingDiscountFactors.discountFactor(forwardDate);
+    double b0u = parameters.b0(maturityDate);
+    double b0t = parameters.b0(forwardDate);
+    double At = Math.exp(a * Math.sqrt(t) * x - 0.5 * a * a * t) - 1.0d;
+    return (p0u + b0u * At) / (p0t + b0t * At);
+  }
+  
+  /**
+   * Returns the evolved discount factors to forward dates for a given value of the underlying normal random variable.
+   * <p>
+   * Evolution in the M measure.
+   * 
+   * @param maturityDates  the maturity dates of the discount factors to evolve
+   * @param forwardDateTime  the forward date and time to which the discount factor will be evolved
+   * @param startingDiscountFactors  the starting discount factors
+   * @param x  the value of the standard normal distribution for the evolution
+   * @param parameters  the rational model parameters
+   * @return  the evolved discount factor
+   */
+  public DoubleArray evolvedDiscountFactor(
+      List<LocalDate> maturityDates,
+      ZonedDateTime forwardDateTime,
+      DiscountFactors startingDiscountFactors,
+      double x,
+      RationalOneFactorParameters parameters) {
+
+    int nbDates = maturityDates.size();
+    double t = parameters.relativeTime(forwardDateTime);
+    ArgChecker.isTrue(t >= 0, "the evolution time must be positive or zero");
+    double a = parameters.a();
+    double[] p0u = new double[nbDates];
+    for (int loopdate = 0; loopdate < nbDates; loopdate++) {
+      p0u[loopdate] = startingDiscountFactors.discountFactor(maturityDates.get(loopdate));
+    }
+    LocalDate forwardDate = forwardDateTime.toLocalDate();
+    double p0t = startingDiscountFactors.discountFactor(forwardDate);
+    double[] b0u = new double[nbDates];
+    for (int loopdate = 0; loopdate < nbDates; loopdate++) {
+      b0u[loopdate] = parameters.b0(maturityDates.get(loopdate));
+    }
+    double b0t = parameters.b0(forwardDate);
+    double At = Math.exp(a * Math.sqrt(t) * x - 0.5 * a * a * t) - 1.0d;
+    double[] df = new double[nbDates];
+    double denominator =  1.0D / (p0t + b0t * At);;
+    for (int loopdate = 0; loopdate < nbDates; loopdate++) {
+      df[loopdate] = (p0u[loopdate] + b0u[loopdate] * At) * denominator;
+    }
+    return DoubleArray.ofUnsafe(df);
+  }
+
+  /**
+   * Returns the evolved discount factors to a forward date for a given array of the underlying normal random variable.
+   * <p>
+   * Evolution in the M measure.
+   * 
+   * @param maturityDate  the maturity date of the discount factor to evolve
+   * @param forwardDateTime  the forward date and time to which the discount factor will be evolved
+   * @param startingDiscountFactors  the starting discount factors
+   * @param x  the values of the standard normal distribution for the evolution
+   * @param parameters  the model parameters
+   * @return  the evolved discount factors
+   */
+  public DoubleArray evolvedDiscountFactor(
+      LocalDate maturityDate,
+      ZonedDateTime forwardDateTime,
+      DiscountFactors startingDiscountFactors,
+      DoubleArray x,
+      RationalOneFactorParameters parameters) {
+
+    double a = parameters.a();
+    int nbX = x.size();
+    double p0u = startingDiscountFactors.discountFactor(maturityDate);
+    LocalDate forwardDate = forwardDateTime.toLocalDate();
+    double p0t = startingDiscountFactors.discountFactor(forwardDate);
+    double b0u = parameters.b0(maturityDate);
+    double b0t = parameters.b0(forwardDate);
+    double t = parameters.relativeTime(forwardDateTime);
+    double[] ptu = new double[nbX];
+    for (int loopx = 0; loopx < nbX; loopx++) {
+      double At = Math.exp(a * Math.sqrt(t) * x.get(loopx) - 0.5 * a * a * t) - 1.0d;
+      ptu[loopx] = (p0u + b0u * At) / (p0t + b0t * At);
+    }
+    return DoubleArray.ofUnsafe(ptu);
   }
   
   /**
