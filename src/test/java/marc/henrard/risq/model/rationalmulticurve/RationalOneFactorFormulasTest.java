@@ -6,11 +6,14 @@ package marc.henrard.risq.model.rationalmulticurve;
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.date.DayCounts.ACT_365F;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_6M;
+import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import org.testng.annotations.Test;
 import org.testng.internal.junit.ArrayAsserts;
@@ -105,8 +108,60 @@ public class RationalOneFactorFormulasTest {
       RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
   private static final RationalOneFactorFormulas FORMULAS = 
       RationalOneFactorFormulas.DEFAULT;
+  
+  private static final List<LocalDate> TEST_FWD_DATES = ImmutableList.of(
+      LocalDate.of(2016, 8, 18), LocalDate.of(2016, 8, 19), LocalDate.of(2017, 8, 18), LocalDate.of(2021, 8, 18));
+  private static final LocalDate MATURITY_DATE = LocalDate.of(2025, 12, 20);
+  private static final List<LocalDate> MATURITY_DATES = ImmutableList.of(
+      LocalDate.of(2025, 12, 20), LocalDate.of(2026, 12, 20), LocalDate.of(2027, 12, 20));
+  private static final int NB_TEST_DATES = TEST_FWD_DATES.size();
 
   private final static double TOLERANCE = 1.0E-10;
+  
+  public void evolved_discount_factor_single() {
+    for (int loopdate = 0; loopdate < NB_TEST_DATES; loopdate++) {
+      double x = -2.0 + loopdate * 4.0d / (NB_TEST_DATES-1);
+      ZonedDateTime forwardDate = TEST_FWD_DATES.get(loopdate).atTime(LocalTime.NOON).atZone(ZoneId.of("Europe/London"));
+      double ptuComputed = FORMULAS.evolvedDiscountFactor(MATURITY_DATE, forwardDate, DF, x, PARAMETERS);
+      double p0u = DF.discountFactor(MATURITY_DATE);
+      double p0t = DF.discountFactor(TEST_FWD_DATES.get(loopdate));
+      double b0u = PARAMETERS.b0(MATURITY_DATE);
+      double b0t = PARAMETERS.b0(TEST_FWD_DATES.get(loopdate));
+      double t = PARAMETERS.relativeTime(forwardDate);
+      double At = Math.exp(A * Math.sqrt(t) * x - 0.5 * A * A * t) - 1.0d;
+      double ptuExpected = (p0u + b0u * At) / (p0t + b0t * At);
+      assertEquals(ptuComputed, ptuExpected, TOLERANCE);
+    }
+  }
+
+  public void evolved_discount_factor_array() {
+    int nbX = 11;
+    double[] xArray = new double[nbX];
+    for (int i = 0; i < nbX; i++) {
+      xArray[i] = -3.0 + i * 6.0d / nbX;
+    }
+    DoubleArray x = DoubleArray.ofUnsafe(xArray);
+    for (int loopdate = 0; loopdate < NB_TEST_DATES; loopdate++) {
+      ZonedDateTime forwardDate = TEST_FWD_DATES.get(loopdate).atTime(LocalTime.NOON).atZone(ZoneId.of("Europe/London"));
+      DoubleArray ptuComputed = FORMULAS.evolvedDiscountFactor(MATURITY_DATE, forwardDate, DF, x, PARAMETERS);
+      for (int i = 0; i < nbX; i++) {
+        double ptuExpected = FORMULAS.evolvedDiscountFactor(MATURITY_DATE, forwardDate, DF, x.get(i), PARAMETERS);
+        assertEquals(ptuComputed.get(i), ptuExpected, TOLERANCE);
+      }
+    }
+  }
+
+  public void evolved_discount_factor_dates() {
+    double x = 2.0d;
+    for (int loopdate = 0; loopdate < NB_TEST_DATES; loopdate++) {
+      ZonedDateTime forwardDate = TEST_FWD_DATES.get(loopdate).atTime(LocalTime.NOON).atZone(ZoneId.of("Europe/London"));
+      DoubleArray ptuComputed = FORMULAS.evolvedDiscountFactor(MATURITY_DATES, forwardDate, DF, x, PARAMETERS);
+      for (int i = 0; i < MATURITY_DATES.size(); i++) {
+        double ptuExpected = FORMULAS.evolvedDiscountFactor(MATURITY_DATES.get(i), forwardDate, DF, x, PARAMETERS);
+        assertEquals(ptuComputed.get(i), ptuExpected, TOLERANCE);
+      }
+    }
+  }
 
   public void swap_coefficients() {
     double fixedRate = 0.02d;
