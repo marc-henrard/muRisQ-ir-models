@@ -20,10 +20,10 @@
 	      <artifactId>maven-surefire-plugin</artifactId>
 	      <configuration>
 	        <properties>
-	            <property>
-	                <name>usedefaultlisteners</name>
-	                <value>false</value>
-	            </property>
+	          <property>
+	            <name>usedefaultlisteners</name>
+	            <value>false</value>
+	          </property>
 	        </properties>
 	      </configuration>
 	    </plugin>
@@ -33,6 +33,7 @@
   
   <!-- ==========          Dependencies          ========== -->
   <dependencies>
+    <!--  Strata -->
     <dependency>
       <groupId>com.opengamma.strata</groupId>
       <artifactId>strata-basics</artifactId>
@@ -53,12 +54,13 @@
       <artifactId>strata-pricer</artifactId>
       <version>${og-strata.version}</version>
     </dependency>
+    <!--  Other -->
     <dependency>
       <groupId>net.sf.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
     </dependency>
-    <!--  Dependency used in tests -->
+    <!--  Used in tests -->
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
