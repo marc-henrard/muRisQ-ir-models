@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - present by Marc Henrard.
+ * Copyright (C) 2017 - present by Marc Henrard.
  */
 package marc.henrard.risq.pricer.swaption;
 
@@ -12,45 +12,56 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneOffset;
+import java.util.Map;
 
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.AdjustableDate;
+import com.opengamma.strata.basics.date.DayCount;
+import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.Tenor;
+import com.opengamma.strata.basics.index.IborIndex;
+import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.collect.io.ResourceLocator;
 import com.opengamma.strata.data.MarketData;
 import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
+import com.opengamma.strata.market.curve.Curve;
 import com.opengamma.strata.market.curve.CurveGroupDefinition;
 import com.opengamma.strata.market.curve.CurveGroupName;
+import com.opengamma.strata.market.curve.DefaultCurveMetadata;
+import com.opengamma.strata.market.curve.ParameterizedFunctionalCurve;
 import com.opengamma.strata.market.observable.QuoteId;
+import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
+import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.curve.CurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwap;
-import com.opengamma.strata.product.swap.Swap;
 import com.opengamma.strata.product.swap.SwapTrade;
 import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
+
+import marc.henrard.risq.model.generic.GenericParameterDateCurve;
+import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
+import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapedParameters;
 
 /**
- * Tests {@link RationalOneFactorSwaptionPhysicalProductExplicitPricer} and
- * {@link RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer}.
- * <p>
- * The tests are done with realistic EUR data.
+ * Tests {@link RationalOneFactorSwaptionPhysicalProductExplicitPricer} 
+ * with specific and generic parameter descriptions.
  * 
  * @author Marc Henrard
  */
 @Test
-public class RationalOneFactorSwaptionPhysicalProductExplicitNiPricerTest {
+public class RationalOneFactorSwaptionPhysicalProductGenericParamTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   
@@ -85,9 +96,25 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitNiPricerTest {
   private static final double ETA = 0.01;
   private static final double KAPPA = 0.03;
   private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
-  private static final RationalOneFactorSimpleHWShapedParameters MODEL_SIMPLE = 
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, MULTICURVE_EUR.discountFactors(EUR));
+  private static final DayCount DAY_COUNT = DayCounts.ACT_365F;
+  private static final DiscountFactors DF = MULTICURVE_EUR.discountFactors(EUR);
+  private static final RationalOneFactorSimpleHWShapedParameters MODEL_HWSHAPED = 
+      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, DF);
 
+  private static final Curve CURVE_B0 =
+      ParameterizedFunctionalCurve.of(DefaultCurveMetadata.of("B0"),
+          DoubleArray.of(A, B_0_0, ETA, KAPPA),
+          (p, x) -> (p.get(1) + p.get(2) / (p.get(0) * p.get(3)) 
+              * (1.0d - Math.exp(-p.get(3) * x))) * DF.discountFactor(x),
+          (a, x) -> 0.0d, (a, x) -> DoubleArray.EMPTY);
+  private static final ParameterDateCurve B0 =
+      GenericParameterDateCurve.of(DAY_COUNT, CURVE_B0, VALUATION_DATE);
+  private static final ParameterDateCurve B1_1 =
+      new TestParameterDateCurve(EUR_EURIBOR_6M, REF_DATA, B0);
+  private static final Map<IborIndex, ParameterDateCurve> B1 =
+      ImmutableMap.of(EUR_EURIBOR_6M, B1_1);
+  private static final RationalOneFactorGenericParameters MODEL_GENERIC =
+      RationalOneFactorGenericParameters.of(EUR, A, B0, B1, TIME_MEAS, VALUATION_DATE);
   /* Descriptions of swaptions */
   private static final Period[] EXPIRIES_PER = new Period[] {
     Period.ofMonths(3), Period.ofYears(2), Period.ofYears(10)};
@@ -103,15 +130,11 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitNiPricerTest {
   private static final DiscountingSwapProductPricer PRICER_SWAP = DiscountingSwapProductPricer.DEFAULT;
   private static final RationalOneFactorSwaptionPhysicalProductExplicitPricer PRICER_SWAPTION_RATIONAL_EXPLICIT =
       RationalOneFactorSwaptionPhysicalProductExplicitPricer.DEFAULT;
-  private static final RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer PRICER_SWAPTION_RATIONAL_NI =
-      RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer.DEFAULT;
   
   /* Tolerance */
-  private static final double TOLERANCE_PV_NI = 5.0E-2;
-  private static final double TOLERANCE_PV_EXPL = 1.0E-2;
-  
-  /* Test explicit formula vs numerical integration. Simple model parameters. */
-  public void present_value_numerical_integration_simple() {
+  private static final double TOLERANCE_PV = 5.0E-2;
+
+  public void present_value() {
     for (int i = 0; i < NB_EXPIRIES; i++) {
       for (int j = 0; j < NB_TENORS; j++) {
         for (int k = 0; k < NB_MONEYNESS; k++) {
@@ -128,49 +151,43 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitNiPricerTest {
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swapPayer.getProduct()).build().resolve(REF_DATA);
           double pvExplicit = 
-              PRICER_SWAPTION_RATIONAL_EXPLICIT.presentValue(swpt, MULTICURVE_EUR, MODEL_SIMPLE).getAmount();
-          double pvNumInteg = 
-              PRICER_SWAPTION_RATIONAL_NI.presentValue(swpt, MULTICURVE_EUR, MODEL_SIMPLE).getAmount();
-          assertEquals(pvExplicit, pvNumInteg, TOLERANCE_PV_NI);
+              PRICER_SWAPTION_RATIONAL_EXPLICIT.presentValue(swpt, MULTICURVE_EUR, MODEL_HWSHAPED).getAmount();
+          double pvGeneric = 
+              PRICER_SWAPTION_RATIONAL_EXPLICIT.presentValue(swpt, MULTICURVE_EUR, MODEL_GENERIC).getAmount();
+          assertEquals(pvExplicit, pvGeneric, TOLERANCE_PV);
         }
       }
     }
   }
+  
+}
 
-  /* Test buy/sell parity and put/call/forward parity. */
-  public void present_value_longshort_putcall() {
-    for (int i = 0; i < NB_EXPIRIES; i++) {
-      for (int j = 0; j < NB_TENORS; j++) {
-        for (int k = 0; k < NB_MONEYNESS; k++) {
-          double[][] pvSwpt = new double[2][2];
-          double[] pvSwap = new double[2];
-          for (int looppr = 0; looppr < 2; looppr++) {
-            for (int loopls = 0; loopls < 2; loopls++) {
-              SwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_6M.createTrade(VALUATION_DATE, EXPIRIES_PER[i], 
-                  Tenor.of(TENORS_PER[j]), (looppr == 0) ? BuySell.BUY : BuySell.SELL, NOTIONAL, 0, REF_DATA);
-              ResolvedSwap swap0Resolved = swap0.getProduct().resolve(REF_DATA);
-              double parRate = PRICER_SWAP.parRate(swap0Resolved, MULTICURVE_EUR);
-              LocalDate expiryDate = EUR_EURIBOR_6M.calculateFixingFromEffective(swap0Resolved.getStartDate(), REF_DATA);
-              Swap swap = EUR_FIXED_1Y_EURIBOR_6M.createTrade(VALUATION_DATE,
-                  EXPIRIES_PER[i], Tenor.of(TENORS_PER[j]), (looppr == 0) ? BuySell.BUY : BuySell.SELL,
-                  NOTIONAL, parRate + MONEYNESS[k], REF_DATA).getProduct();
-              ResolvedSwaption swpt = Swaption.builder()
-                  .longShort((loopls == 0) ? LongShort.LONG : LongShort.SHORT)
-                  .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(LocalTime.NOON).expiryZone(ZoneOffset.UTC)
-                  .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
-                  .underlying(swap).build().resolve(REF_DATA);
-              pvSwpt[looppr][loopls] =
-                  PRICER_SWAPTION_RATIONAL_EXPLICIT.presentValue(swpt, MULTICURVE_EUR, MODEL_SIMPLE).getAmount();
-              pvSwap[looppr] = 
-                  PRICER_SWAP.presentValue(swap.resolve(REF_DATA), MULTICURVE_EUR).getAmount(EUR).getAmount();
-            }
-            assertEquals(pvSwpt[looppr][0], -pvSwpt[looppr][1], TOLERANCE_PV_EXPL);  // Long/Short parity
-          }
-          assertEquals(pvSwpt[1][0] - pvSwpt[0][0], pvSwap[1], TOLERANCE_PV_EXPL);  
-          // Receiver swaption - Payer swaption = Receiver swap
-        }
-      }
-    }
+/*
+ * Custom made curve for tests.
+ */
+class TestParameterDateCurve implements ParameterDateCurve{
+  
+  private final IborIndex index;
+  private final ReferenceData ref;
+  private final ParameterDateCurve b0;
+  
+  public TestParameterDateCurve(IborIndex index, ReferenceData ref, ParameterDateCurve b0) {
+    this.index = index;
+    this.ref = ref;
+    this.b0 = b0;
   }
 
+  @Override
+  public double parameterValue(LocalDate date) {
+    LocalDate effectiveDate = index.calculateEffectiveFromFixing(date, ref);
+    LocalDate maturityDate = index.calculateMaturityFromEffective(effectiveDate, ref);
+    double delta = index.getDayCount().yearFraction(effectiveDate, maturityDate);
+    return (b0.parameterValue(effectiveDate) - b0.parameterValue(maturityDate)) / delta;
+  }
+
+  @Override
+  public PointSensitivityBuilder parameterValueCurveSensitivity(LocalDate date) {
+    throw new IllegalArgumentException("not implemented");
+  }
+  
 }
