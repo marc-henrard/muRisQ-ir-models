@@ -15,8 +15,7 @@ import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
-import marc.henrard.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductPricer;
-import marc.henrard.pricer.swaption.RationalTwoFactorUtils;
+import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
 
 /**
@@ -35,15 +34,15 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  * 
  * @author Marc Henrard
  */
-public class RationalTwoFactorNumericalIntegrationSwaptionPhysicalProductPricer  
+public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer  
     extends RationalTwoFactorSwaptionPhysicalProductPricer {
 
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
 
   /** Default implementation. */
-  public static final RationalTwoFactorNumericalIntegrationSwaptionPhysicalProductPricer DEFAULT =
-      new RationalTwoFactorNumericalIntegrationSwaptionPhysicalProductPricer(NB_INTEGRATION_STEPS_DEFAULT);
+  public static final RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer DEFAULT =
+      new RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer(NB_INTEGRATION_STEPS_DEFAULT);
   
   /** Minimal number of integration steps in the integration. Default value. */
   private final int nbIntegrationSteps;
@@ -51,7 +50,7 @@ public class RationalTwoFactorNumericalIntegrationSwaptionPhysicalProductPricer
   /**
    * Creates an instance.
    */
-  public RationalTwoFactorNumericalIntegrationSwaptionPhysicalProductPricer(int nbIntegrationSteps) {
+  public RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer(int nbIntegrationSteps) {
     this.nbIntegrationSteps = nbIntegrationSteps;
   }
 
