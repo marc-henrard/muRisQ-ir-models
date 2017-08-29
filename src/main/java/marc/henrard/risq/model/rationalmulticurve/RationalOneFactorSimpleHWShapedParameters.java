@@ -96,6 +96,7 @@ public final class RationalOneFactorSimpleHWShapedParameters
    * @param kappa  the mean reversion
    * @param timeMeasure  the measurement of time for expiration
    * @param discountFactors  the discount factors
+   * @return the instance
    */
   public static RationalOneFactorSimpleHWShapedParameters of(
       double a, 
@@ -119,6 +120,7 @@ public final class RationalOneFactorSimpleHWShapedParameters
    * @param timeMeasure  the measurement of time for expiration
    * @param discountFactors  the discount factors
    * @param valuationDateTime  the valuation date, time and zone
+   * @return the instance
    */
   public static RationalOneFactorSimpleHWShapedParameters of(
       double a, 
@@ -133,6 +135,33 @@ public final class RationalOneFactorSimpleHWShapedParameters
         "discount factor date and valuation date must be the same");
     return new RationalOneFactorSimpleHWShapedParameters(
         a, b00, eta, kappa, timeMeasure, discountFactors, valuationDateTime.toLocalTime(), valuationDateTime.getZone());
+  }
+  
+  /**
+   * Creates an instance of the model parameters,
+   * 
+   * @param a  the parameter of the log-normal martingale
+   * @param b00  the value at 0 for the function b0
+   * @param eta  the volatility level
+   * @param kappa  the mean reversion
+   * @param timeMeasure  the measurement of time for expiration
+   * @param discountFactors  the discount factors
+   * @param valuationTime  the valuation time
+   * @param valuationZone  the valuation zone
+   * @return the instance
+   */
+  public static RationalOneFactorSimpleHWShapedParameters of(
+      double a,
+      double b00,
+      double eta,
+      double kappa,
+      TimeMeasurement timeMeasure,
+      DiscountFactors discountFactors,
+      LocalTime valuationTime,
+      ZoneId valuationZone) {
+
+    return new RationalOneFactorSimpleHWShapedParameters(
+        a, b00, eta, kappa, timeMeasure, discountFactors, valuationTime, valuationZone);
   }
   
   @ImmutableConstructor
