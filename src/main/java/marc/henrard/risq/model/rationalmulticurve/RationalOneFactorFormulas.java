@@ -19,7 +19,6 @@ import com.opengamma.strata.product.swap.RateAccrualPeriod;
 import com.opengamma.strata.product.swap.RatePaymentPeriod;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
-import com.opengamma.strata.product.swap.SwapLegType;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
@@ -170,8 +169,8 @@ public class RationalOneFactorFormulas {
       RatesProvider rates, 
       RationalOneFactorParameters model) {
     
-    ResolvedSwapLeg fixedLeg = fixedLeg(swap);
-    ResolvedSwapLeg iborLeg = iborLeg(swap);
+    ResolvedSwapLeg fixedLeg = RationalNFactorFormulas.fixedLeg(swap);
+    ResolvedSwapLeg iborLeg = RationalNFactorFormulas.iborLeg(swap);
     Currency ccy = fixedLeg.getCurrency();
     double[] c = new double[2];
     for(SwapPaymentPeriod period: fixedLeg.getPaymentPeriods()) {
@@ -201,28 +200,6 @@ public class RationalOneFactorFormulas {
     }
     c[0] -= c[1];
     return c;
-  }
-  
-  //-----------------------------------------------------------------------
-
-  // check that one leg is fixed and return it
-  private static ResolvedSwapLeg fixedLeg(ResolvedSwap swap) {
-    // find fixed leg
-    List<ResolvedSwapLeg> fixedLegs = swap.getLegs(SwapLegType.FIXED);
-    if (fixedLegs.isEmpty()) {
-      throw new IllegalArgumentException("Swap must contain a fixed leg");
-    }
-    return fixedLegs.get(0);
-  }
-
-  // check that one leg is ibor and return it
-  private static ResolvedSwapLeg iborLeg(ResolvedSwap swap) {
-    // find ibor leg
-    List<ResolvedSwapLeg> iborLegs = swap.getLegs(SwapLegType.IBOR);
-    if (iborLegs.isEmpty()) {
-      throw new IllegalArgumentException("Swap must contain a ibor leg");
-    }
-    return iborLegs.get(0);
   }
 
 }
