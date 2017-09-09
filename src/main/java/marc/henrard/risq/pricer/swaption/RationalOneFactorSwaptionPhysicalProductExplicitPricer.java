@@ -7,11 +7,9 @@ import java.time.ZonedDateTime;
 
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
-import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.impl.option.BlackFormulaRepository;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.common.LongShort;
-import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorFormulas;
@@ -29,7 +27,8 @@ import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
  * 
  * @author Marc Henrard
  */
-public class RationalOneFactorSwaptionPhysicalProductExplicitPricer {
+public class RationalOneFactorSwaptionPhysicalProductExplicitPricer 
+    extends RationalOneFactorSwaptionPhysicalProductPricer {
 
   /**
    * Default implementation.
@@ -45,17 +44,8 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitPricer {
    */
   public RationalOneFactorSwaptionPhysicalProductExplicitPricer() {
   }
-  
-  /**
-   * Computes the present value of a swaption in the rational model.
-   * <p>
-   * The result is expressed using the currency of the swapion.
-   * 
-   * @param swaption  the product to price
-   * @param multicurve  the rates provider with the multi-curve framework
-   * @param model  the rational model parameters
-   * @return the present value of the swaption product
-   */
+
+  @Override
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
@@ -75,15 +65,6 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitPricer {
     // Black formula: F = omega c[1], K = - omega c[0], sigma = a
     double pv = BlackFormulaRepository.price(omega * c[1], -omega * c[0], expiryTime, model.a(), c[1] > 0);
     return CurrencyAmount.of(ccy, (swaption.getLongShort() == LongShort.LONG) ? pv : -pv);
-  }
-
-  // validate that the rates and volatilities providers are coherent
-  private void validate(RatesProvider rates, ResolvedSwaption swaption, RationalOneFactorParameters model) {
-    ArgChecker.isTrue(model.getValuationDate().equals(rates.getValuationDate()), 
-        "volatility and rate data should be for the same date");
-    ArgChecker.isFalse(swaption.getUnderlying().isCrossCurrency(), "underlying swap should be single currency");
-    ArgChecker.isTrue(swaption.getSwaptionSettlement() == PhysicalSwaptionSettlement.DEFAULT, "swaption should be physical settlement");
-    ArgChecker.isTrue(swaption.getUnderlying().getLegs().size() == 2, "underlying swap should have two legs");
   }
 
 }

@@ -8,11 +8,9 @@ import java.util.function.Function;
 
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
-import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.math.impl.integration.RungeKuttaIntegrator1D;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.common.LongShort;
-import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorFormulas;
@@ -30,7 +28,8 @@ import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
  * 
  * @author Marc Henrard
  */
-public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer {
+public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer
+    extends RationalOneFactorSwaptionPhysicalProductPricer {
 
   /**
    * Default implementation.
@@ -48,17 +47,8 @@ public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer 
    */
   public RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer() {
   }
-  
-  /**
-   * Computes the present value of a swaption in the rational model.
-   * <p>
-   * The result is expressed using the currency of the swapion.
-   * 
-   * @param swaption  the product to price
-   * @param rates  the rates provider
-   * @param model  the rational model parameters
-   * @return the present value of the swaption product
-   */
+
+  @Override
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption, 
       RatesProvider rates, 
@@ -84,16 +74,6 @@ public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer 
     }
     return CurrencyAmount.of(ccy, pv * ((swaption.getLongShort() == LongShort.LONG) ? 1.0 : -1.0));
   }
-
-  // validate that the rates and volatilities providers are coherent
-  private void validate(RatesProvider rates, ResolvedSwaption swaption, RationalOneFactorParameters model) {
-    ArgChecker.isTrue(model.getValuationDate().equals(rates.getValuationDate()), 
-        "volatility and rate data should be for the same date");
-    ArgChecker.isFalse(swaption.getUnderlying().isCrossCurrency(), "underlying swap should be single currency");
-    ArgChecker.isTrue(swaption.getSwaptionSettlement() == PhysicalSwaptionSettlement.DEFAULT, "swaption should be physical settlement");
-    ArgChecker.isTrue(swaption.getUnderlying().getLegs().size() == 2, "underlying swap should have two legs");
-  }
-
 
   /** Inner class to implement the integration used in price replication. */
   private static final class SwaptionIntegrant implements Function<Double, Double> {
