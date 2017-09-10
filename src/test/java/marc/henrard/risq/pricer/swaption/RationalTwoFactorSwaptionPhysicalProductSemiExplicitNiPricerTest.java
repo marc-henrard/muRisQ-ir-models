@@ -19,7 +19,6 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer;
-import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductPricer;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
 
 import org.testng.annotations.Test;

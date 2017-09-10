@@ -3,7 +3,6 @@
  */
 package marc.henrard.risq.pricer.swaption;
 
-import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_6M;
 import static org.testng.Assert.assertEquals;
@@ -48,9 +47,8 @@ import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapedParameters;
+import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
+import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 
 /**
  * Tests {@link RationalSwaptionPhysicalProductPricer}.
@@ -58,7 +56,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShape
  * @author Marc Henrard
  */
 @Test
-public class RationalOneFactorSwaptionPhysicalProductPricerTest {
+public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   
@@ -98,15 +96,10 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
       CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA, REF_DATA);
   private static final ImmutableRatesProvider MULTICURVE_EUR_POS = 
       CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA_POS, REF_DATA);
-  
-  /* Rational model data: HW shaped b0 */
-  private static final double A = 0.75;
-  private static final double B_0_0 = 0.50;
-  private static final double ETA = 0.01;
-  private static final double KAPPA = 0.03;
-  private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
-  private static final RationalOneFactorSimpleHWShapedParameters MODEL_SIMPLE = 
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, MULTICURVE_EUR.discountFactors(EUR));
+
+  /* Rational model data */
+  private static final RationalTwoFactorGenericParameters RATIONAL_2F = 
+      RationalTwoFactorParameters20151120DataSet.RATIONAL_2F;
 
   /* Descriptions of swaptions */
   private static final Period[] EXPIRIES_PER = new Period[] {
@@ -121,8 +114,8 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
   
   /* Pricer */
   private static final DiscountingSwapProductPricer PRICER_SWAP = DiscountingSwapProductPricer.DEFAULT;
-  private static final RationalOneFactorSwaptionPhysicalProductExplicitPricer PRICER_SWAPTION_RATIONAL_EXPLICIT =
-      RationalOneFactorSwaptionPhysicalProductExplicitPricer.DEFAULT;
+  private static final RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer PRICER_SWPT_S_EX =
+      RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer.DEFAULT; 
   private static final BlackSwaptionPhysicalProductPricer PRICER_SWAPTION_BLACK = 
       BlackSwaptionPhysicalProductPricer.DEFAULT;
   private static final NormalSwaptionPhysicalProductPricer PRICER_SWAPTION_BACHELIER = 
@@ -136,7 +129,7 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
   public void black() {
     for (int i = 0; i < NB_EXPIRIES; i++) {
       for (int j = 0; j < NB_TENORS; j++) {
-        for (int k = 0; k < NB_MONEYNESS; k++) {
+        for (int k = 1; k < NB_MONEYNESS; k++) {  // Removed first moneyness as it has 0 time value in some case
           SwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_6M.createTrade(
               VALUATION_DATE, EXPIRIES_PER[i], Tenor.of(TENORS_PER[j]), BuySell.BUY, NOTIONAL, 0, REF_DATA);
           ResolvedSwap swap0Resolved = swap0.getProduct().resolve(REF_DATA);
@@ -150,9 +143,9 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swapPayer.getProduct()).build().resolve(REF_DATA);
           double pvRational = 
-              PRICER_SWAPTION_RATIONAL_EXPLICIT.presentValue(swpt, MULTICURVE_EUR_POS, MODEL_SIMPLE).getAmount();
+              PRICER_SWPT_S_EX.presentValue(swpt, MULTICURVE_EUR_POS, RATIONAL_2F).getAmount();
           double iv =
-              PRICER_SWAPTION_RATIONAL_EXPLICIT.impliedVolatilityBlack(swpt, MULTICURVE_EUR_POS, MODEL_SIMPLE);
+              PRICER_SWPT_S_EX.impliedVolatilityBlack(swpt, MULTICURVE_EUR_POS, RATIONAL_2F);
           BlackSwaptionExpiryTenorVolatilities volatilities =
               BlackSwaptionExpiryTenorVolatilities.of(
                   EUR_FIXED_1Y_EURIBOR_6M,
@@ -169,8 +162,8 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
           assertEquals(pvRational, pvBlack, TOLERANCE_PV);
           /* Short swaption. */
           ResolvedSwaption swpt2 = swpt.toBuilder().longShort(LongShort.SHORT).build();
-          double iv2 = PRICER_SWAPTION_RATIONAL_EXPLICIT
-              .impliedVolatilityBlack(swpt2, MULTICURVE_EUR_POS, MODEL_SIMPLE);
+          double iv2 = PRICER_SWPT_S_EX
+              .impliedVolatilityBlack(swpt2, MULTICURVE_EUR_POS, RATIONAL_2F);
           assertEquals(iv, iv2, TOLERANCE_IV);
         }
       }
@@ -195,10 +188,10 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
               .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(LocalTime.NOON).expiryZone(ZoneOffset.UTC)
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swapPayer.getProduct()).build().resolve(REF_DATA);
-          double pvRational = PRICER_SWAPTION_RATIONAL_EXPLICIT
-              .presentValue(swpt, MULTICURVE_EUR, MODEL_SIMPLE).getAmount();
-          double iv = PRICER_SWAPTION_RATIONAL_EXPLICIT
-              .impliedVolatilityBachelier(swpt, MULTICURVE_EUR, MODEL_SIMPLE);
+          double pvRational = PRICER_SWPT_S_EX
+              .presentValue(swpt, MULTICURVE_EUR, RATIONAL_2F).getAmount();
+          double iv = PRICER_SWPT_S_EX
+              .impliedVolatilityBachelier(swpt, MULTICURVE_EUR, RATIONAL_2F);
           NormalSwaptionExpiryTenorVolatilities volatilities =
               NormalSwaptionExpiryTenorVolatilities.of(
                   EUR_FIXED_1Y_EURIBOR_6M,
@@ -215,8 +208,8 @@ public class RationalOneFactorSwaptionPhysicalProductPricerTest {
           assertEquals(pvRational, pvBachelier, TOLERANCE_PV);
           /* Short swaption. */
           ResolvedSwaption swpt2 = swpt.toBuilder().longShort(LongShort.SHORT).build();
-          double iv2 = PRICER_SWAPTION_RATIONAL_EXPLICIT
-              .impliedVolatilityBachelier(swpt2, MULTICURVE_EUR, MODEL_SIMPLE);
+          double iv2 = PRICER_SWPT_S_EX
+              .impliedVolatilityBachelier(swpt2, MULTICURVE_EUR, RATIONAL_2F);
           assertEquals(iv, iv2, TOLERANCE_IV);
         }
       }

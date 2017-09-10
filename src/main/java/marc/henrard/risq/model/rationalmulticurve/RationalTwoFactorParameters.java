@@ -4,12 +4,8 @@
 package marc.henrard.risq.model.rationalmulticurve;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
-import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.index.IborIndexObservation;
-
-import marc.henrard.risq.model.generic.ModelParameters;
 
 /**
  * Interest rate multi-curve rational model.
@@ -28,13 +24,7 @@ import marc.henrard.risq.model.generic.ModelParameters;
  * @author Marc Henrard
  */
 public interface RationalTwoFactorParameters 
-    extends ModelParameters {
-  
-  /**
-   * The currency for which the model is valid.
-   * @return the currency
-   */
-  public Currency getCurrency();
+    extends RationalParameters {
   
   /**
    * Returns the b0 parameter at a given date.
@@ -82,27 +72,5 @@ public interface RationalTwoFactorParameters
    * @return the correlation
    */
   public double getCorrelation();
-  
-  /**
-   * Gets the valuation date. All data items in this environment are calibrated for this date.
-   * @return the value of the property, not null
-   */
-  public LocalDate getValuationDate();
-  
-  /**
-   * Gets the valuation date and time. All data items in this environment are calibrated for this date.
-   * @return the value of the property, not null
-   */
-  public ZonedDateTime getValuationDateTime();
-
-  /**
-   * Converts a time of day and date to a relative time. 
-   * <p>
-   * When the date is after the valuation date (and potentially time), the returned number is negative.
-   * 
-   * @param dateTime  the date/time to find the relative year fraction of
-   * @return the time
-   */
-  public double relativeTime(ZonedDateTime dateTime);
 
 }

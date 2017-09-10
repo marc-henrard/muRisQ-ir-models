@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
+import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.math.impl.integration.RungeKuttaIntegrator1D;
 import com.opengamma.strata.math.impl.statistics.distribution.NormalDistribution;
 import com.opengamma.strata.math.impl.statistics.distribution.ProbabilityDistribution;
@@ -16,6 +17,7 @@ import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
+import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
 
@@ -32,7 +34,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  * @author Marc Henrard
  */
 public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
-    extends RationalTwoFactorSwaptionPhysicalProductPricer {
+    extends RationalSwaptionPhysicalProductPricer {
 
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
@@ -60,14 +62,17 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption,
       RatesProvider rates,
-      RationalTwoFactorParameters model) {
+      RationalParameters model) {
+
+    ArgChecker.isTrue(model instanceof RationalTwoFactorParameters);
+    RationalTwoFactorParameters model2 = (RationalTwoFactorParameters) model;
     validate(rates, swaption, model);
     Currency ccy = swaption.getUnderlying().getLegs().get(0).getCurrency();
     ZonedDateTime expiryDateTime = swaption.getExpiry();
     double expiryTime = model.relativeTime(expiryDateTime);
     ResolvedSwap underlying = swaption.getUnderlying();
-    double[] c = RationalTwoFactorFormulas.swapCoefficients(underlying, rates, model);
-    double pvNum = pvNumerical(c, expiryTime, model.a1(), model.a2(), model.getCorrelation());
+    double[] c = RationalTwoFactorFormulas.swapCoefficients(underlying, rates, model2);
+    double pvNum = pvNumerical(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation());
     return CurrencyAmount.of(ccy, (swaption.getLongShort() == LongShort.LONG) ? pvNum : -pvNum);
   }
 

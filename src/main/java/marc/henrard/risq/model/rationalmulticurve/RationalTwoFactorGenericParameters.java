@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.basics.index.IborIndexObservation;
+import com.opengamma.strata.collect.ArgChecker;
 
 import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.TimeMeasurement;
@@ -110,6 +111,12 @@ public final class RationalTwoFactorGenericParameters
     this.a2 = a2;
     this.correlation = correlation;
     this.b0 = b0;
+    ArgChecker.isTrue(b1.keySet().equals(b2.keySet()), 
+        "Index sets should be identic for b1 and b2");
+    for(IborIndex index:b1.keySet()) {
+      ArgChecker.isTrue(index.getCurrency().equals(currency), 
+          "the index currency should be equal to the model currency");
+    }
     this.b1 = b1;
     this.b2 = b2;
     this.timeMeasure = timeMeasure;

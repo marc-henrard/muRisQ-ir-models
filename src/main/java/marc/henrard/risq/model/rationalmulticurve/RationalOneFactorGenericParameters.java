@@ -56,7 +56,7 @@ public final class RationalOneFactorGenericParameters
 
   /** The model currency */
   @PropertyDefinition(validate = "notNull")
-  private final Currency ccy;
+  private final Currency currency;
   /** The parameter of the log-normal martingale. */
   @PropertyDefinition
   private final double a;
@@ -111,7 +111,7 @@ public final class RationalOneFactorGenericParameters
       LocalDate valuationDate,
       LocalTime valuationTime,
       ZoneId valuationZone) {
-    this.ccy = ccy;
+    this.currency = ccy;
     this.a = a;
     this.b0 = b0;
     this.b1 = b1;
@@ -123,11 +123,6 @@ public final class RationalOneFactorGenericParameters
   }
 
   //-----------------------------------------------------------------------
-
-  @Override
-  public Currency currency() {
-    return ccy;
-  }
 
   @Override
   public double b0(LocalDate date) {
@@ -213,8 +208,8 @@ public final class RationalOneFactorGenericParameters
    * Gets the model currency
    * @return the value of the property, not null
    */
-  public Currency getCcy() {
-    return ccy;
+  public Currency getCurrency() {
+    return currency;
   }
 
   //-----------------------------------------------------------------------
@@ -296,7 +291,7 @@ public final class RationalOneFactorGenericParameters
     }
     if (obj != null && obj.getClass() == this.getClass()) {
       RationalOneFactorGenericParameters other = (RationalOneFactorGenericParameters) obj;
-      return JodaBeanUtils.equal(ccy, other.ccy) &&
+      return JodaBeanUtils.equal(currency, other.currency) &&
           JodaBeanUtils.equal(a, other.a) &&
           JodaBeanUtils.equal(b0, other.b0) &&
           JodaBeanUtils.equal(b1, other.b1) &&
@@ -311,7 +306,7 @@ public final class RationalOneFactorGenericParameters
   @Override
   public int hashCode() {
     int hash = getClass().hashCode();
-    hash = hash * 31 + JodaBeanUtils.hashCode(ccy);
+    hash = hash * 31 + JodaBeanUtils.hashCode(currency);
     hash = hash * 31 + JodaBeanUtils.hashCode(a);
     hash = hash * 31 + JodaBeanUtils.hashCode(b0);
     hash = hash * 31 + JodaBeanUtils.hashCode(b1);
@@ -326,7 +321,7 @@ public final class RationalOneFactorGenericParameters
   public String toString() {
     StringBuilder buf = new StringBuilder(288);
     buf.append("RationalOneFactorGenericParameters{");
-    buf.append("ccy").append('=').append(ccy).append(',').append(' ');
+    buf.append("currency").append('=').append(currency).append(',').append(' ');
     buf.append("a").append('=').append(a).append(',').append(' ');
     buf.append("b0").append('=').append(b0).append(',').append(' ');
     buf.append("b1").append('=').append(b1).append(',').append(' ');
@@ -349,10 +344,10 @@ public final class RationalOneFactorGenericParameters
     static final Meta INSTANCE = new Meta();
 
     /**
-     * The meta-property for the {@code ccy} property.
+     * The meta-property for the {@code currency} property.
      */
-    private final MetaProperty<Currency> ccy = DirectMetaProperty.ofImmutable(
-        this, "ccy", RationalOneFactorGenericParameters.class, Currency.class);
+    private final MetaProperty<Currency> currency = DirectMetaProperty.ofImmutable(
+        this, "currency", RationalOneFactorGenericParameters.class, Currency.class);
     /**
      * The meta-property for the {@code a} property.
      */
@@ -394,7 +389,7 @@ public final class RationalOneFactorGenericParameters
      */
     private final Map<String, MetaProperty<?>> metaPropertyMap$ = new DirectMetaPropertyMap(
         this, null,
-        "ccy",
+        "currency",
         "a",
         "b0",
         "b1",
@@ -412,8 +407,8 @@ public final class RationalOneFactorGenericParameters
     @Override
     protected MetaProperty<?> metaPropertyGet(String propertyName) {
       switch (propertyName.hashCode()) {
-        case 98329:  // ccy
-          return ccy;
+        case 575402001:  // currency
+          return currency;
         case 97:  // a
           return a;
         case 3086:  // b0
@@ -449,11 +444,11 @@ public final class RationalOneFactorGenericParameters
 
     //-----------------------------------------------------------------------
     /**
-     * The meta-property for the {@code ccy} property.
+     * The meta-property for the {@code currency} property.
      * @return the meta-property, not null
      */
-    public MetaProperty<Currency> ccy() {
-      return ccy;
+    public MetaProperty<Currency> currency() {
+      return currency;
     }
 
     /**
@@ -516,8 +511,8 @@ public final class RationalOneFactorGenericParameters
     @Override
     protected Object propertyGet(Bean bean, String propertyName, boolean quiet) {
       switch (propertyName.hashCode()) {
-        case 98329:  // ccy
-          return ((RationalOneFactorGenericParameters) bean).getCcy();
+        case 575402001:  // currency
+          return ((RationalOneFactorGenericParameters) bean).getCurrency();
         case 97:  // a
           return ((RationalOneFactorGenericParameters) bean).getA();
         case 3086:  // b0
@@ -553,7 +548,7 @@ public final class RationalOneFactorGenericParameters
    */
   public static final class Builder extends DirectFieldsBeanBuilder<RationalOneFactorGenericParameters> {
 
-    private Currency ccy;
+    private Currency currency;
     private double a;
     private ParameterDateCurve b0;
     private Map<IborIndex, ParameterDateCurve> b1 = ImmutableMap.of();
@@ -573,7 +568,7 @@ public final class RationalOneFactorGenericParameters
      * @param beanToCopy  the bean to copy from, not null
      */
     private Builder(RationalOneFactorGenericParameters beanToCopy) {
-      this.ccy = beanToCopy.getCcy();
+      this.currency = beanToCopy.getCurrency();
       this.a = beanToCopy.getA();
       this.b0 = beanToCopy.getB0();
       this.b1 = ImmutableMap.copyOf(beanToCopy.getB1());
@@ -587,8 +582,8 @@ public final class RationalOneFactorGenericParameters
     @Override
     public Object get(String propertyName) {
       switch (propertyName.hashCode()) {
-        case 98329:  // ccy
-          return ccy;
+        case 575402001:  // currency
+          return currency;
         case 97:  // a
           return a;
         case 3086:  // b0
@@ -612,8 +607,8 @@ public final class RationalOneFactorGenericParameters
     @Override
     public Builder set(String propertyName, Object newValue) {
       switch (propertyName.hashCode()) {
-        case 98329:  // ccy
-          this.ccy = (Currency) newValue;
+        case 575402001:  // currency
+          this.currency = (Currency) newValue;
           break;
         case 97:  // a
           this.a = (Double) newValue;
@@ -681,7 +676,7 @@ public final class RationalOneFactorGenericParameters
     @Override
     public RationalOneFactorGenericParameters build() {
       return new RationalOneFactorGenericParameters(
-          ccy,
+          currency,
           a,
           b0,
           b1,
@@ -694,12 +689,12 @@ public final class RationalOneFactorGenericParameters
     //-----------------------------------------------------------------------
     /**
      * Sets the model currency
-     * @param ccy  the new value, not null
+     * @param currency  the new value, not null
      * @return this, for chaining, not null
      */
-    public Builder ccy(Currency ccy) {
-      JodaBeanUtils.notNull(ccy, "ccy");
-      this.ccy = ccy;
+    public Builder currency(Currency currency) {
+      JodaBeanUtils.notNull(currency, "currency");
+      this.currency = currency;
       return this;
     }
 
@@ -784,7 +779,7 @@ public final class RationalOneFactorGenericParameters
     public String toString() {
       StringBuilder buf = new StringBuilder(288);
       buf.append("RationalOneFactorGenericParameters.Builder{");
-      buf.append("ccy").append('=').append(JodaBeanUtils.toString(ccy)).append(',').append(' ');
+      buf.append("currency").append('=').append(JodaBeanUtils.toString(currency)).append(',').append(' ');
       buf.append("a").append('=').append(JodaBeanUtils.toString(a)).append(',').append(' ');
       buf.append("b0").append('=').append(JodaBeanUtils.toString(b0)).append(',').append(' ');
       buf.append("b1").append('=').append(JodaBeanUtils.toString(b1)).append(',').append(' ');

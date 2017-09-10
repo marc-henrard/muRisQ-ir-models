@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
+import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.math.impl.integration.RungeKuttaIntegrator1D;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.common.LongShort;
@@ -15,6 +16,7 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 
 /**
  * Price physical delivery European swaptions in the simplified one-factor rational model by numerical integration.
@@ -29,7 +31,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
  * @author Marc Henrard
  */
 public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer
-    extends RationalOneFactorSwaptionPhysicalProductPricer {
+    extends RationalSwaptionPhysicalProductPricer {
 
   /**
    * Default implementation.
@@ -52,15 +54,17 @@ public class RationalOneFactorSwaptionPhysicalProductNumericalIntegrationPricer
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption, 
       RatesProvider rates, 
-      RationalOneFactorParameters model) {
+      RationalParameters model) {
     
+    ArgChecker.isTrue(model instanceof RationalOneFactorParameters);
+    RationalOneFactorParameters model1 = (RationalOneFactorParameters) model;
     validate(rates, swaption, model);
-    double[] c = FORMULAS.swapCoefficients(swaption.getUnderlying(), rates, model);
+    double[] c = FORMULAS.swapCoefficients(swaption.getUnderlying(), rates, model1);
     Currency ccy = swaption.getUnderlying().getLegs().get(0).getCurrency();
     ZonedDateTime expiryDateTime = swaption.getExpiry();
     double expiryTime = model.relativeTime(expiryDateTime);
     /* Numerical integration: (c0 + c1 A1) exp(-1/2 X^2) */
-    final SwaptionIntegrant integrant = new SwaptionIntegrant(model.a(), c, expiryTime);
+    final SwaptionIntegrant integrant = new SwaptionIntegrant(model1.a(), c, expiryTime);
     final double limit = 12.0;
     final double absoluteTolerance = 1.0E-1;
     final double relativeTolerance = 1.0E-6;

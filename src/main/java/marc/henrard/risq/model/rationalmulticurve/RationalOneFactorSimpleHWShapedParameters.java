@@ -189,7 +189,7 @@ public final class RationalOneFactorSimpleHWShapedParameters
   }
 
   @Override
-  public Currency currency() {
+  public Currency getCurrency() {
     return currency;
   }
 
