@@ -65,7 +65,7 @@ public class RationalOneFactorGenericParametersTest {
   public void of() {
     RationalOneFactorGenericParameters test = RationalOneFactorGenericParameters
         .of(EUR, A, B0, B1, TIME_MEASUREMENT, VALUATION_DATE);
-    assertEquals(test.currency(), EUR);
+    assertEquals(test.getCurrency(), EUR);
     assertEquals(test.getA(), A);
     assertEquals(test.getTimeMeasure(), TIME_MEASUREMENT);
     assertEquals(test.getValuationDate(), VALUATION_DATE);

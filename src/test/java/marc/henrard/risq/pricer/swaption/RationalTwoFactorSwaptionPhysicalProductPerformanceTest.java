@@ -14,7 +14,6 @@ import java.time.ZoneOffset;
 import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer;
-import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductPricer;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
 
 import org.testng.annotations.Test;

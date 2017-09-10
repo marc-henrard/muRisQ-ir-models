@@ -4,13 +4,9 @@
 package marc.henrard.risq.model.rationalmulticurve;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
-import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
-
-import marc.henrard.risq.model.generic.ModelParameters;
 
 /**
  * Interest rate multi-curve rational model with one factor.
@@ -25,13 +21,7 @@ import marc.henrard.risq.model.generic.ModelParameters;
  * @author Marc Henrard <a href="http://multi-curve-framework.blogspot.com/">Multi-curve Framework</a>
  */
 public interface RationalOneFactorParameters
-    extends ModelParameters {
-
-  /**
-   * The currency for which the model is valid.
-   * @return the currency
-   */
-  public Currency currency();
+    extends RationalParameters {
   
   /**
    * Returns the parameter of the log-normal martingale.
@@ -55,34 +45,6 @@ public interface RationalOneFactorParameters
    * @return  the parameter
    */
   public double b1(IborIndexObservation obs);
-  
-  /**
-   * Returns the valuation date. 
-   * <p>
-   * All data items in this environment are calibrated for this date.
-   * 
-   * @return the date
-   */
-  public LocalDate getValuationDate();
-  
-  /**
-   * Returns the valuation date and time. 
-   * <p>
-   * All data items in this environment are calibrated for this date.
-   * 
-   * @return the date and time
-   */
-  public ZonedDateTime getValuationDateTime();
-  
-  /**
-   * Converts a time of day and date to a relative time. 
-   * <p>
-   * When the date is after the valuation date (and potentially time), the returned number is positive.
-   * 
-   * @param dateTime  the date to find the relative time of
-   * @return the time
-   */
-  public double relativeTime(ZonedDateTime dateTime);
   
   /**
    * Returns the b0 parameter sensitivity to the curves rates.

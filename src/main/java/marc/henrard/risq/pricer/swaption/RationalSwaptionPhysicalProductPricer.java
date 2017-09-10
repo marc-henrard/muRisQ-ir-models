@@ -16,7 +16,7 @@ import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
 import marc.henrard.risq.model.bachelier.BachelierFormula;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 
 /**
  * Price of physical delivery European swaptions in the two-factor rational model.
@@ -34,7 +34,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
  * 
  * @author Marc Henrard
  */
-public abstract class RationalOneFactorSwaptionPhysicalProductPricer {
+public abstract class RationalSwaptionPhysicalProductPricer {
 
   /** The pricer used for swap measures. */
   private static final DiscountingSwapProductPricer PRICER_SWAP = 
@@ -53,7 +53,7 @@ public abstract class RationalOneFactorSwaptionPhysicalProductPricer {
   public abstract CurrencyAmount presentValue(
       ResolvedSwaption swaption,
       RatesProvider rates,
-      RationalOneFactorParameters model);
+      RationalParameters model);
   
   /**
    * Computes the implied volatility in the Black model.
@@ -69,7 +69,7 @@ public abstract class RationalOneFactorSwaptionPhysicalProductPricer {
   public double impliedVolatilityBlack(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
-      RationalOneFactorParameters model) {
+      RationalParameters model) {
     
     double price = presentValue(swaption, multicurve, model).getAmount();
     double parRate = PRICER_SWAP.parRate(swaption.getUnderlying(), multicurve);
@@ -95,7 +95,7 @@ public abstract class RationalOneFactorSwaptionPhysicalProductPricer {
   public double impliedVolatilityBachelier(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
-      RationalOneFactorParameters model) {
+      RationalParameters model) {
 
     double price = presentValue(swaption, multicurve, model).getAmount();
     double parRate = PRICER_SWAP.parRate(swaption.getUnderlying(), multicurve);
@@ -118,7 +118,7 @@ public abstract class RationalOneFactorSwaptionPhysicalProductPricer {
   protected void validate(
       RatesProvider rates, 
       ResolvedSwaption swaption, 
-      RationalOneFactorParameters model) {
+      RationalParameters model) {
     
     ArgChecker.isTrue(model.getValuationDate().equals(rates.getValuationDate()),
         "volatility and rate data should be for the same date");
