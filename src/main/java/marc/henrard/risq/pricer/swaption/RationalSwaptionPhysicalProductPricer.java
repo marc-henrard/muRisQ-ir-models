@@ -130,6 +130,8 @@ public abstract class RationalSwaptionPhysicalProductPricer {
         "underlying swap should have two legs");
     ArgChecker.isTrue(swaption.getUnderlying().getLegs(SwapLegType.FIXED).size() == 1, 
         "underlying swap should have one fixed leg");
+    ArgChecker.isTrue(swaption.getUnderlying().getLegs(SwapLegType.IBOR).size() == 1, 
+        "underlying swap should have one Ibor leg");
   }
   
   /**
