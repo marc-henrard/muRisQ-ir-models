@@ -43,6 +43,7 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
   private static final double TOL_REL = 1.0E-6;
   private static final double SMALL = 1.0E-12;
   private static final ProbabilityDistribution<Double> NORMAL = new NormalDistribution(0, 1);
+  public static final RationalTwoFactorFormulas FORMULAS_2 = RationalTwoFactorFormulas.DEFAULT;
 
   /** Default implementation. */
   public static final RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer DEFAULT =
@@ -71,7 +72,7 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
     ZonedDateTime expiryDateTime = swaption.getExpiry();
     double expiryTime = model.relativeTime(expiryDateTime);
     ResolvedSwap underlying = swaption.getUnderlying();
-    double[] c = RationalTwoFactorFormulas.swapCoefficients(underlying, rates, model2);
+    double[] c = FORMULAS_2.swapCoefficients(underlying, rates, model2);
     double pvNum = pvNumerical(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation());
     return CurrencyAmount.of(ccy, (swaption.getLongShort() == LongShort.LONG) ? pvNum : -pvNum);
   }
@@ -120,7 +121,7 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
-    return pv1 + pv2; // P1P1-0.0025
+    return pv1 + pv2;
   }
 
   private double kappa2(double x0, double x2, double d2, double a2, double sqrtt) {
