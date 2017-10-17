@@ -41,6 +41,7 @@ public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer
 
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
+  public static final RationalTwoFactorFormulas FORMULAS_2 = RationalTwoFactorFormulas.DEFAULT;
 
   /** Default implementation. */
   public static final RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer DEFAULT =
@@ -69,7 +70,7 @@ public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer
     ZonedDateTime expiryDateTime = swaption.getExpiry();
     double expiryTime = model.relativeTime(expiryDateTime);
     ResolvedSwap underlying = swaption.getUnderlying();
-    double[] c = RationalTwoFactorFormulas.swapCoefficients(underlying, rates, model2);
+    double[] c = FORMULAS_2.swapCoefficients(underlying, rates, model2);
     /* Numerical integration: (c0 + c1 (A1+1) + c2 (A2+1)) exp(-1/2 XT S X) */
     final SwaptionIntegrant integrant = 
         new SwaptionIntegrant(new double[] {model2.a1(), model2.a2() }, model2.getCorrelation(), c, expiryTime);

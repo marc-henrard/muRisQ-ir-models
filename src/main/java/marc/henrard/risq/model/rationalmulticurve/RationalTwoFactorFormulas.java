@@ -35,6 +35,13 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  */
 public class RationalTwoFactorFormulas {
   
+  /** The default instance of the formulas. */
+  public final static RationalTwoFactorFormulas DEFAULT = new RationalTwoFactorFormulas();
+  
+  // Private constructor
+  private RationalTwoFactorFormulas(){
+  }
+  
   /**
    * In the rational two factors model, for the description of a swap dynamic, the constant, the coefficients of
    * exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...)
@@ -44,7 +51,7 @@ public class RationalTwoFactorFormulas {
    * @param model  the rational 2-factor model
    * @return the coefficients
    */
-  public static double[] swapCoefficients(
+  public double[] swapCoefficients(
       ResolvedSwap swap, 
       RatesProvider rates,
       RationalTwoFactorParameters model) {
