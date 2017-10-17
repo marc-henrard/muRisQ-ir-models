@@ -3,10 +3,14 @@
  */
 package marc.henrard.risq.model.rationalmulticurve;
 
+import java.time.LocalDate;
+
 import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.currency.Currency;
+import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.rate.RatesProvider;
+import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.rate.FixedRateComputation;
 import com.opengamma.strata.product.rate.IborRateComputation;
 import com.opengamma.strata.product.swap.RateAccrualPeriod;
@@ -43,7 +47,7 @@ public class RationalTwoFactorFormulas {
   }
   
   /**
-   * In the rational two factors model, for the description of a swap dynamic, the constant, the coefficients of
+   * In the rational two-factor model, for the description of a swap dynamic, the constant, the coefficients of
    * exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...)
    * 
    * @param swap  the swap
@@ -87,6 +91,39 @@ public class RationalTwoFactorFormulas {
       c[2] += ratePeriod.getNotional() * accrualPeriod.getYearFraction()  * 
           model.b2(obs.getObservation());
     }
+    c[0] -= c[1] + c[2];
+    return c;
+  }
+  
+  /**
+   * In the rational two-factor model, for the description of a caplet dynamic, the constant, the coefficients of
+   * exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...)
+   * <p>
+   * From the working paper on implementation:
+   * c[1] = b_1(\theta) - K b_0(v)
+   * c[2] = b_2(\theta)
+   * c[0] = L^j(0; \theta) - K P^D(0,v) - (c[1] + c[2])
+   * All to be multiplied by notional and accrual factor
+   * 
+   * @param caplet  the caplet/floorlet period
+   * @param rates  the rates/multi-curve provider
+   * @param model  the rational 2-factor model
+   * @return the coefficients
+   */
+  public double[] capletCoefficients(
+      IborCapletFloorletPeriod caplet,
+      RatesProvider rates,
+      RationalTwoFactorParameters model) {
+
+    double strike = caplet.getStrike();
+    double factor = Math.abs(caplet.getNotional()) * caplet.getYearFraction();
+    IborIndexObservation obs = caplet.getIborRate().getObservation();
+    LocalDate maturity = obs.getMaturityDate();
+    double[] c = new double[3];
+    c[1] = (model.b1(obs) - strike * model.b0(maturity)) * factor;
+    c[2] = model.b2(obs) * factor;
+    c[0] = (rates.iborIndexRates(obs.getIndex()).rate(obs) -
+        strike) * rates.discountFactor(caplet.getCurrency(), maturity) * factor;
     c[0] -= c[1] + c[2];
     return c;
   }
