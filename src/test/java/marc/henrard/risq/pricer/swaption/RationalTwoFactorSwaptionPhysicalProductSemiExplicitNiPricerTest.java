@@ -3,23 +3,16 @@
  */
 package marc.henrard.risq.pricer.swaption;
 
-import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import static com.opengamma.strata.basics.currency.Currency.EUR;
+import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_6M;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-
-import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
-import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
-import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer;
-import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
 
 import org.testng.annotations.Test;
 
@@ -44,6 +37,12 @@ import com.opengamma.strata.product.swap.SwapTrade;
 import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
+
+import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
+import marc.henrard.risq.model.generic.ScaledSecondTime;
+import marc.henrard.risq.model.generic.TimeMeasurement;
+import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 
 /**
  * Tests of {@link RationalTwoFactorSwaptionPhysicalProductPricer}.
@@ -110,9 +109,18 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitNiPricerTest {
   private static final RationalTwoFactorGenericParameters RATIONAL_2F_REDUCED_0 = 
       RationalTwoFactorParameters20151120DataSet.RATIONAL_2F_REDUCED_0;
   private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
+  public static final LocalTime LOCAL_TIME = LocalTime.of(11, 0);
+  public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
   private static final RationalOneFactorGenericParameters RATIONAL_1F = 
-      RationalOneFactorGenericParameters.of(EUR, RATIONAL_2F_REDUCED_0.a1(), 
-          RATIONAL_2F_REDUCED_0.getB0(), RATIONAL_2F_REDUCED_0.getB1(), TIME_MEAS, VALUATION_DATE);
+      RationalOneFactorGenericParameters.builder()
+      .currency(EUR)
+      .a(RATIONAL_2F_REDUCED_0.a1())
+      .b0(RATIONAL_2F_REDUCED_0.getB0())
+      .b1(RATIONAL_2F_REDUCED_0.getB1())
+      .timeMeasure(TIME_MEAS)
+      .valuationDate(VALUATION_DATE)
+      .valuationTime(LOCAL_TIME)
+      .valuationZone(ZONE_ID).build();
   
   /* Constants */
 //  private static final double TOLERANCE_PV_HC = 1.0E-6;

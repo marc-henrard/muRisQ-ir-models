@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.testng.annotations.Test;
@@ -61,8 +60,9 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   
   private static final LocalDate VALUATION_DATE = LocalDate.of(2015, 11, 20);
-  private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/London");
-  private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);
+  private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/Brussels");
+  private static final LocalTime VALUATION_TIME = LocalTime.of(11, 0); 
+  // Comparison with Black requires same expiry and valuation time
   private static final ZonedDateTime VALUATION_DATE_TIME = 
       VALUATION_DATE.atTime(VALUATION_TIME).atZone(VALUATION_ZONE);
   private static final DayCount DAYCOUNT_DEFAULT = DayCounts.ACT_365F;
@@ -139,7 +139,7 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
               EXPIRIES_PER[i], Tenor.of(TENORS_PER[j]), BuySell.BUY, NOTIONAL, parRate + MONEYNESS[k], REF_DATA);
           ResolvedSwaption swpt = Swaption.builder()
               .longShort(LongShort.LONG)
-              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(LocalTime.NOON).expiryZone(ZoneOffset.UTC)
+              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swapPayer.getProduct()).build().resolve(REF_DATA);
           double pvRational = 
@@ -185,7 +185,7 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
               EXPIRIES_PER[i], Tenor.of(TENORS_PER[j]), BuySell.BUY, NOTIONAL, parRate + MONEYNESS[k], REF_DATA);
           ResolvedSwaption swpt = Swaption.builder()
               .longShort(LongShort.LONG)
-              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(LocalTime.NOON).expiryZone(ZoneOffset.UTC)
+              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swapPayer.getProduct()).build().resolve(REF_DATA);
           double pvRational = PRICER_SWPT_S_EX
