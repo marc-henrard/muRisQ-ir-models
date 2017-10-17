@@ -4,6 +4,7 @@
 package marc.henrard.risq.model.rationalmulticurve;
 
 import static com.opengamma.strata.basics.currency.Currency.EUR;
+import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_6M;
 import static org.testng.Assert.assertEquals;
 
@@ -29,6 +30,7 @@ import com.opengamma.strata.market.curve.CurveGroupName;
 import com.opengamma.strata.market.observable.QuoteId;
 import com.opengamma.strata.pricer.curve.CurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
+import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.rate.IborRateComputation;
 import com.opengamma.strata.product.swap.RateAccrualPeriod;
@@ -90,14 +92,14 @@ public class RationalTwoFactorFormulasTest {
         .resolve(REF_DATA).getProduct();
     double[] cComputed = FORMULAS.swapCoefficients(swap, MULTICURVE_EUR, PARAMETERS);
     assertEquals(cComputed.length, 3);
-    double[] cExpeted = new double[3];
+    double[] cExpected = new double[3];
     for (SwapPaymentPeriod period : swap.getLegs().get(0).getPaymentPeriods()) {
       RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
       ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
       RateAccrualPeriod accrualPeriod = accrualPeriods.get(0);
-      cExpeted[0] += -notional * fixedRate * accrualPeriod.getYearFraction() *
+      cExpected[0] += -notional * fixedRate * accrualPeriod.getYearFraction() *
           MULTICURVE_EUR.discountFactor(EUR, ratePeriod.getPaymentDate());
-      cExpeted[1] += -notional * fixedRate * accrualPeriod.getYearFraction() *
+      cExpected[1] += -notional * fixedRate * accrualPeriod.getYearFraction() *
           PARAMETERS.b0(ratePeriod.getPaymentDate());
     }
     for (SwapPaymentPeriod period : swap.getLegs().get(1).getPaymentPeriods()) {
@@ -107,15 +109,46 @@ public class RationalTwoFactorFormulasTest {
       ArgChecker.isTrue(accrualPeriod.getRateComputation() instanceof IborRateComputation, "ibor");
       IborRateComputation obs = (IborRateComputation) accrualPeriod.getRateComputation();
       double df = MULTICURVE_EUR.discountFactor(EUR, ratePeriod.getPaymentDate());
-      cExpeted[0] += notional * accrualPeriod.getYearFraction() *
+      cExpected[0] += notional * accrualPeriod.getYearFraction() *
           MULTICURVE_EUR.iborIndexRates(obs.getIndex()).rate(obs.getObservation()) * df;
-      cExpeted[1] += notional * accrualPeriod.getYearFraction() *
+      cExpected[1] += notional * accrualPeriod.getYearFraction() *
           PARAMETERS.b1(obs.getObservation());
-      cExpeted[2] += notional * accrualPeriod.getYearFraction() *
+      cExpected[2] += notional * accrualPeriod.getYearFraction() *
           PARAMETERS.b2(obs.getObservation());
     }
-    cExpeted[0] -= cExpeted[1] + cExpeted[2];
-    ArrayAsserts.assertArrayEquals(cExpeted, cComputed, TOLERANCE);
+    cExpected[0] -= cExpected[1] + cExpected[2];
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+
+  public void caplet_coefficients() {
+    double fixedRate = 0.02d;
+    double notional = 123456.78d;
+    double accrualFactor = 0.25;
+    LocalDate fixingDate = LocalDate.of(2020, 8, 14);
+    LocalDate startDate = LocalDate.of(2020, 8, 18);
+    LocalDate endDate = LocalDate.of(2021, 2, 18);
+    IborRateComputation comp = IborRateComputation.of(EUR_EURIBOR_6M, fixingDate, REF_DATA);
+    IborCapletFloorletPeriod caplet = IborCapletFloorletPeriod.builder()
+        .currency(EUR)
+        .notional(notional)
+        .startDate(startDate)
+        .endDate(endDate)
+        .paymentDate(endDate)
+        .yearFraction(accrualFactor)
+        .caplet(fixedRate)
+        .iborRate(comp)
+        .build();
+    double[] cComputed = FORMULAS.capletCoefficients(caplet, MULTICURVE_EUR, PARAMETERS);
+    assertEquals(cComputed.length, 3);
+    double[] cExpected = new double[3];
+    cExpected[1] = (PARAMETERS.b1(comp.getObservation()) - fixedRate * PARAMETERS.b0(endDate));
+    cExpected[2] = PARAMETERS.b2(comp.getObservation());
+    cExpected[0] = (MULTICURVE_EUR.iborIndexRates(EUR_EURIBOR_6M).rate(comp.getObservation())
+        - fixedRate) * MULTICURVE_EUR.discountFactor(EUR, endDate) - (cExpected[1] + cExpected[2]);
+    cExpected[0] *= notional * accrualFactor;
+    cExpected[1] *= notional * accrualFactor;
+    cExpected[2] *= notional * accrualFactor;
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
   }
   
 }
