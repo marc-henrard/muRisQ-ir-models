@@ -117,7 +117,7 @@ public class RationalTwoFactorFormulas {
    * c[1] = b_1(\theta) - K b_0(v)
    * c[2] = b_2(\theta)
    * c[0] = L^j(0; \theta) - K P^D(0,v) - (c[1] + c[2])
-   * All to be multiplied by notional and accrual factor
+   * All to be multiplied by omega, notional and accrual factor
    * 
    * @param caplet  the caplet/floorlet period
    * @param rates  the rates/multi-curve provider
@@ -131,6 +131,9 @@ public class RationalTwoFactorFormulas {
 
     double strike = caplet.getStrike();
     double factor = Math.abs(caplet.getNotional()) * caplet.getYearFraction();
+    if(caplet.getFloorlet().isPresent()) { // Floorlet
+      factor *= -1.0d;
+    }
     IborIndexObservation obs = caplet.getIborRate().getObservation();
     LocalDate maturity = obs.getMaturityDate();
     double[] c = new double[3];

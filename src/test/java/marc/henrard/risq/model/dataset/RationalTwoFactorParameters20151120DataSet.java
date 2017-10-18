@@ -78,13 +78,18 @@ public class RationalTwoFactorParameters20151120DataSet {
             VALUATION_DATE);
     ZERO.put(EUR_EURIBOR_6M, b3_0);
   }
-  public static final LocalTime LOCAL_TIME = LocalTime.NOON;
-  public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
+  public static final LocalTime LOCAL_TIME = LocalTime.of(11, 0);
+  public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
   public static final RationalTwoFactorGenericParameters RATIONAL_2F = 
       RationalTwoFactorGenericParameters.of(EUR, A1, A2, RHO, B0, B1, B2, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
   public static final RationalTwoFactorGenericParameters RATIONAL_2F_REDUCED_1 = 
       RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.9, B0, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
   public static final RationalTwoFactorGenericParameters RATIONAL_2F_REDUCED_0 = 
       RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.0, B0, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
+  
+  public static final RationalTwoFactorGenericParameters rational2Factor(LocalTime localTime, ZoneId zone) {
+    return RationalTwoFactorGenericParameters
+        .of(EUR, A1, A2, RHO, B0, B1, B2, TIME_MEAS, VALUATION_DATE, localTime, zone);
+  }
   
 }
