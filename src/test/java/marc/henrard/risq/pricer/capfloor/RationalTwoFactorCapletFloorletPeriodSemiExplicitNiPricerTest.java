@@ -16,7 +16,6 @@ import java.time.ZoneId;
 
 import org.testng.annotations.Test;
 
-import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.AdjustableDate;
 import com.opengamma.strata.basics.date.BusinessDayAdjustment;
@@ -24,13 +23,6 @@ import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.HolidayCalendar;
 import com.opengamma.strata.basics.date.Tenor;
 import com.opengamma.strata.basics.schedule.Frequency;
-import com.opengamma.strata.collect.io.ResourceLocator;
-import com.opengamma.strata.data.MarketData;
-import com.opengamma.strata.loader.csv.QuotesCsvLoader;
-import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
-import com.opengamma.strata.market.curve.CurveGroupDefinition;
-import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.pricer.curve.CurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod.Builder;
@@ -81,24 +73,7 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitNiPricerTest {
   private static final double NOTIONAL = 100_000_000.0d;
 
   /* Load and calibrate curves */
-  private static final String PATH_CONFIG = "src/test/resources/curve-config/";
-  private static final String FILE_QUOTES = "src/test/resources/quotes/quotes-20151120-eur.csv";
-
-  private static final ResourceLocator GROUPS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "groups-eur.csv");
-  private static final ResourceLocator SETTINGS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
-  private static final ResourceLocator NODES_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, CurveGroupDefinition> GROUPS_CONFIG =
-      RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
-  private static final MarketData MARKET_DATA = 
-      MarketData.of(VALUATION_DATE, QuotesCsvLoader.load(VALUATION_DATE, ResourceLocator.of(FILE_QUOTES)));
-
-  private static final CurveCalibrator CALIBRATOR = CurveCalibrator.standard();
-  private static final String GROUP_NAME = "EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS";
-  public static final ImmutableRatesProvider MULTICURVE = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(CurveGroupName.of(GROUP_NAME)), MARKET_DATA, REF_DATA);
+  public static final ImmutableRatesProvider MULTICURVE = CurveEurDataSet.MULTICURVE_EUR_20151120;
   
   /* Rational model data */
   public static final LocalTime LOCAL_TIME = LocalTime.of(9, 29);
@@ -113,7 +88,7 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitNiPricerTest {
   /* Test payer/receiver parity. */
   public void present_value_payer_receiver_parity() {
     for (int i = 0; i < NB_EXPIRIES; i++) {
-      for (int k = 0; k < NB_STRIKES; k++) {  // Removed first moneyness as it has negative strike
+      for (int k = 0; k < NB_STRIKES; k++) {
         LocalDate fixingDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(EXPIRIES_PER[i]));
         IborRateComputation comp = IborRateComputation.of(EUR_EURIBOR_6M, fixingDate, REF_DATA);
         IborCapletFloorletPeriod capletLong = capletFloorlet(NOTIONAL, comp, STRIKES[k], true);

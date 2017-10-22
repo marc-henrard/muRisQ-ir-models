@@ -58,18 +58,19 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer
   @Override
   public CurrencyAmount presentValue(
       IborCapletFloorletPeriod caplet, 
-      RatesProvider rates, 
+      RatesProvider multicurve, 
       RationalParameters model) {
 
     ArgChecker.isTrue(model instanceof RationalTwoFactorParameters);
     RationalTwoFactorParameters model2 = (RationalTwoFactorParameters) model;
-    validate(rates, caplet, model);
+    validate(multicurve, caplet, model);
     Currency ccy = caplet.getCurrency();
     ZonedDateTime expiryDateTime = caplet.getFixingDateTime();
     double expiryTime = model.relativeTime(expiryDateTime);
-    double[] c = FORMULAS.capletCoefficients(caplet, rates, model2);
-    double pvNum = FORMULAS
-        .pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
+    double[] c = FORMULAS.capletCoefficients(caplet, multicurve, model2);
+    double pvNum = multicurve.discountFactor(ccy, caplet.getPaymentDate()) /
+        multicurve.discountFactor(ccy, caplet.getIborRate().getMaturityDate()) *
+        FORMULAS.pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
     return CurrencyAmount.of(ccy, (caplet.getNotional() > 0) ? pvNum : -pvNum);
   }
 

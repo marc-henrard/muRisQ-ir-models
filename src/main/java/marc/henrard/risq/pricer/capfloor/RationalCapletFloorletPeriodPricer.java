@@ -3,6 +3,8 @@
  */
 package marc.henrard.risq.pricer.capfloor;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.impl.option.BlackFormulaRepository;
@@ -14,16 +16,12 @@ import marc.henrard.risq.model.bachelier.BachelierFormula;
 import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 
 /**
- * Price of caplet/floorlet in the two-factor rational model.
+ * Price of caplet/floorlet in the multi-curve rational model.
  * <p>
  * <i>Reference: </i>
  * <p>
  * Theoretical description: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2016).
  * Rational multi-curve models with counterparty-risk valuation adjustments. <i>Quantitative Finance</i>, 16(6): 847-866.
- * <p>
- * The martingales are A(1) = exp(a_1 X_t^(1) - 0.5 a_1^2 t) - 1, A(2) = exp(a_2 X_t^(2)  - 0.5 a_2^2 t) - 1.
- * The Libor process numerator is of the form L(0) + b_1 A(1) + b_2 A(2) 
- * The discount factor process numerator is of the form P(0,T) + b_0(T) A(1)
  * 
  * @author Marc Henrard
  */
@@ -38,13 +36,13 @@ public abstract class RationalCapletFloorletPeriodPricer {
    * equal to the maturity date of the underlying Ibor rate.
    * 
    * @param caplet  the caplet/floorlet period to price
-   * @param rates  the rates provider
+   * @param multicurve  the rates provider
    * @param model  the rational model parameters
    * @return the present value of the caplet/floorlet
    */
   public abstract CurrencyAmount presentValue(
       IborCapletFloorletPeriod caplet,
-      RatesProvider rates,
+      RatesProvider multicurve,
       RationalParameters model);
   
   /**
@@ -125,9 +123,9 @@ public abstract class RationalCapletFloorletPeriodPricer {
         "caplet end date and payment date should be for the same date, have {} and {}",
         caplet.getEndDate(), caplet.getPaymentDate());
     caplet.getUnadjustedEndDate();
-    ArgChecker.isTrue(caplet.getEndDate().equals(caplet.getIborRate().getObservation().getMaturityDate()),
-        "caplet end date and Ibor maturity date should be for the same date, have {} and {}",
-        caplet.getEndDate(), caplet.getIborRate().getObservation().getMaturityDate()); // TODO: adjustments? 
+    ArgChecker.isTrue(DAYS.between(caplet.getEndDate(), caplet.getIborRate().getObservation().getMaturityDate()) < 7,
+        "caplet end date and Ibor maturity date should be less than 7 days appart, have {} and {}",
+        caplet.getEndDate(), caplet.getIborRate().getObservation().getMaturityDate());
   }
 
 }
