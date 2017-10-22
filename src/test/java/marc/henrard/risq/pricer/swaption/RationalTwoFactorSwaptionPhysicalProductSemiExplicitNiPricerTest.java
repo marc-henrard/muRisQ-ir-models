@@ -117,7 +117,7 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitNiPricerTest {
       .a(RATIONAL_2F_REDUCED_0.a1())
       .b0(RATIONAL_2F_REDUCED_0.getB0())
       .indices(RATIONAL_2F_REDUCED_0.getListIndices())
-      .b1(RATIONAL_2F_REDUCED_0.getListCurvesB1())
+      .b1(RATIONAL_2F_REDUCED_0.getB1())
       .timeMeasure(TIME_MEAS)
       .valuationDate(VALUATION_DATE)
       .valuationTime(LOCAL_TIME)

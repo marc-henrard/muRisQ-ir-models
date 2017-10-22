@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 - present by Marc Henrard.
  */
-package marc.henrard.risq.pricer.capfloor;
+package marc.henrard.risq.pricer.dataset;
 
 import java.time.LocalDate;
 
@@ -21,7 +21,7 @@ import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
  * 
  * @author Marc Henrard
  */
-public class CurveEurDataSet {
+public class MulticurveEur20151120DataSet {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   public static final LocalDate VALUATION_DATE = LocalDate.of(2015, 11, 20);

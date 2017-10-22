@@ -39,6 +39,7 @@ import com.opengamma.strata.product.swaption.Swaption;
 
 import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
+import marc.henrard.risq.pricer.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
 
 /**
@@ -73,7 +74,7 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitNiPricerTest {
   private static final double NOTIONAL = 100_000_000.0d;
 
   /* Load and calibrate curves */
-  public static final ImmutableRatesProvider MULTICURVE = CurveEurDataSet.MULTICURVE_EUR_20151120;
+  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
   
   /* Rational model data */
   public static final LocalTime LOCAL_TIME = LocalTime.of(9, 29);
