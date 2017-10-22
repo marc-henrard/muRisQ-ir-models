@@ -7,8 +7,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import com.opengamma.strata.basics.currency.Currency;
-
-import marc.henrard.risq.model.generic.ModelParameters;
+import com.opengamma.strata.market.param.ParameterizedData;
 
 /**
  * Interest rate multi-curve rational model with one factor.
@@ -23,7 +22,7 @@ import marc.henrard.risq.model.generic.ModelParameters;
  * @author Marc Henrard
  */
 public interface RationalParameters
-    extends ModelParameters {
+    extends ParameterizedData {
 
   /**
    * The currency for which the model is valid.

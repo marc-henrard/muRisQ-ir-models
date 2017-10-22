@@ -24,6 +24,7 @@ import com.opengamma.strata.market.curve.Curves;
 import com.opengamma.strata.market.curve.InterpolatedNodalCurve;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolator;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolators;
+import com.opengamma.strata.market.param.LabelParameterMetadata;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.ZeroRateDiscountFactors;
 
@@ -33,7 +34,7 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
 /**
  * Tests {@link ScaledSecondTime}
  * 
- * @author Marc Henrard <a href="http://multi-curve-framework.blogspot.com/">Multi-curve Framework</a>
+ * @author Marc Henrard
  */
 @Test
 public class RationalOneFactorSimpleHWShapedParametersTest {
@@ -97,6 +98,35 @@ public class RationalOneFactorSimpleHWShapedParametersTest {
       double b1Expected = (PARAMETERS.b0(obs.getEffectiveDate()) - PARAMETERS.b0(obs.getMaturityDate())) / delta;
       double b1Computed = PARAMETERS.b1(obs);
       assertEquals(b1Computed, b1Expected, TOLERANCE);
+    }
+  }
+  
+  /* Tests parameter features. */
+  public void parameters_count() {
+    assertEquals(PARAMETERS.getParameterCount(), 4);
+  }
+  
+  public void parameters_values() {
+    assertEquals(PARAMETERS.getParameter(0), A);
+    assertEquals(PARAMETERS.getParameter(1), B_0_0);
+    assertEquals(PARAMETERS.getParameter(2), ETA);
+    assertEquals(PARAMETERS.getParameter(3), KAPPA);
+  }
+  
+  public void parameters_metadata() {
+    assertEquals(PARAMETERS.getParameterMetadata(0), LabelParameterMetadata.of("a"));
+    assertEquals(PARAMETERS.getParameterMetadata(1), LabelParameterMetadata.of("b_0_0"));
+    assertEquals(PARAMETERS.getParameterMetadata(2), LabelParameterMetadata.of("eta"));
+    assertEquals(PARAMETERS.getParameterMetadata(3), LabelParameterMetadata.of("kappa"));
+  }
+
+  public void parameters_with() {
+    double test = 0.123456;
+    for (int i = 0; i < 4; i++) {
+      RationalOneFactorSimpleHWShapedParameters newParam = PARAMETERS.withParameter(i, test);
+      for (int j = 0; j < 4; j++) {
+        assertEquals(newParam.getParameter(j), (i == j) ? test : PARAMETERS.getParameter(j));
+      }
     }
   }
   

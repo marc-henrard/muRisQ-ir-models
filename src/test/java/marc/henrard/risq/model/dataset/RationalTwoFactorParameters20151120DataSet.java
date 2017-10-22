@@ -9,9 +9,9 @@ import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.collect.array.DoubleArray;
@@ -51,45 +51,34 @@ public class RationalTwoFactorParameters20151120DataSet {
       DoubleArray.copyOf(new double[]{ALPHA, ALPHA + BETA * TIMES[1]}), INTERPOLATOR_LINEAR);
   private static final ParameterDateCurve B0 = GenericParameterDateCurve.of(
       DayCounts.ACT_365F, B0_CURVE, VALUATION_DATE);
-  private static final Map<IborIndex, ParameterDateCurve> B1 = new HashMap<>();
-  static {
-    ParameterDateCurve b2_6 = 
+  private static final List<IborIndex> BX_INDICES = ImmutableList.of(EUR_EURIBOR_6M);
+  private static final List<ParameterDateCurve> B1 = ImmutableList.of(
         GenericParameterDateCurve.of(
             DayCounts.ACT_365F, 
             ConstantCurve.of(DefaultCurveMetadata.of("B1"), 0.010), 
-            VALUATION_DATE);
-    B1.put(EUR_EURIBOR_6M, b2_6);
-  }
-  private static final Map<IborIndex, ParameterDateCurve> B2 = new HashMap<>();
-  static {
-    ParameterDateCurve b3_6 = 
+            VALUATION_DATE));
+  private static final List<ParameterDateCurve> B2 = ImmutableList.of(
         GenericParameterDateCurve.of(
             DayCounts.ACT_365F, 
             ConstantCurve.of(DefaultCurveMetadata.of("B2"), 0.001), 
-            VALUATION_DATE);
-    B2.put(EUR_EURIBOR_6M, b3_6);
-  }
-  private static final Map<IborIndex, ParameterDateCurve> ZERO = new HashMap<>();
-  static {
-    ParameterDateCurve b3_0 = 
+            VALUATION_DATE));
+  private static final List<ParameterDateCurve> ZERO = ImmutableList.of(
         GenericParameterDateCurve.of(
             DayCounts.ACT_365F, 
             ConstantCurve.of(DefaultCurveMetadata.of("ZERO"), 0.0d), 
-            VALUATION_DATE);
-    ZERO.put(EUR_EURIBOR_6M, b3_0);
-  }
+            VALUATION_DATE));
   public static final LocalTime LOCAL_TIME = LocalTime.of(11, 0);
   public static final ZoneId ZONE_ID = ZoneId.of("Europe/Brussels");
   public static final RationalTwoFactorGenericParameters RATIONAL_2F = 
-      RationalTwoFactorGenericParameters.of(EUR, A1, A2, RHO, B0, B1, B2, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
+      RationalTwoFactorGenericParameters.of(EUR, A1, A2, RHO, B0, BX_INDICES, B1, B2, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
   public static final RationalTwoFactorGenericParameters RATIONAL_2F_REDUCED_1 = 
-      RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.9, B0, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
+      RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.9, B0, BX_INDICES, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
   public static final RationalTwoFactorGenericParameters RATIONAL_2F_REDUCED_0 = 
-      RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.0, B0, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
+      RationalTwoFactorGenericParameters.of(EUR, A1, A2, 0.0, B0, BX_INDICES, B1, ZERO, TIME_MEAS, VALUATION_DATE, LOCAL_TIME, ZONE_ID);
   
   public static final RationalTwoFactorGenericParameters rational2Factor(LocalTime localTime, ZoneId zone) {
     return RationalTwoFactorGenericParameters
-        .of(EUR, A1, A2, RHO, B0, B1, B2, TIME_MEAS, VALUATION_DATE, localTime, zone);
+        .of(EUR, A1, A2, RHO, B0, BX_INDICES, B1, B2, TIME_MEAS, VALUATION_DATE, localTime, zone);
   }
   
 }

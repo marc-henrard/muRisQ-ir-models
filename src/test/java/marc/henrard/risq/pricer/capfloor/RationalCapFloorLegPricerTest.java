@@ -33,6 +33,7 @@ import com.opengamma.strata.product.swap.IborRateCalculation;
 
 import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
+import marc.henrard.risq.pricer.dataset.MulticurveEur20151120DataSet;
 
 /**
  * Tests {@link RationalCapFloorLegPricer}.
@@ -43,10 +44,10 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParame
 public class RationalCapFloorLegPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
-  private static final LocalDate VALUATION_DATE = CurveEurDataSet.VALUATION_DATE;
+  private static final LocalDate VALUATION_DATE = MulticurveEur20151120DataSet.VALUATION_DATE;
   private static final BusinessDayAdjustment BUSINESS_ADJ = BusinessDayAdjustment.of(
       BusinessDayConventions.MODIFIED_FOLLOWING, EUTA);
-  public static final ImmutableRatesProvider MULTICURVE = CurveEurDataSet.MULTICURVE_EUR_20151120;
+  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
 
   private static final RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer PRICER_CAPLET_S_EX =
       RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer.DEFAULT;

@@ -12,10 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Period;
 import java.time.ZoneOffset;
-import java.util.Map;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.AdjustableDate;
@@ -34,6 +35,8 @@ import com.opengamma.strata.market.curve.CurveGroupName;
 import com.opengamma.strata.market.curve.DefaultCurveMetadata;
 import com.opengamma.strata.market.curve.ParameterizedFunctionalCurve;
 import com.opengamma.strata.market.observable.QuoteId;
+import com.opengamma.strata.market.param.ParameterMetadata;
+import com.opengamma.strata.market.param.ParameterizedData;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.curve.CurveCalibrator;
@@ -111,10 +114,12 @@ public class RationalOneFactorSwaptionPhysicalProductGenericParamTest {
       GenericParameterDateCurve.of(DAY_COUNT, CURVE_B0, VALUATION_DATE);
   private static final ParameterDateCurve B1_1 =
       new TestParameterDateCurve(EUR_EURIBOR_6M, REF_DATA, B0);
-  private static final Map<IborIndex, ParameterDateCurve> B1 =
-      ImmutableMap.of(EUR_EURIBOR_6M, B1_1);
+  private static final List<IborIndex> B1_INDICES =
+      ImmutableList.of(EUR_EURIBOR_6M);
+  private static final List<ParameterDateCurve> B1_CURVES =
+      ImmutableList.of(B1_1);
   private static final RationalOneFactorGenericParameters MODEL_GENERIC =
-      RationalOneFactorGenericParameters.of(EUR, A, B0, B1, TIME_MEAS, VALUATION_DATE);
+      RationalOneFactorGenericParameters.of(EUR, A, B0, B1_INDICES, B1_CURVES, TIME_MEAS, VALUATION_DATE);
   /* Descriptions of swaptions */
   private static final Period[] EXPIRIES_PER = new Period[] {
     Period.ofMonths(3), Period.ofYears(2), Period.ofYears(10)};
@@ -187,6 +192,26 @@ class TestParameterDateCurve implements ParameterDateCurve{
 
   @Override
   public PointSensitivityBuilder parameterValueCurveSensitivity(LocalDate date) {
+    throw new IllegalArgumentException("not implemented");
+  }
+
+  @Override
+  public int getParameterCount() {
+    return b0.getParameterCount();
+  }
+
+  @Override
+  public double getParameter(int parameterIndex) {
+    return b0.getParameter(parameterIndex);
+  }
+
+  @Override
+  public ParameterMetadata getParameterMetadata(int parameterIndex) {
+    return b0.getParameterMetadata(parameterIndex);
+  }
+
+  @Override
+  public ParameterizedData withParameter(int parameterIndex, double newValue) {
     throw new IllegalArgumentException("not implemented");
   }
   
