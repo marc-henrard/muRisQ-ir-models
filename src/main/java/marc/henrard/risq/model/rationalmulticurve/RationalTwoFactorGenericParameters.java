@@ -8,31 +8,37 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
+import org.joda.beans.Bean;
 import org.joda.beans.BeanDefinition;
 import org.joda.beans.ImmutableBean;
 import org.joda.beans.ImmutableConstructor;
+import org.joda.beans.JodaBeanUtils;
+import org.joda.beans.MetaProperty;
+import org.joda.beans.Property;
 import org.joda.beans.PropertyDefinition;
+import org.joda.beans.impl.direct.DirectFieldsBeanBuilder;
+import org.joda.beans.impl.direct.DirectMetaBean;
+import org.joda.beans.impl.direct.DirectMetaProperty;
+import org.joda.beans.impl.direct.DirectMetaPropertyMap;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.market.param.LabelParameterMetadata;
+import com.opengamma.strata.market.param.ParameterMetadata;
+import com.opengamma.strata.market.param.ParameterizedDataCombiner;
 
 import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.TimeMeasurement;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import org.joda.beans.Bean;
-import org.joda.beans.JodaBeanUtils;
-import org.joda.beans.MetaProperty;
-import org.joda.beans.Property;
-import org.joda.beans.impl.direct.DirectFieldsBeanBuilder;
-import org.joda.beans.impl.direct.DirectMetaBean;
-import org.joda.beans.impl.direct.DirectMetaProperty;
-import org.joda.beans.impl.direct.DirectMetaPropertyMap;
 
 /**
  * Interest rate multi-curve rational model.
@@ -54,6 +60,12 @@ import org.joda.beans.impl.direct.DirectMetaPropertyMap;
 public final class RationalTwoFactorGenericParameters 
     implements RationalTwoFactorParameters, ImmutableBean, Serializable {
   
+  /** Metadata */
+  private final static List<ParameterMetadata> METADATA = 
+      ImmutableList.of(LabelParameterMetadata.of("a1"),
+          LabelParameterMetadata.of("a2"),
+          LabelParameterMetadata.of("correlation"));
+  
   /** The model currency */
   @PropertyDefinition(validate = "notNull", overrideGet = true)
   private final Currency currency;
@@ -69,14 +81,18 @@ public final class RationalTwoFactorGenericParameters
   /** The time dependent parameter function in front of the martingale in the discount factor evolution. */
   @PropertyDefinition(validate = "notNull")
   private final ParameterDateCurve b0;
-  /** The time dependent parameter function in front of the first martingale in the Libor process evolution. 
-   * One function for each Ibor index. */
+  /** List of indices for which the curves b1 and b2 are defined. b1 is the time dependent parameter function 
+   * in front of the first martingale in the Libor process evolution.*/
   @PropertyDefinition(validate = "notNull")
-  private final Map<IborIndex, ParameterDateCurve> b1;
-  /** The time dependent parameter function in front of the second martingale in the Libor dynamic. 
-   * One different function for each Ibor index. */
+  private final List<IborIndex> listIndices;
+  /** The time dependent parameter function in front of the first in the Libor process evolution. 
+   * One function for each Ibor index, in the same order as the list of indices. */
   @PropertyDefinition(validate = "notNull")
-  private final Map<IborIndex, ParameterDateCurve> b2;
+  private final List<ParameterDateCurve> listCurvesB1;
+  /** The time dependent parameter function in front of the second in the Libor process evolution. 
+   * One function for each Ibor index, in the same order as the list of indices. */
+  @PropertyDefinition(validate = "notNull")
+  private final List<ParameterDateCurve> listCurvesB2;
   /** The mechanism to measure time for time to expiry. */
   @PropertyDefinition(validate = "notNull")
   private final TimeMeasurement timeMeasure;
@@ -91,6 +107,12 @@ public final class RationalTwoFactorGenericParameters
   private final ZoneId valuationZone;
   /** The valuation zoned date and time.*/
   private final ZonedDateTime valuationDateTime;  // Not a property
+  /** The indices and curve related to b1 as a map to facilitate search. */
+  private final Map<IborIndex, ParameterDateCurve> b1;  // Not a property
+  /** The indices and curve related to b2 as a map to facilitate search. */
+  private final Map<IborIndex, ParameterDateCurve> b2;  // Not a property
+  /** The parameter combiner. Contains b0 and the curves of b1/b2 in order but not a1, a2 and correlation. */
+  private final transient ParameterizedDataCombiner paramCombiner;  // Not a property
 
   @ImmutableConstructor
   private RationalTwoFactorGenericParameters(
@@ -99,8 +121,9 @@ public final class RationalTwoFactorGenericParameters
       double a2,
       double correlation,
       ParameterDateCurve b0,
-      Map<IborIndex, ParameterDateCurve> b1,
-      Map<IborIndex, ParameterDateCurve> b2,
+      List<IborIndex> listIndices,
+      List<ParameterDateCurve> listCurvesB1,
+      List<ParameterDateCurve> listCurvesB2,
       TimeMeasurement timeMeasure,
       LocalDate valuationDate,
       LocalTime valuationTime,
@@ -111,19 +134,35 @@ public final class RationalTwoFactorGenericParameters
     this.a2 = a2;
     this.correlation = correlation;
     this.b0 = b0;
-    ArgChecker.isTrue(b1.keySet().equals(b2.keySet()), 
-        "Index sets should be identic for b1 and b2");
-    for(IborIndex index:b1.keySet()) {
+    for(IborIndex index:listIndices) {
       ArgChecker.isTrue(index.getCurrency().equals(currency), 
           "the index currency should be equal to the model currency");
     }
-    this.b1 = b1;
-    this.b2 = b2;
+    this.listIndices = listIndices;
+    ArgChecker.isTrue(listIndices.size() == listCurvesB1.size(),
+        "number of indices should be equal to number of b1 curves");
+    this.listCurvesB1 = listCurvesB1;
+    ArgChecker.isTrue(listIndices.size() == listCurvesB2.size(),
+        "number of indices should be equal to number of b2 curves");
+    this.listCurvesB2 = listCurvesB2;
     this.timeMeasure = timeMeasure;
     this.valuationDate = valuationDate;
     this.valuationTime = valuationTime;
     this.valuationZone = valuationZone;
     this.valuationDateTime = ZonedDateTime.of(valuationDate, valuationTime, valuationZone);
+    ImmutableMap.Builder<IborIndex, ParameterDateCurve> builderB1 = ImmutableMap.builder();
+    ImmutableMap.Builder<IborIndex, ParameterDateCurve> builderB2 = ImmutableMap.builder();
+    for (int loopindex = 0; loopindex < listIndices.size(); loopindex++) {
+      builderB1.put(listIndices.get(loopindex), listCurvesB1.get(loopindex));
+      builderB2.put(listIndices.get(loopindex), listCurvesB2.get(loopindex));
+    }
+    this.b1 = builderB1.build();
+    this.b2 = builderB2.build();
+    List<ParameterDateCurve> listCombiner = new ArrayList<>();
+    listCombiner.add(b0);
+    listCombiner.addAll(listCurvesB1);
+    listCombiner.addAll(listCurvesB2);
+    this.paramCombiner = ParameterizedDataCombiner.of(listCombiner);
   }
 
   @Override
@@ -161,6 +200,59 @@ public final class RationalTwoFactorGenericParameters
     return valuationDateTime;
   }
 
+  @Override
+  public int getParameterCount() {
+    return 3 + paramCombiner.getParameterCount();
+  }
+
+  @Override
+  public double getParameter(int parameterIndex) {
+    if(parameterIndex == 0) {
+      return a1;
+    }
+    if(parameterIndex == 1) {
+      return a2;
+    }
+    if(parameterIndex == 2) {
+      return correlation;
+    }
+    return paramCombiner.getParameter(parameterIndex - 3);
+  }
+
+  @Override
+  public ParameterMetadata getParameterMetadata(int parameterIndex) {
+    if(parameterIndex < 3) {
+      return METADATA.get(parameterIndex);
+    }
+    return paramCombiner.getParameterMetadata(parameterIndex - 3);
+  }
+
+  @Override
+  public RationalTwoFactorGenericParameters withParameter(int parameterIndex, double newValue) {
+    if (parameterIndex == 0) {
+      return new RationalTwoFactorGenericParameters(
+          currency, newValue, a2, correlation, b0, listIndices, listCurvesB1, listCurvesB2, 
+          timeMeasure, valuationDate, valuationTime, valuationZone);
+    }
+    if (parameterIndex == 1) {
+      return new RationalTwoFactorGenericParameters(
+          currency, a1, newValue, correlation, b0, listIndices, listCurvesB1, listCurvesB2, 
+          timeMeasure, valuationDate, valuationTime, valuationZone);
+    }
+    if (parameterIndex == 2) {
+      return new RationalTwoFactorGenericParameters(
+          currency, a1, a2, newValue, b0, listIndices, listCurvesB1, listCurvesB2,
+          timeMeasure, valuationDate, valuationTime, valuationZone);
+    }
+    List<ParameterDateCurve> listModified =
+        paramCombiner.withParameter(ParameterDateCurve.class, parameterIndex - 3, newValue);
+    int nbIndices = listIndices.size();
+    return new RationalTwoFactorGenericParameters(
+        currency, a1, a2, correlation, listModified.get(0),
+        listIndices, listModified.subList(1, 1 + nbIndices), listModified.subList(1 + nbIndices, 1 + 2 * nbIndices),
+        timeMeasure, valuationDate, valuationTime, valuationZone);
+  }
+
   //------------------------- AUTOGENERATED START -------------------------
   ///CLOVER:OFF
   /**
@@ -187,8 +279,9 @@ public final class RationalTwoFactorGenericParameters
    * @param a2  the value of the property
    * @param correlation  the value of the property
    * @param b0  the value of the property, not null
-   * @param b1  the value of the property, not null
-   * @param b2  the value of the property, not null
+   * @param listIndices  the value of the property, not null
+   * @param listCurvesB1  the value of the property, not null
+   * @param listCurvesB2  the value of the property, not null
    * @param timeMeasure  the value of the property, not null
    * @param valuationDate  the value of the property, not null
    * @param valuationTime  the value of the property, not null
@@ -201,8 +294,9 @@ public final class RationalTwoFactorGenericParameters
       double a2,
       double correlation,
       ParameterDateCurve b0,
-      Map<IborIndex, ParameterDateCurve> b1,
-      Map<IborIndex, ParameterDateCurve> b2,
+      List<IborIndex> listIndices,
+      List<ParameterDateCurve> listCurvesB1,
+      List<ParameterDateCurve> listCurvesB2,
       TimeMeasurement timeMeasure,
       LocalDate valuationDate,
       LocalTime valuationTime,
@@ -213,8 +307,9 @@ public final class RationalTwoFactorGenericParameters
       a2,
       correlation,
       b0,
-      b1,
-      b2,
+      listIndices,
+      listCurvesB1,
+      listCurvesB2,
       timeMeasure,
       valuationDate,
       valuationTime,
@@ -293,20 +388,29 @@ public final class RationalTwoFactorGenericParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the b1.
+   * Gets the listIndices.
    * @return the value of the property, not null
    */
-  public Map<IborIndex, ParameterDateCurve> getB1() {
-    return b1;
+  public List<IborIndex> getListIndices() {
+    return listIndices;
   }
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the b2.
+   * Gets the listCurvesB1.
    * @return the value of the property, not null
    */
-  public Map<IborIndex, ParameterDateCurve> getB2() {
-    return b2;
+  public List<ParameterDateCurve> getListCurvesB1() {
+    return listCurvesB1;
+  }
+
+  //-----------------------------------------------------------------------
+  /**
+   * Gets the listCurvesB2.
+   * @return the value of the property, not null
+   */
+  public List<ParameterDateCurve> getListCurvesB2() {
+    return listCurvesB2;
   }
 
   //-----------------------------------------------------------------------
@@ -366,8 +470,9 @@ public final class RationalTwoFactorGenericParameters
           JodaBeanUtils.equal(a2, other.a2) &&
           JodaBeanUtils.equal(correlation, other.correlation) &&
           JodaBeanUtils.equal(b0, other.b0) &&
-          JodaBeanUtils.equal(b1, other.b1) &&
-          JodaBeanUtils.equal(b2, other.b2) &&
+          JodaBeanUtils.equal(listIndices, other.listIndices) &&
+          JodaBeanUtils.equal(listCurvesB1, other.listCurvesB1) &&
+          JodaBeanUtils.equal(listCurvesB2, other.listCurvesB2) &&
           JodaBeanUtils.equal(timeMeasure, other.timeMeasure) &&
           JodaBeanUtils.equal(valuationDate, other.valuationDate) &&
           JodaBeanUtils.equal(valuationTime, other.valuationTime) &&
@@ -384,8 +489,9 @@ public final class RationalTwoFactorGenericParameters
     hash = hash * 31 + JodaBeanUtils.hashCode(a2);
     hash = hash * 31 + JodaBeanUtils.hashCode(correlation);
     hash = hash * 31 + JodaBeanUtils.hashCode(b0);
-    hash = hash * 31 + JodaBeanUtils.hashCode(b1);
-    hash = hash * 31 + JodaBeanUtils.hashCode(b2);
+    hash = hash * 31 + JodaBeanUtils.hashCode(listIndices);
+    hash = hash * 31 + JodaBeanUtils.hashCode(listCurvesB1);
+    hash = hash * 31 + JodaBeanUtils.hashCode(listCurvesB2);
     hash = hash * 31 + JodaBeanUtils.hashCode(timeMeasure);
     hash = hash * 31 + JodaBeanUtils.hashCode(valuationDate);
     hash = hash * 31 + JodaBeanUtils.hashCode(valuationTime);
@@ -395,15 +501,16 @@ public final class RationalTwoFactorGenericParameters
 
   @Override
   public String toString() {
-    StringBuilder buf = new StringBuilder(384);
+    StringBuilder buf = new StringBuilder(416);
     buf.append("RationalTwoFactorGenericParameters{");
     buf.append("currency").append('=').append(currency).append(',').append(' ');
     buf.append("a1").append('=').append(a1).append(',').append(' ');
     buf.append("a2").append('=').append(a2).append(',').append(' ');
     buf.append("correlation").append('=').append(correlation).append(',').append(' ');
     buf.append("b0").append('=').append(b0).append(',').append(' ');
-    buf.append("b1").append('=').append(b1).append(',').append(' ');
-    buf.append("b2").append('=').append(b2).append(',').append(' ');
+    buf.append("listIndices").append('=').append(listIndices).append(',').append(' ');
+    buf.append("listCurvesB1").append('=').append(listCurvesB1).append(',').append(' ');
+    buf.append("listCurvesB2").append('=').append(listCurvesB2).append(',').append(' ');
     buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
     buf.append("valuationDate").append('=').append(valuationDate).append(',').append(' ');
     buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
@@ -448,17 +555,23 @@ public final class RationalTwoFactorGenericParameters
     private final MetaProperty<ParameterDateCurve> b0 = DirectMetaProperty.ofImmutable(
         this, "b0", RationalTwoFactorGenericParameters.class, ParameterDateCurve.class);
     /**
-     * The meta-property for the {@code b1} property.
+     * The meta-property for the {@code listIndices} property.
      */
     @SuppressWarnings({"unchecked", "rawtypes" })
-    private final MetaProperty<Map<IborIndex, ParameterDateCurve>> b1 = DirectMetaProperty.ofImmutable(
-        this, "b1", RationalTwoFactorGenericParameters.class, (Class) Map.class);
+    private final MetaProperty<List<IborIndex>> listIndices = DirectMetaProperty.ofImmutable(
+        this, "listIndices", RationalTwoFactorGenericParameters.class, (Class) List.class);
     /**
-     * The meta-property for the {@code b2} property.
+     * The meta-property for the {@code listCurvesB1} property.
      */
     @SuppressWarnings({"unchecked", "rawtypes" })
-    private final MetaProperty<Map<IborIndex, ParameterDateCurve>> b2 = DirectMetaProperty.ofImmutable(
-        this, "b2", RationalTwoFactorGenericParameters.class, (Class) Map.class);
+    private final MetaProperty<List<ParameterDateCurve>> listCurvesB1 = DirectMetaProperty.ofImmutable(
+        this, "listCurvesB1", RationalTwoFactorGenericParameters.class, (Class) List.class);
+    /**
+     * The meta-property for the {@code listCurvesB2} property.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes" })
+    private final MetaProperty<List<ParameterDateCurve>> listCurvesB2 = DirectMetaProperty.ofImmutable(
+        this, "listCurvesB2", RationalTwoFactorGenericParameters.class, (Class) List.class);
     /**
      * The meta-property for the {@code timeMeasure} property.
      */
@@ -489,8 +602,9 @@ public final class RationalTwoFactorGenericParameters
         "a2",
         "correlation",
         "b0",
-        "b1",
-        "b2",
+        "listIndices",
+        "listCurvesB1",
+        "listCurvesB2",
         "timeMeasure",
         "valuationDate",
         "valuationTime",
@@ -515,10 +629,12 @@ public final class RationalTwoFactorGenericParameters
           return correlation;
         case 3086:  // b0
           return b0;
-        case 3087:  // b1
-          return b1;
-        case 3088:  // b2
-          return b2;
+        case -2039519959:  // listIndices
+          return listIndices;
+        case 1662907217:  // listCurvesB1
+          return listCurvesB1;
+        case 1662907218:  // listCurvesB2
+          return listCurvesB2;
         case 1642109393:  // timeMeasure
           return timeMeasure;
         case 113107279:  // valuationDate
@@ -588,19 +704,27 @@ public final class RationalTwoFactorGenericParameters
     }
 
     /**
-     * The meta-property for the {@code b1} property.
+     * The meta-property for the {@code listIndices} property.
      * @return the meta-property, not null
      */
-    public MetaProperty<Map<IborIndex, ParameterDateCurve>> b1() {
-      return b1;
+    public MetaProperty<List<IborIndex>> listIndices() {
+      return listIndices;
     }
 
     /**
-     * The meta-property for the {@code b2} property.
+     * The meta-property for the {@code listCurvesB1} property.
      * @return the meta-property, not null
      */
-    public MetaProperty<Map<IborIndex, ParameterDateCurve>> b2() {
-      return b2;
+    public MetaProperty<List<ParameterDateCurve>> listCurvesB1() {
+      return listCurvesB1;
+    }
+
+    /**
+     * The meta-property for the {@code listCurvesB2} property.
+     * @return the meta-property, not null
+     */
+    public MetaProperty<List<ParameterDateCurve>> listCurvesB2() {
+      return listCurvesB2;
     }
 
     /**
@@ -649,10 +773,12 @@ public final class RationalTwoFactorGenericParameters
           return ((RationalTwoFactorGenericParameters) bean).getCorrelation();
         case 3086:  // b0
           return ((RationalTwoFactorGenericParameters) bean).getB0();
-        case 3087:  // b1
-          return ((RationalTwoFactorGenericParameters) bean).getB1();
-        case 3088:  // b2
-          return ((RationalTwoFactorGenericParameters) bean).getB2();
+        case -2039519959:  // listIndices
+          return ((RationalTwoFactorGenericParameters) bean).getListIndices();
+        case 1662907217:  // listCurvesB1
+          return ((RationalTwoFactorGenericParameters) bean).getListCurvesB1();
+        case 1662907218:  // listCurvesB2
+          return ((RationalTwoFactorGenericParameters) bean).getListCurvesB2();
         case 1642109393:  // timeMeasure
           return ((RationalTwoFactorGenericParameters) bean).getTimeMeasure();
         case 113107279:  // valuationDate
@@ -687,8 +813,9 @@ public final class RationalTwoFactorGenericParameters
     private double a2;
     private double correlation;
     private ParameterDateCurve b0;
-    private Map<IborIndex, ParameterDateCurve> b1 = ImmutableMap.of();
-    private Map<IborIndex, ParameterDateCurve> b2 = ImmutableMap.of();
+    private List<IborIndex> listIndices = ImmutableList.of();
+    private List<ParameterDateCurve> listCurvesB1 = ImmutableList.of();
+    private List<ParameterDateCurve> listCurvesB2 = ImmutableList.of();
     private TimeMeasurement timeMeasure;
     private LocalDate valuationDate;
     private LocalTime valuationTime;
@@ -710,8 +837,9 @@ public final class RationalTwoFactorGenericParameters
       this.a2 = beanToCopy.getA2();
       this.correlation = beanToCopy.getCorrelation();
       this.b0 = beanToCopy.getB0();
-      this.b1 = ImmutableMap.copyOf(beanToCopy.getB1());
-      this.b2 = ImmutableMap.copyOf(beanToCopy.getB2());
+      this.listIndices = ImmutableList.copyOf(beanToCopy.getListIndices());
+      this.listCurvesB1 = ImmutableList.copyOf(beanToCopy.getListCurvesB1());
+      this.listCurvesB2 = ImmutableList.copyOf(beanToCopy.getListCurvesB2());
       this.timeMeasure = beanToCopy.getTimeMeasure();
       this.valuationDate = beanToCopy.getValuationDate();
       this.valuationTime = beanToCopy.getValuationTime();
@@ -732,10 +860,12 @@ public final class RationalTwoFactorGenericParameters
           return correlation;
         case 3086:  // b0
           return b0;
-        case 3087:  // b1
-          return b1;
-        case 3088:  // b2
-          return b2;
+        case -2039519959:  // listIndices
+          return listIndices;
+        case 1662907217:  // listCurvesB1
+          return listCurvesB1;
+        case 1662907218:  // listCurvesB2
+          return listCurvesB2;
         case 1642109393:  // timeMeasure
           return timeMeasure;
         case 113107279:  // valuationDate
@@ -768,11 +898,14 @@ public final class RationalTwoFactorGenericParameters
         case 3086:  // b0
           this.b0 = (ParameterDateCurve) newValue;
           break;
-        case 3087:  // b1
-          this.b1 = (Map<IborIndex, ParameterDateCurve>) newValue;
+        case -2039519959:  // listIndices
+          this.listIndices = (List<IborIndex>) newValue;
           break;
-        case 3088:  // b2
-          this.b2 = (Map<IborIndex, ParameterDateCurve>) newValue;
+        case 1662907217:  // listCurvesB1
+          this.listCurvesB1 = (List<ParameterDateCurve>) newValue;
+          break;
+        case 1662907218:  // listCurvesB2
+          this.listCurvesB2 = (List<ParameterDateCurve>) newValue;
           break;
         case 1642109393:  // timeMeasure
           this.timeMeasure = (TimeMeasurement) newValue;
@@ -836,8 +969,9 @@ public final class RationalTwoFactorGenericParameters
           a2,
           correlation,
           b0,
-          b1,
-          b2,
+          listIndices,
+          listCurvesB1,
+          listCurvesB2,
           timeMeasure,
           valuationDate,
           valuationTime,
@@ -898,25 +1032,66 @@ public final class RationalTwoFactorGenericParameters
     }
 
     /**
-     * Sets the b1.
-     * @param b1  the new value, not null
+     * Sets the listIndices.
+     * @param listIndices  the new value, not null
      * @return this, for chaining, not null
      */
-    public Builder b1(Map<IborIndex, ParameterDateCurve> b1) {
-      JodaBeanUtils.notNull(b1, "b1");
-      this.b1 = b1;
+    public Builder listIndices(List<IborIndex> listIndices) {
+      JodaBeanUtils.notNull(listIndices, "listIndices");
+      this.listIndices = listIndices;
       return this;
     }
 
     /**
-     * Sets the b2.
-     * @param b2  the new value, not null
+     * Sets the {@code listIndices} property in the builder
+     * from an array of objects.
+     * @param listIndices  the new value, not null
      * @return this, for chaining, not null
      */
-    public Builder b2(Map<IborIndex, ParameterDateCurve> b2) {
-      JodaBeanUtils.notNull(b2, "b2");
-      this.b2 = b2;
+    public Builder listIndices(IborIndex... listIndices) {
+      return listIndices(ImmutableList.copyOf(listIndices));
+    }
+
+    /**
+     * Sets the listCurvesB1.
+     * @param listCurvesB1  the new value, not null
+     * @return this, for chaining, not null
+     */
+    public Builder listCurvesB1(List<ParameterDateCurve> listCurvesB1) {
+      JodaBeanUtils.notNull(listCurvesB1, "listCurvesB1");
+      this.listCurvesB1 = listCurvesB1;
       return this;
+    }
+
+    /**
+     * Sets the {@code listCurvesB1} property in the builder
+     * from an array of objects.
+     * @param listCurvesB1  the new value, not null
+     * @return this, for chaining, not null
+     */
+    public Builder listCurvesB1(ParameterDateCurve... listCurvesB1) {
+      return listCurvesB1(ImmutableList.copyOf(listCurvesB1));
+    }
+
+    /**
+     * Sets the listCurvesB2.
+     * @param listCurvesB2  the new value, not null
+     * @return this, for chaining, not null
+     */
+    public Builder listCurvesB2(List<ParameterDateCurve> listCurvesB2) {
+      JodaBeanUtils.notNull(listCurvesB2, "listCurvesB2");
+      this.listCurvesB2 = listCurvesB2;
+      return this;
+    }
+
+    /**
+     * Sets the {@code listCurvesB2} property in the builder
+     * from an array of objects.
+     * @param listCurvesB2  the new value, not null
+     * @return this, for chaining, not null
+     */
+    public Builder listCurvesB2(ParameterDateCurve... listCurvesB2) {
+      return listCurvesB2(ImmutableList.copyOf(listCurvesB2));
     }
 
     /**
@@ -966,15 +1141,16 @@ public final class RationalTwoFactorGenericParameters
     //-----------------------------------------------------------------------
     @Override
     public String toString() {
-      StringBuilder buf = new StringBuilder(384);
+      StringBuilder buf = new StringBuilder(416);
       buf.append("RationalTwoFactorGenericParameters.Builder{");
       buf.append("currency").append('=').append(JodaBeanUtils.toString(currency)).append(',').append(' ');
       buf.append("a1").append('=').append(JodaBeanUtils.toString(a1)).append(',').append(' ');
       buf.append("a2").append('=').append(JodaBeanUtils.toString(a2)).append(',').append(' ');
       buf.append("correlation").append('=').append(JodaBeanUtils.toString(correlation)).append(',').append(' ');
       buf.append("b0").append('=').append(JodaBeanUtils.toString(b0)).append(',').append(' ');
-      buf.append("b1").append('=').append(JodaBeanUtils.toString(b1)).append(',').append(' ');
-      buf.append("b2").append('=').append(JodaBeanUtils.toString(b2)).append(',').append(' ');
+      buf.append("listIndices").append('=').append(JodaBeanUtils.toString(listIndices)).append(',').append(' ');
+      buf.append("listCurvesB1").append('=').append(JodaBeanUtils.toString(listCurvesB1)).append(',').append(' ');
+      buf.append("listCurvesB2").append('=').append(JodaBeanUtils.toString(listCurvesB2)).append(',').append(' ');
       buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
       buf.append("valuationDate").append('=').append(JodaBeanUtils.toString(valuationDate)).append(',').append(' ');
       buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');

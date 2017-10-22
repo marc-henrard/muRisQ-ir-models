@@ -5,6 +5,7 @@ package marc.henrard.risq.model.generic;
 
 import java.time.LocalDate;
 
+import com.opengamma.strata.market.param.ParameterizedData;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 
 /**
@@ -12,7 +13,8 @@ import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
  * 
  * @author Marc Henrard
  */
-public interface ParameterDateCurve {
+public interface ParameterDateCurve
+    extends ParameterizedData {
 
   /**
    * Returns the value of the parameter at the given date.
