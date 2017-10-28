@@ -6,28 +6,26 @@ package marc.henrard.risq.model.rationalmulticurve;
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.ZoneId;
-
-import org.joda.beans.ImmutableBean;
-
-import marc.henrard.risq.model.generic.TimeMeasurement;
-
-import com.opengamma.strata.collect.ArgChecker;
-import com.opengamma.strata.collect.array.DoubleArray;
-import com.opengamma.strata.pricer.DiscountFactors;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
+
 import org.joda.beans.Bean;
+import org.joda.beans.ImmutableBean;
 import org.joda.beans.JodaBeanUtils;
+import org.joda.beans.MetaBean;
 import org.joda.beans.MetaProperty;
-import org.joda.beans.Property;
+import org.joda.beans.gen.BeanDefinition;
+import org.joda.beans.gen.PropertyDefinition;
 import org.joda.beans.impl.direct.DirectFieldsBeanBuilder;
 import org.joda.beans.impl.direct.DirectMetaBean;
 import org.joda.beans.impl.direct.DirectMetaProperty;
 import org.joda.beans.impl.direct.DirectMetaPropertyMap;
-import org.joda.beans.MetaBean;
-import org.joda.beans.gen.BeanDefinition;
-import org.joda.beans.gen.PropertyDefinition;
+
+import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.pricer.DiscountFactors;
+
+import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Template for a Rational one-factor model with b0 function in the Hull-White-like shape.
