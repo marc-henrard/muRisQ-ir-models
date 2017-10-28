@@ -43,10 +43,6 @@ public class RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer
   
   /** Number of integration steps in the integration. */
   private final int nbSteps;
-  
-  /** Default implementation. */
-  public static final RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer DEFAULT =
-      new RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer(NB_INTEGRATION_STEPS_DEFAULT);
 
   /**
   * Creates an instance.
@@ -54,6 +50,10 @@ public class RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer
   public RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer(int nbIntegrationSteps) {
     this.nbSteps = nbIntegrationSteps;
   }
+  
+  /** Default implementation. */
+  public static final RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer DEFAULT =
+      new RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer(NB_INTEGRATION_STEPS_DEFAULT);
 
   @Override
   public CurrencyAmount presentValue(
