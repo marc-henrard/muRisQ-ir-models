@@ -3,8 +3,19 @@
  */
 package marc.henrard.risq.pricer.capfloor;
 
+import java.util.function.Function;
+
 import com.opengamma.strata.basics.currency.CurrencyAmount;
+import com.opengamma.strata.basics.date.DayCounts;
+import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.market.ValueType;
+import com.opengamma.strata.market.surface.ConstantSurface;
+import com.opengamma.strata.market.surface.DefaultSurfaceMetadata;
+import com.opengamma.strata.math.impl.rootfinding.BracketRoot;
+import com.opengamma.strata.math.impl.rootfinding.BrentSingleRootFinder;
+import com.opengamma.strata.pricer.capfloor.NormalIborCapFloorLegPricer;
+import com.opengamma.strata.pricer.capfloor.NormalIborCapletFloorletExpiryStrikeVolatilities;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorLeg;
@@ -12,7 +23,7 @@ import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorLeg;
 import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 
 /**
- * Price of cap/floor legs in a multi-curve rational model.
+ * Measures for cap/floor legs in a multi-curve rational model.
  * <p>
  * <i>Reference: </i>
  * <p>
@@ -22,6 +33,12 @@ import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
  * @author Marc Henrard
  */
 public class RationalCapFloorLegPricer {
+  
+  /** Pricer used to estimate the Bachelier implied volatility. */
+  private static final NormalIborCapFloorLegPricer PRICER_LEG_BACHELIER =
+      NormalIborCapFloorLegPricer.DEFAULT;
+  /** Tolerance for the implied volatility. */
+  private static final double TOLERANCE_ABS = 1.0E-8;
   
   /** Pricer for {@link IborCapletFloorletPeriod} in the rational model. */
   private final RationalCapletFloorletPeriodPricer periodPricer;
@@ -55,6 +72,47 @@ public class RationalCapFloorLegPricer {
         .map(period -> periodPricer.presentValue(period, multicurve, model))
         .reduce((c1, c2) -> c1.plus(c2))
         .get();
+  }
+
+
+  /**
+   * Computes the implied volatility in the Bachelier model.
+   * <p>
+   * The cap/floor price is computed in the rational model and the implied volatility for that price is computed.
+   * The implied volatility is the constant volatility for all caplets/floorlets composing the leg.
+   * 
+   * @param capFloorLeg  the Ibor cap/floor leg
+   * @param multicurve  the rates provider 
+   * @param model  the rational model parameters
+   * @return the implied volatility in the Bachelier model
+   */
+  public double impliedVolatilityBachelier(
+      ResolvedIborCapFloorLeg capFloorLeg,
+      RatesProvider multicurve,
+      RationalParameters model) {
+    
+    IborIndex index = capFloorLeg.getIndex();
+    BracketRoot bracket = new BracketRoot();
+    BrentSingleRootFinder rootFinder = new BrentSingleRootFinder(TOLERANCE_ABS);
+    double pvRational = presentValue(capFloorLeg, multicurve, model).getAmount();
+    Function<Double, Double> error = x -> {
+      NormalIborCapletFloorletExpiryStrikeVolatilities volatilities =
+          NormalIborCapletFloorletExpiryStrikeVolatilities.of(index, model.getValuationDateTime(),
+              ConstantSurface.of(DefaultSurfaceMetadata.builder()
+                  .surfaceName("Bachelier-vol")
+                  .xValueType(ValueType.YEAR_FRACTION)
+                  .yValueType(ValueType.STRIKE)
+                  .zValueType(ValueType.NORMAL_VOLATILITY)
+                  .dayCount(DayCounts.ACT_365F).build(),
+                  x));
+      double pvBachelier = PRICER_LEG_BACHELIER.presentValue(capFloorLeg, multicurve, volatilities).getAmount();
+      return pvRational - pvBachelier;
+    };
+    double ivLower = 0.001;
+    double ivUpper = 0.02;
+    double[] ivBracket = bracket.getBracketedPoints(error, ivLower, ivUpper);
+    double impliedVolatility = rootFinder.getRoot(error, ivBracket[0], ivBracket[1]);
+    return impliedVolatility;
   }
 
 }

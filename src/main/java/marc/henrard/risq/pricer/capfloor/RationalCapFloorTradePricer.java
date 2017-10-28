@@ -31,6 +31,12 @@ public class RationalCapFloorTradePricer {
   /** Pricer for {@link Payment}. */
   private final DiscountingPaymentPricer paymentPricer;
 
+  /**
+   * Creates and instance of the trade pricer.
+   * 
+   * @param capFloorProductPricer  the pricer for the {@link ResolvedIborCapFloor}
+   * @param paymentPricer  the pricer for the premium
+   */
   public RationalCapFloorTradePricer(
       RationalCapFloorProductPricer capFloorProductPricer,
       DiscountingPaymentPricer paymentPricer) {

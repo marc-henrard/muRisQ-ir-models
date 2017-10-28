@@ -19,11 +19,17 @@ import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.basics.date.BusinessDayAdjustment;
 import com.opengamma.strata.basics.date.BusinessDayConventions;
+import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.schedule.Frequency;
 import com.opengamma.strata.basics.schedule.PeriodicSchedule;
 import com.opengamma.strata.basics.schedule.RollConventions;
 import com.opengamma.strata.basics.schedule.StubConvention;
 import com.opengamma.strata.basics.value.ValueSchedule;
+import com.opengamma.strata.market.ValueType;
+import com.opengamma.strata.market.surface.ConstantSurface;
+import com.opengamma.strata.market.surface.DefaultSurfaceMetadata;
+import com.opengamma.strata.pricer.capfloor.NormalIborCapFloorLegPricer;
+import com.opengamma.strata.pricer.capfloor.NormalIborCapletFloorletExpiryStrikeVolatilities;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapFloorLeg;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
@@ -53,6 +59,8 @@ public class RationalCapFloorLegPricerTest {
       RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer.DEFAULT;
   private static final RationalCapFloorLegPricer PRICER_LEG_S_EX =
       new RationalCapFloorLegPricer(PRICER_CAPLET_S_EX);
+  private static final NormalIborCapFloorLegPricer PRICER_LEG_BACHELIER =
+      NormalIborCapFloorLegPricer.DEFAULT;
   
   /* Descriptions of swaptions */
   private static final Period[] MATURITIES_PER = new Period[] {
@@ -70,6 +78,7 @@ public class RationalCapFloorLegPricerTest {
   
   /* Constants */
   private static final double TOLERANCE_PV = 1.0E-1;
+  private static final double TOLERANCE_PV_IV = 1.0E-0;
 
   /* Tests present value as sum of periods. */
   public void present_value_leg() {
@@ -95,6 +104,40 @@ public class RationalCapFloorLegPricerTest {
           pvExpected += PRICER_CAPLET_S_EX.presentValue(p, MULTICURVE, RATIONAL_2F).getAmount();
         }
         assertEquals(pvComputed.getAmount(), pvExpected, TOLERANCE_PV);
+      }
+    }
+  }
+
+  /* Tests implied volatility in the Bachelier model. */
+  public void implied_volatility_bachelier() {
+    LocalDate spot6M = EUR_EURIBOR_6M.calculateMaturityFromFixing(VALUATION_DATE, REF_DATA);
+    for (int i = 0; i < NB_MATURITIES; i++) {
+      LocalDate maturity = spot6M.plus(MATURITIES_PER[i]);
+      for (int k = 0; k < NB_STRIKES; k++) {
+        PeriodicSchedule paySchedule =
+            PeriodicSchedule.of(spot6M, maturity, Frequency.P6M, BUSINESS_ADJ, StubConvention.NONE,
+                RollConventions.NONE);
+        IborCapFloorLeg leg = IborCapFloorLeg.builder()
+            .currency(EUR)
+            .calculation(IborRateCalculation.of(EUR_EURIBOR_6M))
+            .capSchedule(ValueSchedule.of(STRIKES[k]))
+            .notional(ValueSchedule.of(NOTIONAL))
+            .paymentSchedule(paySchedule)
+            .payReceive(PayReceive.PAY).build();
+        ResolvedIborCapFloorLeg resolvedLeg = leg.resolve(REF_DATA);
+        double pvRational = PRICER_LEG_S_EX.presentValue(resolvedLeg, MULTICURVE, RATIONAL_2F).getAmount();
+        double iv = PRICER_LEG_S_EX.impliedVolatilityBachelier(resolvedLeg, MULTICURVE, RATIONAL_2F);
+        NormalIborCapletFloorletExpiryStrikeVolatilities volatilities =
+            NormalIborCapletFloorletExpiryStrikeVolatilities.of(EUR_EURIBOR_6M, RATIONAL_2F.getValuationDateTime(),
+                ConstantSurface.of(DefaultSurfaceMetadata.builder()
+                    .surfaceName("Bachelier-vol")
+                    .xValueType(ValueType.YEAR_FRACTION)
+                    .yValueType(ValueType.STRIKE)
+                    .zValueType(ValueType.NORMAL_VOLATILITY)
+                    .dayCount(DayCounts.ACT_365F).build(),
+                    iv));
+        double pvBachelier = PRICER_LEG_BACHELIER.presentValue(resolvedLeg, MULTICURVE, volatilities).getAmount();
+        assertEquals(pvRational, pvBachelier, TOLERANCE_PV_IV);
       }
     }
   }
