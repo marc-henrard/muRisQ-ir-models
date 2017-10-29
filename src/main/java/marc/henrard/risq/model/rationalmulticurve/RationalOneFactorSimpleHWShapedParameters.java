@@ -30,11 +30,17 @@ import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.market.curve.Curve;
+import com.opengamma.strata.market.curve.DefaultCurveMetadata;
+import com.opengamma.strata.market.curve.ParameterizedFunctionalCurve;
 import com.opengamma.strata.market.param.LabelParameterMetadata;
 import com.opengamma.strata.market.param.ParameterMetadata;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 import com.opengamma.strata.pricer.DiscountFactors;
 
+import marc.henrard.risq.model.generic.GenericParameterDateCurve;
+import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
@@ -51,6 +57,8 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
  *   b0(u) = (b0(0) + eta/(a*kappa) (1-exp(-kappa u))) P(0,u)
  * The function b1(theta,u,v) is the one implied by the forward risk free rates: 
  *   b1(theta, u, v) = (b0(u) - b0(v)) / delta
+ * <p>
+ * The time measurement in the discount factors and the parameters have to be consistent.
  * 
  * @author Marc Henrard <a href="http://multi-curve-framework.blogspot.com/">Multi-curve Framework</a>
  */
@@ -219,9 +227,30 @@ public final class RationalOneFactorSimpleHWShapedParameters
 
   @Override
   public double b0(LocalDate date) {
-    double u = discountFactors.relativeYearFraction(date);
-    double pu = discountFactors.discountFactor(u);
-    return (b00 + eta /(a * kappa) * (1.0d - Math.exp(-kappa * u))) * pu;
+    double u = timeMeasure.relativeTime(valuationDateTime, date);
+    double pu = discountFactors.discountFactor(date);
+    return (b00 - eta /(a * kappa) * (1.0d - Math.exp(-kappa * u))) * pu;
+  }
+  
+  @Override
+  public ParameterDateCurve b0() {
+    Curve curveB0 =
+        ParameterizedFunctionalCurve.of(DefaultCurveMetadata.of("B0"),
+            DoubleArray.of(a, b00, eta, kappa),
+            (p, x) -> (p.get(1) - p.get(2) / (p.get(0) * p.get(3)) 
+                * (1.0d - Math.exp(-p.get(3) * x))) * discountFactors.discountFactor(x),
+            (p, x) -> -p.get(2) / p.get(0) * Math.exp(-p.get(3) * x) * discountFactors.discountFactor(x) +
+                (p.get(1) - p.get(2) / (p.get(0) * p.get(3)) * (1.0d - Math.exp(-p.get(3) * x))) *
+                    discountFactors.discountFactorTimeDerivative(x),  // Time derivative
+            (p, x) -> DoubleArray.of(
+                p.get(2) / (p.get(0) * p.get(0) * p.get(3)) * (1.0d - Math.exp(-p.get(3) * x)) *
+                    discountFactors.discountFactor(x),
+                discountFactors.discountFactor(x),
+                -1.0d / (p.get(0) * p.get(3)) * discountFactors.discountFactor(x),
+                p.get(2) / (p.get(0) * p.get(3)) *
+                    (1.0d / p.get(3) * (1.0d - Math.exp(-p.get(3) * x) - p.get(3) * Math.exp(-p.get(3) * x)) *
+                        discountFactors.discountFactor(x)))); // Parameter derivative
+    return GenericParameterDateCurve.of(timeMeasure, curveB0, valuationDate);
   }
 
   @Override

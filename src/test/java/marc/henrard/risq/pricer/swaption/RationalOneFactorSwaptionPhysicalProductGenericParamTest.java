@@ -20,8 +20,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.AdjustableDate;
-import com.opengamma.strata.basics.date.DayCount;
-import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.Tenor;
 import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.collect.array.DoubleArray;
@@ -99,7 +97,6 @@ public class RationalOneFactorSwaptionPhysicalProductGenericParamTest {
   private static final double ETA = 0.01;
   private static final double KAPPA = 0.03;
   private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
-  private static final DayCount DAY_COUNT = DayCounts.ACT_365F;
   private static final DiscountFactors DF = MULTICURVE_EUR.discountFactors(EUR);
   private static final RationalOneFactorSimpleHWShapedParameters MODEL_HWSHAPED = 
       RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, DF);
@@ -107,11 +104,11 @@ public class RationalOneFactorSwaptionPhysicalProductGenericParamTest {
   private static final Curve CURVE_B0 =
       ParameterizedFunctionalCurve.of(DefaultCurveMetadata.of("B0"),
           DoubleArray.of(A, B_0_0, ETA, KAPPA),
-          (p, x) -> (p.get(1) + p.get(2) / (p.get(0) * p.get(3)) 
+          (p, x) -> (p.get(1) - p.get(2) / (p.get(0) * p.get(3)) 
               * (1.0d - Math.exp(-p.get(3) * x))) * DF.discountFactor(x),
           (a, x) -> 0.0d, (a, x) -> DoubleArray.EMPTY);
   private static final ParameterDateCurve B0 =
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_B0, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_B0, VALUATION_DATE);
   private static final ParameterDateCurve B1_1 =
       new TestParameterDateCurve(EUR_EURIBOR_6M, REF_DATA, B0);
   private static final List<IborIndex> B1_INDICES =

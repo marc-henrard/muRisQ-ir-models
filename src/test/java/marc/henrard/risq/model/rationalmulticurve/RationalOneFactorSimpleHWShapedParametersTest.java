@@ -28,6 +28,7 @@ import com.opengamma.strata.market.param.LabelParameterMetadata;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.ZeroRateDiscountFactors;
 
+import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 
@@ -84,11 +85,20 @@ public class RationalOneFactorSimpleHWShapedParametersTest {
     for (int loopdate = 1; loopdate < NB_TEST_DATES; loopdate++) {
       double u = DF.relativeYearFraction(TEST_DATES[loopdate]);
       double pu = DF.discountFactor(u);
-      double b0Expected = (B_0_0 + ETA / (A * KAPPA) * (1.0d - Math.exp(-KAPPA * u))) * pu;
+      double b0Expected = (B_0_0 - ETA / (A * KAPPA) * (1.0d - Math.exp(-KAPPA * u))) * pu;
       double b0Computed = PARAMETERS.b0(TEST_DATES[loopdate]);
       assertEquals(b0Computed, b0Expected, TOLERANCE);
     }
   }
+
+  /* Tests that the b0 method and the b0 ParameterDateCurve produce the same values. */
+  public void b0_parameter_curve() {
+    ParameterDateCurve b0 = PARAMETERS.b0();
+    for (int loopdate = 1; loopdate < NB_TEST_DATES; loopdate++) {
+      assertEquals(b0.parameterValue(TEST_DATES[loopdate]), PARAMETERS.b0(TEST_DATES[loopdate]), TOLERANCE);
+    }
+  }
+  // TODO: Check derivatives of b0 curve wrt time and parameters
   
   /* Tests b1 against b0. */
   public void b1() {

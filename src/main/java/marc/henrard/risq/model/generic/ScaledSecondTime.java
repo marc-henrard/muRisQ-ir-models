@@ -4,13 +4,20 @@
 package marc.henrard.risq.model.generic;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
- * Measure the time by the number of seconds and rescaled to a year,
- * for a 365 day year and ignoring leap seconds (multiplied by 31_536_000.0).
+ * Measure the time between two temporal indications.
+ * <p>
+ * For two {@link ZonedDateTime}, the time is measured by the number of seconds and rescaled to a year 
+ * considering a 365 day year and ignoring leap seconds (divided by 31_536_000.0).
+ * <P>
+ * If at least one is a {@link LocalDate}, the time is measured by the number of days and rescaled to a year 
+ * considering a 365 day year (divided by 365.0). 
  * 
- * @author Marc Henrard <a href="http://multi-curve-framework.blogspot.com/">Multi-curve Framework</a>
+ * @author Marc Henrard
  */
 public class ScaledSecondTime 
     implements TimeMeasurement, Serializable {
@@ -18,7 +25,8 @@ public class ScaledSecondTime
   private static final long serialVersionUID = 1L;
 
   /** The number of second in a year, for a 365 day year and ignoring leap seconds. */
-  private final static double SECOND_BY_YEAR = 31_536_000.0d;
+  private final static double SECONDS_BY_YEAR = 31_536_000.0d;
+  private final static double DAYS_BY_YEAR = 365.0d;
   
   /** The default instance of the time measurement. */
   public final static ScaledSecondTime DEFAULT = new ScaledSecondTime();
@@ -29,7 +37,17 @@ public class ScaledSecondTime
 
   @Override
   public double relativeTime(ZonedDateTime dateTimeStart, ZonedDateTime dateTimeEnd) {
-    return (dateTimeEnd.toEpochSecond() - dateTimeStart.toEpochSecond()) / SECOND_BY_YEAR;
+    return (dateTimeEnd.toEpochSecond() - dateTimeStart.toEpochSecond()) / SECONDS_BY_YEAR;
+  }
+
+  @Override
+  public double relativeTime(ZonedDateTime dateTimeStart, LocalDate date) {
+    return ChronoUnit.DAYS.between(dateTimeStart.toLocalDate(), date) / DAYS_BY_YEAR;
+  }
+
+  @Override
+  public double relativeTime(LocalDate dateStart, LocalDate date) {
+    return ChronoUnit.DAYS.between(dateStart, date) / DAYS_BY_YEAR;
   }
 
   @Override

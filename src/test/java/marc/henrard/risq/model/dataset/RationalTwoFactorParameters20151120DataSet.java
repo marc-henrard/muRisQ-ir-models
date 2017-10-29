@@ -12,7 +12,6 @@ import java.time.ZoneId;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.index.IborIndex;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.market.curve.ConstantCurve;
@@ -50,21 +49,21 @@ public class RationalTwoFactorParameters20151120DataSet {
       DoubleArray.copyOf(TIMES), 
       DoubleArray.copyOf(new double[]{ALPHA, ALPHA + BETA * TIMES[1]}), INTERPOLATOR_LINEAR);
   private static final ParameterDateCurve B0 = GenericParameterDateCurve.of(
-      DayCounts.ACT_365F, B0_CURVE, VALUATION_DATE);
+      ScaledSecondTime.DEFAULT, B0_CURVE, VALUATION_DATE);
   private static final List<IborIndex> BX_INDICES = ImmutableList.of(EUR_EURIBOR_6M);
   private static final List<ParameterDateCurve> B1 = ImmutableList.of(
         GenericParameterDateCurve.of(
-            DayCounts.ACT_365F, 
+            ScaledSecondTime.DEFAULT, 
             ConstantCurve.of(DefaultCurveMetadata.of("B1"), 0.010), 
             VALUATION_DATE));
   private static final List<ParameterDateCurve> B2 = ImmutableList.of(
         GenericParameterDateCurve.of(
-            DayCounts.ACT_365F, 
+            ScaledSecondTime.DEFAULT, 
             ConstantCurve.of(DefaultCurveMetadata.of("B2"), 0.001), 
             VALUATION_DATE));
   private static final List<ParameterDateCurve> ZERO = ImmutableList.of(
         GenericParameterDateCurve.of(
-            DayCounts.ACT_365F, 
+            ScaledSecondTime.DEFAULT, 
             ConstantCurve.of(DefaultCurveMetadata.of("ZERO"), 0.0d), 
             VALUATION_DATE));
   public static final LocalTime LOCAL_TIME = LocalTime.of(11, 0);
