@@ -60,11 +60,11 @@ public class RationalOneFactorGenericParametersTest {
           DoubleArray.of(0.0d, 10.0D), DoubleArray.of(3.0d, 4.0d), CurveInterpolators.LINEAR);
   
   private static final ParameterDateCurve B0 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_1, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_1, VALUATION_DATE);
   private static final ParameterDateCurve B1_1 =
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_2, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_2, VALUATION_DATE);
   private static final ParameterDateCurve B1_2 =
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_3, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_3, VALUATION_DATE);
   private static final List<IborIndex> B1_INDICES =
       ImmutableList.of(EUR_EURIBOR_3M, EUR_EURIBOR_6M);
   private static final List<ParameterDateCurve> B1_CURVES =

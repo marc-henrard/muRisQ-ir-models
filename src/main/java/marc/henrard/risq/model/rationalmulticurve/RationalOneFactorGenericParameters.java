@@ -158,6 +158,11 @@ public final class RationalOneFactorGenericParameters
   public double b0(LocalDate date) {
     return b0.parameterValue(date);
   }
+  
+  @Override
+  public ParameterDateCurve b0() {
+    return b0;
+  }
 
   @Override
   public double b1(IborIndexObservation obs) {

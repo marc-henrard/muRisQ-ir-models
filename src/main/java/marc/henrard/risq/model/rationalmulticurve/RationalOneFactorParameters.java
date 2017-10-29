@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 
+import marc.henrard.risq.model.generic.ParameterDateCurve;
+
 /**
  * Interest rate multi-curve rational model with one factor.
  * <p>
@@ -31,10 +33,19 @@ public interface RationalOneFactorParameters
   
   /**
    * Returns the b0 parameter used in the numeraire and discount factor dynamic at a given date.
+   * 
    * @param date  the date
    * @return  the parameter
    */
   public double b0(LocalDate date);
+
+  /**
+   * Returns the b0 parameter curve used in the numeraire and discount factor dynamic.
+   * 
+   * @param date  the date
+   * @return  the parameter
+   */
+  public ParameterDateCurve b0();
   
   /**
    * Returns the b1 parameter used in the Libor process evolution for a given index and Ibor observation.

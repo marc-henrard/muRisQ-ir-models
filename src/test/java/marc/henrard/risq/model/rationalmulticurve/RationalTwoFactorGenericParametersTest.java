@@ -63,15 +63,15 @@ public class RationalTwoFactorGenericParametersTest {
   private static final Curve CURVE_4 = ConstantCurve.of("C4", VAL_4);
   
   private static final ParameterDateCurve B0 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_1, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_1, VALUATION_DATE);
   private static final ParameterDateCurve B1_1 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_2, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_2, VALUATION_DATE);
   private static final ParameterDateCurve B1_2 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_3, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_3, VALUATION_DATE);
   private static final ParameterDateCurve B2_1 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_3, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_3, VALUATION_DATE);
   private static final ParameterDateCurve B2_2 = 
-      GenericParameterDateCurve.of(DAY_COUNT, CURVE_4, VALUATION_DATE);
+      GenericParameterDateCurve.of(ScaledSecondTime.DEFAULT, CURVE_4, VALUATION_DATE);
   private static final List<IborIndex> BX_INDICES = ImmutableList.of(EUR_EURIBOR_3M, EUR_EURIBOR_6M);
   private static final List<ParameterDateCurve> B1 =
       ImmutableList.of(B1_1, B1_2);
