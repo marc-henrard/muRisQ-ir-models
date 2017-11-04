@@ -95,6 +95,10 @@ public class RationalCapFloorLegPricer {
     BracketRoot bracket = new BracketRoot();
     BrentSingleRootFinder rootFinder = new BrentSingleRootFinder(TOLERANCE_ABS);
     double pvRational = presentValue(capFloorLeg, multicurve, model).getAmount();
+    double notional = notional(capFloorLeg);
+    if (Math.abs(pvRational) < notional * 1.0E-8) {  // price is 0 for practical purposes
+      return 0.0d; // Return 0.0 implied volatility - possible as rates are bounded in the model
+    }
     Function<Double, Double> error = x -> {
       NormalIborCapletFloorletExpiryStrikeVolatilities volatilities =
           NormalIborCapletFloorletExpiryStrikeVolatilities.of(index, model.getValuationDateTime(),
@@ -108,11 +112,19 @@ public class RationalCapFloorLegPricer {
       double pvBachelier = PRICER_LEG_BACHELIER.presentValue(capFloorLeg, multicurve, volatilities).getAmount();
       return pvRational - pvBachelier;
     };
-    double ivLower = 0.001;
-    double ivUpper = 0.02;
+    double ivLower = 0.0001;
+    double ivUpper = 0.05;
     double[] ivBracket = bracket.getBracketedPoints(error, ivLower, ivUpper);
     double impliedVolatility = rootFinder.getRoot(error, ivBracket[0], ivBracket[1]);
     return impliedVolatility;
+  }
+  
+  private double notional(ResolvedIborCapFloorLeg capFloorLeg) {
+    double n = 0.0;
+    for(IborCapletFloorletPeriod p: capFloorLeg.getCapletFloorletPeriods()) {
+      n = Math.max(n, Math.abs(p.getNotional()));
+    }
+    return n;
   }
 
 }

@@ -25,8 +25,6 @@ import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
-
 /**
  * Interest rate multi-curve rational model.
  * <p>
@@ -49,7 +47,10 @@ public class RationalTwoFactorFormulas {
   private static final double LIMIT_INT = 12.0; // Equivalent to + infinity in normal integrals
   private static final double TOL_ABS = 1.0E-1;
   private static final double TOL_REL = 1.0E-6;
+  /** Limit for small coefficients. */
   private static final double SMALL = 1.0E-12;
+  /** Limit for small times. */
+  private static final double SMALL_T = 1.0E-6;
   /** Normal distribution implementation. */
   private static final ProbabilityDistribution<Double> NORMAL = new NormalDistribution(0, 1);
   
@@ -146,7 +147,7 @@ public class RationalTwoFactorFormulas {
   }
 
   /**
-   * Computes the value of a derivative by semi-explicit formula with one dimensional numerical integration.
+   * Computes the value of the 2-D integral (x_0 + x_1 (exp(a_1 X(1) - ...) + 1) + x_2 (exp(a_2 X(2) - ...) + 1))^+
    * <p>
    * The computation is based on the coefficients of the different base random variables. The coefficeints 
    * are the constant, the coefficients of exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...)
@@ -163,6 +164,9 @@ public class RationalTwoFactorFormulas {
     RungeKuttaIntegrator1D integrator1D  = 
         new RungeKuttaIntegrator1D(TOL_ABS, TOL_REL, nbSteps);
     ArgChecker.notNegative(t, "time to expiry");
+    if (t < SMALL_T) {  // No time value
+      return Math.max(x[0] + x[1] + x[2], 0.0);
+    }
     if (x[1] < 0) { // Payer-receiver parity
       return x[0] + x[1] + x[2] + pvSemiExplicit(new double[] {-x[0], -x[1], -x[2] }, t, a1, a2, rho, nbSteps);
     }

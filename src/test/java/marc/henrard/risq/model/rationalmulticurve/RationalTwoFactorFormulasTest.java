@@ -84,6 +84,7 @@ public class RationalTwoFactorFormulasTest {
 
   private final static double TOLERANCE = 1.0E-10;
 
+  /* Tests the swap coefficients. */
   public void swap_coefficients() {
     double fixedRate = 0.02d;
     double notional = 123456.78d;
@@ -120,6 +121,7 @@ public class RationalTwoFactorFormulasTest {
     ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
   }
 
+  /* Tests the caplet/floorlet coefficients. */
   public void caplet_coefficients() {
     double fixedRate = 0.02d;
     double notional = 123456.78d;
@@ -149,6 +151,14 @@ public class RationalTwoFactorFormulasTest {
     cExpected[1] *= notional * accrualFactor;
     cExpected[2] *= notional * accrualFactor;
     ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+  
+  /* Tests the semi-explicit integral value for edge cases. TODO */
+  public void semi_explicit_t_0() {
+    double pvP = FORMULAS.pvSemiExplicit(new double[] {1.0d, 2.0d, 3.0d}, 0.0, 0.5, 0.5, 0.1, 10);
+    assertEquals(pvP, 1.0d + 2.0d + 3.0d, TOLERANCE);
+    double pvN = FORMULAS.pvSemiExplicit(new double[] {-1.0d, -2.0d, -3.0d}, 0.0, 0.5, 0.5, 0.1, 10);
+    assertEquals(pvN, 0.0d, TOLERANCE);
   }
   
 }
