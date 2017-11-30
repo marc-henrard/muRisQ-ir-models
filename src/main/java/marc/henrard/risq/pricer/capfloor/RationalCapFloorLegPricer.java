@@ -3,6 +3,7 @@
  */
 package marc.henrard.risq.pricer.capfloor;
 
+import java.time.ZonedDateTime;
 import java.util.function.Function;
 
 import com.opengamma.strata.basics.currency.CurrencyAmount;
@@ -90,18 +91,39 @@ public class RationalCapFloorLegPricer {
       ResolvedIborCapFloorLeg capFloorLeg,
       RatesProvider multicurve,
       RationalParameters model) {
+
+    double pvRational = presentValue(capFloorLeg, multicurve, model).getAmount();
+    return impliedVolatilityBachelier(capFloorLeg, multicurve, pvRational, model.getValuationDateTime());
+  }
+
+  /**
+   * Computes the implied volatility in the Bachelier model.
+   * <p>
+   * The leg present value is passed and the implied volatility for that price is computed.
+   * The implied volatility is the constant volatility for all caplets/floorlets composing the leg.
+   * 
+   * @param capFloorLeg  the Ibor cap/floor leg
+   * @param multicurve  the rates provider 
+   * @param pv  the leg's present value
+   * @param valuationDateTime  the valuation date and time
+   * @return the implied volatility in the Bachelier model
+   */
+  public double impliedVolatilityBachelier(
+      ResolvedIborCapFloorLeg capFloorLeg,
+      RatesProvider multicurve,
+      double pv,
+      ZonedDateTime valuationDateTime) {
     
     IborIndex index = capFloorLeg.getIndex();
     BracketRoot bracket = new BracketRoot();
     BrentSingleRootFinder rootFinder = new BrentSingleRootFinder(TOLERANCE_ABS);
-    double pvRational = presentValue(capFloorLeg, multicurve, model).getAmount();
     double notional = notional(capFloorLeg);
-    if (Math.abs(pvRational) < notional * 1.0E-8) {  // price is 0 for practical purposes
+    if (Math.abs(pv) < notional * 1.0E-8) {  // price is 0 for practical purposes
       return 0.0d; // Return 0.0 implied volatility - possible as rates are bounded in the model
     }
     Function<Double, Double> error = x -> {
       NormalIborCapletFloorletExpiryStrikeVolatilities volatilities =
-          NormalIborCapletFloorletExpiryStrikeVolatilities.of(index, model.getValuationDateTime(),
+          NormalIborCapletFloorletExpiryStrikeVolatilities.of(index, valuationDateTime,
               ConstantSurface.of(DefaultSurfaceMetadata.builder()
                   .surfaceName("Bachelier-vol")
                   .xValueType(ValueType.YEAR_FRACTION)
@@ -110,7 +132,7 @@ public class RationalCapFloorLegPricer {
                   .dayCount(DayCounts.ACT_365F).build(),
                   x));
       double pvBachelier = PRICER_LEG_BACHELIER.presentValue(capFloorLeg, multicurve, volatilities).getAmount();
-      return pvRational - pvBachelier;
+      return pv - pvBachelier;
     };
     double ivLower = 0.0001;
     double ivUpper = 0.05;

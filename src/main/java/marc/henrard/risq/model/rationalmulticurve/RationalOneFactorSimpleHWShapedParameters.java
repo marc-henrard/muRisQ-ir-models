@@ -319,6 +319,11 @@ public final class RationalOneFactorSimpleHWShapedParameters
   }
 
   @Override
+  public DoubleArray getParameters() {
+    return DoubleArray.of(a,b00, eta, kappa);
+  }
+
+  @Override
   public ParameterMetadata getParameterMetadata(int parameterIndex) {
     return METADATA.get(parameterIndex);
   }

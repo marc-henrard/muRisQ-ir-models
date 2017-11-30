@@ -58,7 +58,7 @@ public interface RationalOneFactorParameters
   public double b1(IborIndexObservation obs);
   
   /**
-   * Returns the b0 parameter sensitivity to the curves rates.
+   * Returns the b0 parameter sensitivity to the interest rate curves.
    * <p>
    * This is used in case the b0 coefficient depends explicitly on P^D(0,.).
    * 
@@ -68,7 +68,7 @@ public interface RationalOneFactorParameters
   public PointSensitivityBuilder b0Sensitivity(LocalDate date);
   
   /**
-   * Returns the b1 parameter sensitivity to the curves rates.
+   * Returns the b1 parameter sensitivity to the interest rate curves.
    * <p>
    * This is used in case the b1 coefficient depends explicitly on P^D(0,.).
    * 
@@ -76,5 +76,9 @@ public interface RationalOneFactorParameters
    * @return  the parameter sensitivity to rates
    */
   public PointSensitivityBuilder b1Sensitivity(IborIndexObservation obs);
+  
+  // TODO: add sensitivity to parameters
+  //  public ValueDerivatives b0ParameterSensitivity(LocalDate date);
+  //  public ValueDerivatives b1ParameterSensitivity(IborIndexObservation obs);
 
 }

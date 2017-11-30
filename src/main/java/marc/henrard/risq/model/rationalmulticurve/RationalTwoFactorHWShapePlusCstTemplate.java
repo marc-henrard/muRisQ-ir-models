@@ -6,7 +6,9 @@ package marc.henrard.risq.model.rationalmulticurve;
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -27,6 +29,7 @@ import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.minimization.DoubleRangeLimitTransform;
 import com.opengamma.strata.math.impl.minimization.NonLinearParameterTransforms;
+import com.opengamma.strata.math.impl.minimization.NullTransform;
 import com.opengamma.strata.math.impl.minimization.ParameterLimitsTransform;
 import com.opengamma.strata.math.impl.minimization.ParameterLimitsTransform.LimitType;
 import com.opengamma.strata.math.impl.minimization.SingleRangeLimitTransform;
@@ -36,26 +39,41 @@ import com.opengamma.strata.pricer.DiscountFactors;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
- * Template for a Rational one-factor model with b0 function in the Hull-White-like shape.
- * <P>
- * The parameters are a, b_0(0), eta and kappa.
+ * Template for a rational two-factor model {@link RationalTwoFactorHWShapePlusCstParameters}.
  * 
  * @author Marc Henrard
  */
 @BeanDefinition(factoryName = "of")
-public final class RationalOneFactorSimpleHWShapedTemplate 
+public final class RationalTwoFactorHWShapePlusCstTemplate
     implements RationalTemplate, ImmutableBean, Serializable  {
 
+  private static final int NB_PARAMETERS = 8;
   private static final double LIMIT_0 = 1.0E-8;
+  private static final double LIMIT_A = 1.0E-2; // To avoid singular behavior around 0
   private static final ParameterLimitsTransform[] DEFAULT_TRANSFORMS;
   static {
-    DEFAULT_TRANSFORMS = new ParameterLimitsTransform[4];
-    DEFAULT_TRANSFORMS[0] = new SingleRangeLimitTransform(LIMIT_0, LimitType.GREATER_THAN); // a > 0
-    DEFAULT_TRANSFORMS[1] = new DoubleRangeLimitTransform(0.0d, 1.0d); // 0 < b00 < 1
-    DEFAULT_TRANSFORMS[2] = new SingleRangeLimitTransform(LIMIT_0, LimitType.GREATER_THAN); // eta > 0
-    DEFAULT_TRANSFORMS[3] = new SingleRangeLimitTransform(LIMIT_0, LimitType.GREATER_THAN); // kappa > 0
+    DEFAULT_TRANSFORMS = new ParameterLimitsTransform[8];
+    DEFAULT_TRANSFORMS[0] = new SingleRangeLimitTransform(LIMIT_A, LimitType.GREATER_THAN); // a1 > 0
+    DEFAULT_TRANSFORMS[1] = new SingleRangeLimitTransform(LIMIT_A, LimitType.GREATER_THAN); // a2 > 0
+    DEFAULT_TRANSFORMS[2] = new DoubleRangeLimitTransform(-1.0d, 1.0d); // -1 < correlation < 1
+    DEFAULT_TRANSFORMS[3] = new DoubleRangeLimitTransform(0.0d, 1.0d); // 0 < b00 < 1
+    DEFAULT_TRANSFORMS[4] = new SingleRangeLimitTransform(LIMIT_0, LimitType.GREATER_THAN); // eta > 0
+    DEFAULT_TRANSFORMS[5] = new SingleRangeLimitTransform(LIMIT_0, LimitType.GREATER_THAN); // kappa > 0
+    DEFAULT_TRANSFORMS[6] = new NullTransform(); // c_1
+    DEFAULT_TRANSFORMS[7] = new NullTransform(); // c_2
   }
-  
+  private static final List<Function<Double, Boolean>> CONSTRAINTS = new ArrayList<>();
+  static {
+    CONSTRAINTS.add(a1 -> (a1 > 0));
+    CONSTRAINTS.add(a2 -> (a2 > 0));
+    CONSTRAINTS.add(rho -> ((rho > -1.0) && (rho < 1.0)));
+    CONSTRAINTS.add(b00 -> ((b00 > 0) && (b00 < 1)));
+    CONSTRAINTS.add(eta -> (eta > 0));
+    CONSTRAINTS.add(kappa -> (kappa > 0));
+    CONSTRAINTS.add(c1 -> true);
+    CONSTRAINTS.add(c2 -> true);
+  }
+
   /** The mechanism to measure time for time to expiry. */
   @PropertyDefinition(validate = "notNull")
   private final TimeMeasurement timeMeasure;
@@ -69,64 +87,66 @@ public final class RationalOneFactorSimpleHWShapedTemplate
   @PropertyDefinition(validate = "notNull")
   private final ZoneId valuationZone;
   /** The default initial guess.*/
-  @PropertyDefinition(validate = "notNull")
+  @PropertyDefinition(validate = "validateInitialGuess")
   private final DoubleArray initialGuess;
+  /** The fixed parameters which are not calibrated but set at their guess value. */
   @PropertyDefinition(validate = "notNull", overrideGet = true)
   private final BitSet fixed;
   
+  // Validation of initial guess
+  private static void validateInitialGuess(DoubleArray initialGuess, String message) {
+    ArgChecker.notNull(initialGuess, message);
+    ArgChecker.isTrue(initialGuess.size() == NB_PARAMETERS, message);
+  }
+
   @Override
   public int parametersCount() {
-    return initialGuess.size();
+    return NB_PARAMETERS;
   }
 
   @Override
   public DoubleArray initialGuess() {
     return initialGuess;
   }
-  
+
   @Override
-  public RationalOneFactorSimpleHWShapedParameters generate(DoubleArray parameters) {
+  public RationalTwoFactorHWShapePlusCstParameters generate(DoubleArray parameters) {
     ArgChecker.isTrue(parameters.size() == initialGuess.size(), "Incorrect number of parameters");
-    return RationalOneFactorSimpleHWShapedParameters
-        .of(parameters.get(0), parameters.get(1), parameters.get(2), parameters.get(3), 
-            timeMeasure, discountFactors, valuationTime, valuationZone);
+    return RationalTwoFactorHWShapePlusCstParameters
+        .of(parameters, timeMeasure, discountFactors, valuationTime, valuationZone);
   }
 
   @Override
   public NonLinearParameterTransforms getTransform() {
-    return new UncoupledParameterTransforms(initialGuess, DEFAULT_TRANSFORMS, null);
+    return new UncoupledParameterTransforms(initialGuess, DEFAULT_TRANSFORMS, fixed);
   }
 
   @Override
   public Function<DoubleArray, Boolean> getConstraints() {
     return (parameters) -> {
-      if (parameters.get(0) <= 0.0d) { // a1 > 0
-        return false;
+      boolean isOk = true;
+      int loopp = 0;
+      for (int i = 0; i < initialGuess.size(); i++) {
+        if (!fixed.get(i)) {
+          isOk = (isOk && CONSTRAINTS.get(i).apply(parameters.get(loopp)));
+          loopp++;
+        }
       }
-      if ((parameters.get(1) <= 0.0) || (parameters.get(3) >= 1.0)) { // 0 < b_0(0) < 1
-        return false;
-      }
-      if (parameters.get(2) <= 0.0d) { // eta > 0
-        return false;
-      }
-      if (parameters.get(3) <= 0.0d) { // kappa > 0
-        return false;
-      }
-      return true;
+      return isOk;
     };
   }
 
   //------------------------- AUTOGENERATED START -------------------------
   /**
-   * The meta-bean for {@code RationalOneFactorSimpleHWShapedTemplate}.
+   * The meta-bean for {@code RationalTwoFactorHWShapePlusCstTemplate}.
    * @return the meta-bean, not null
    */
-  public static RationalOneFactorSimpleHWShapedTemplate.Meta meta() {
-    return RationalOneFactorSimpleHWShapedTemplate.Meta.INSTANCE;
+  public static RationalTwoFactorHWShapePlusCstTemplate.Meta meta() {
+    return RationalTwoFactorHWShapePlusCstTemplate.Meta.INSTANCE;
   }
 
   static {
-    MetaBean.register(RationalOneFactorSimpleHWShapedTemplate.Meta.INSTANCE);
+    MetaBean.register(RationalTwoFactorHWShapePlusCstTemplate.Meta.INSTANCE);
   }
 
   /**
@@ -140,18 +160,18 @@ public final class RationalOneFactorSimpleHWShapedTemplate
    * @param discountFactors  the value of the property, not null
    * @param valuationTime  the value of the property, not null
    * @param valuationZone  the value of the property, not null
-   * @param initialGuess  the value of the property, not null
+   * @param initialGuess  the value of the property
    * @param fixed  the value of the property, not null
    * @return the instance
    */
-  public static RationalOneFactorSimpleHWShapedTemplate of(
+  public static RationalTwoFactorHWShapePlusCstTemplate of(
       TimeMeasurement timeMeasure,
       DiscountFactors discountFactors,
       LocalTime valuationTime,
       ZoneId valuationZone,
       DoubleArray initialGuess,
       BitSet fixed) {
-    return new RationalOneFactorSimpleHWShapedTemplate(
+    return new RationalTwoFactorHWShapePlusCstTemplate(
       timeMeasure,
       discountFactors,
       valuationTime,
@@ -164,11 +184,11 @@ public final class RationalOneFactorSimpleHWShapedTemplate
    * Returns a builder used to create an instance of the bean.
    * @return the builder, not null
    */
-  public static RationalOneFactorSimpleHWShapedTemplate.Builder builder() {
-    return new RationalOneFactorSimpleHWShapedTemplate.Builder();
+  public static RationalTwoFactorHWShapePlusCstTemplate.Builder builder() {
+    return new RationalTwoFactorHWShapePlusCstTemplate.Builder();
   }
 
-  private RationalOneFactorSimpleHWShapedTemplate(
+  private RationalTwoFactorHWShapePlusCstTemplate(
       TimeMeasurement timeMeasure,
       DiscountFactors discountFactors,
       LocalTime valuationTime,
@@ -179,7 +199,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
     JodaBeanUtils.notNull(discountFactors, "discountFactors");
     JodaBeanUtils.notNull(valuationTime, "valuationTime");
     JodaBeanUtils.notNull(valuationZone, "valuationZone");
-    JodaBeanUtils.notNull(initialGuess, "initialGuess");
+    validateInitialGuess(initialGuess, "initialGuess");
     JodaBeanUtils.notNull(fixed, "fixed");
     this.timeMeasure = timeMeasure;
     this.discountFactors = discountFactors;
@@ -190,8 +210,8 @@ public final class RationalOneFactorSimpleHWShapedTemplate
   }
 
   @Override
-  public RationalOneFactorSimpleHWShapedTemplate.Meta metaBean() {
-    return RationalOneFactorSimpleHWShapedTemplate.Meta.INSTANCE;
+  public RationalTwoFactorHWShapePlusCstTemplate.Meta metaBean() {
+    return RationalTwoFactorHWShapePlusCstTemplate.Meta.INSTANCE;
   }
 
   //-----------------------------------------------------------------------
@@ -233,7 +253,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
   //-----------------------------------------------------------------------
   /**
    * Gets the default initial guess.
-   * @return the value of the property, not null
+   * @return the value of the property
    */
   public DoubleArray getInitialGuess() {
     return initialGuess;
@@ -241,7 +261,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the fixed.
+   * Gets the fixed parameters which are not calibrated but set at their guess value.
    * @return the value of the property, not null
    */
   @Override
@@ -264,7 +284,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
       return true;
     }
     if (obj != null && obj.getClass() == this.getClass()) {
-      RationalOneFactorSimpleHWShapedTemplate other = (RationalOneFactorSimpleHWShapedTemplate) obj;
+      RationalTwoFactorHWShapePlusCstTemplate other = (RationalTwoFactorHWShapePlusCstTemplate) obj;
       return JodaBeanUtils.equal(timeMeasure, other.timeMeasure) &&
           JodaBeanUtils.equal(discountFactors, other.discountFactors) &&
           JodaBeanUtils.equal(valuationTime, other.valuationTime) &&
@@ -290,7 +310,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder(224);
-    buf.append("RationalOneFactorSimpleHWShapedTemplate{");
+    buf.append("RationalTwoFactorHWShapePlusCstTemplate{");
     buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
     buf.append("discountFactors").append('=').append(discountFactors).append(',').append(' ');
     buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
@@ -303,7 +323,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
 
   //-----------------------------------------------------------------------
   /**
-   * The meta-bean for {@code RationalOneFactorSimpleHWShapedTemplate}.
+   * The meta-bean for {@code RationalTwoFactorHWShapePlusCstTemplate}.
    */
   public static final class Meta extends DirectMetaBean {
     /**
@@ -315,32 +335,32 @@ public final class RationalOneFactorSimpleHWShapedTemplate
      * The meta-property for the {@code timeMeasure} property.
      */
     private final MetaProperty<TimeMeasurement> timeMeasure = DirectMetaProperty.ofImmutable(
-        this, "timeMeasure", RationalOneFactorSimpleHWShapedTemplate.class, TimeMeasurement.class);
+        this, "timeMeasure", RationalTwoFactorHWShapePlusCstTemplate.class, TimeMeasurement.class);
     /**
      * The meta-property for the {@code discountFactors} property.
      */
     private final MetaProperty<DiscountFactors> discountFactors = DirectMetaProperty.ofImmutable(
-        this, "discountFactors", RationalOneFactorSimpleHWShapedTemplate.class, DiscountFactors.class);
+        this, "discountFactors", RationalTwoFactorHWShapePlusCstTemplate.class, DiscountFactors.class);
     /**
      * The meta-property for the {@code valuationTime} property.
      */
     private final MetaProperty<LocalTime> valuationTime = DirectMetaProperty.ofImmutable(
-        this, "valuationTime", RationalOneFactorSimpleHWShapedTemplate.class, LocalTime.class);
+        this, "valuationTime", RationalTwoFactorHWShapePlusCstTemplate.class, LocalTime.class);
     /**
      * The meta-property for the {@code valuationZone} property.
      */
     private final MetaProperty<ZoneId> valuationZone = DirectMetaProperty.ofImmutable(
-        this, "valuationZone", RationalOneFactorSimpleHWShapedTemplate.class, ZoneId.class);
+        this, "valuationZone", RationalTwoFactorHWShapePlusCstTemplate.class, ZoneId.class);
     /**
      * The meta-property for the {@code initialGuess} property.
      */
     private final MetaProperty<DoubleArray> initialGuess = DirectMetaProperty.ofImmutable(
-        this, "initialGuess", RationalOneFactorSimpleHWShapedTemplate.class, DoubleArray.class);
+        this, "initialGuess", RationalTwoFactorHWShapePlusCstTemplate.class, DoubleArray.class);
     /**
      * The meta-property for the {@code fixed} property.
      */
     private final MetaProperty<BitSet> fixed = DirectMetaProperty.ofImmutable(
-        this, "fixed", RationalOneFactorSimpleHWShapedTemplate.class, BitSet.class);
+        this, "fixed", RationalTwoFactorHWShapePlusCstTemplate.class, BitSet.class);
     /**
      * The meta-properties.
      */
@@ -379,13 +399,13 @@ public final class RationalOneFactorSimpleHWShapedTemplate
     }
 
     @Override
-    public RationalOneFactorSimpleHWShapedTemplate.Builder builder() {
-      return new RationalOneFactorSimpleHWShapedTemplate.Builder();
+    public RationalTwoFactorHWShapePlusCstTemplate.Builder builder() {
+      return new RationalTwoFactorHWShapePlusCstTemplate.Builder();
     }
 
     @Override
-    public Class<? extends RationalOneFactorSimpleHWShapedTemplate> beanType() {
-      return RationalOneFactorSimpleHWShapedTemplate.class;
+    public Class<? extends RationalTwoFactorHWShapePlusCstTemplate> beanType() {
+      return RationalTwoFactorHWShapePlusCstTemplate.class;
     }
 
     @Override
@@ -447,17 +467,17 @@ public final class RationalOneFactorSimpleHWShapedTemplate
     protected Object propertyGet(Bean bean, String propertyName, boolean quiet) {
       switch (propertyName.hashCode()) {
         case 1642109393:  // timeMeasure
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getTimeMeasure();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getTimeMeasure();
         case -91613053:  // discountFactors
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getDiscountFactors();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getDiscountFactors();
         case 113591406:  // valuationTime
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getValuationTime();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getValuationTime();
         case 113775949:  // valuationZone
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getValuationZone();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getValuationZone();
         case -431632141:  // initialGuess
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getInitialGuess();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getInitialGuess();
         case 97445748:  // fixed
-          return ((RationalOneFactorSimpleHWShapedTemplate) bean).getFixed();
+          return ((RationalTwoFactorHWShapePlusCstTemplate) bean).getFixed();
       }
       return super.propertyGet(bean, propertyName, quiet);
     }
@@ -475,9 +495,9 @@ public final class RationalOneFactorSimpleHWShapedTemplate
 
   //-----------------------------------------------------------------------
   /**
-   * The bean-builder for {@code RationalOneFactorSimpleHWShapedTemplate}.
+   * The bean-builder for {@code RationalTwoFactorHWShapePlusCstTemplate}.
    */
-  public static final class Builder extends DirectFieldsBeanBuilder<RationalOneFactorSimpleHWShapedTemplate> {
+  public static final class Builder extends DirectFieldsBeanBuilder<RationalTwoFactorHWShapePlusCstTemplate> {
 
     private TimeMeasurement timeMeasure;
     private DiscountFactors discountFactors;
@@ -496,7 +516,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
      * Restricted copy constructor.
      * @param beanToCopy  the bean to copy from, not null
      */
-    private Builder(RationalOneFactorSimpleHWShapedTemplate beanToCopy) {
+    private Builder(RationalTwoFactorHWShapePlusCstTemplate beanToCopy) {
       this.timeMeasure = beanToCopy.getTimeMeasure();
       this.discountFactors = beanToCopy.getDiscountFactors();
       this.valuationTime = beanToCopy.getValuationTime();
@@ -560,8 +580,8 @@ public final class RationalOneFactorSimpleHWShapedTemplate
     }
 
     @Override
-    public RationalOneFactorSimpleHWShapedTemplate build() {
-      return new RationalOneFactorSimpleHWShapedTemplate(
+    public RationalTwoFactorHWShapePlusCstTemplate build() {
+      return new RationalTwoFactorHWShapePlusCstTemplate(
           timeMeasure,
           discountFactors,
           valuationTime,
@@ -617,17 +637,17 @@ public final class RationalOneFactorSimpleHWShapedTemplate
 
     /**
      * Sets the default initial guess.
-     * @param initialGuess  the new value, not null
+     * @param initialGuess  the new value
      * @return this, for chaining, not null
      */
     public Builder initialGuess(DoubleArray initialGuess) {
-      JodaBeanUtils.notNull(initialGuess, "initialGuess");
+      validateInitialGuess(initialGuess, "initialGuess");
       this.initialGuess = initialGuess;
       return this;
     }
 
     /**
-     * Sets the fixed.
+     * Sets the fixed parameters which are not calibrated but set at their guess value.
      * @param fixed  the new value, not null
      * @return this, for chaining, not null
      */
@@ -641,7 +661,7 @@ public final class RationalOneFactorSimpleHWShapedTemplate
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder(224);
-      buf.append("RationalOneFactorSimpleHWShapedTemplate.Builder{");
+      buf.append("RationalTwoFactorHWShapePlusCstTemplate.Builder{");
       buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
       buf.append("discountFactors").append('=').append(JodaBeanUtils.toString(discountFactors)).append(',').append(' ');
       buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');

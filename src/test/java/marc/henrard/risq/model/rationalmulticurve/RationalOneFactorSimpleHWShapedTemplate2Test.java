@@ -33,7 +33,7 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
  * @author Marc Henrard
  */
 @Test
-public class RationalOneFactorSimpleHWShapedTemplateTest {
+public class RationalOneFactorSimpleHWShapedTemplate2Test {
 
   private static final ZonedDateTime VAL_DATE_TIME = ZonedDateTime.of(2016, 8, 18, 11, 12, 13, 0, ZoneId.of("Europe/Brussels"));
   private static final LocalDate VAL_DATE = VAL_DATE_TIME.toLocalDate();
@@ -65,6 +65,7 @@ public class RationalOneFactorSimpleHWShapedTemplateTest {
     assertEquals(test.getValuationTime(), VAL_DATE_TIME.toLocalTime());
     assertEquals(test.getValuationZone(), VAL_DATE_TIME.getZone());
     assertEquals(test.getInitialGuess(), GUESS);
+    assertEquals(test.getFixed(), FIXED);
   }
 
   public void generate() {
