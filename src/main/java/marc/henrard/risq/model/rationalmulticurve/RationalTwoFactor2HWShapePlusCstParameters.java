@@ -50,13 +50,14 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
  * The Libor process numerator is of the form L(0) + b_1 A(1) + b_2 A(2) 
  * The discount factor process numerator is of the form P(0,T) + b_0(T) A(1)
  * <p>
- * The function b_0 as a HW shape. The function b_1 is the one implied by b_0 plus a constant c_1. 
+ * The function b_0 is inspired by G2++ shape with correlation -1. 
+ * The function b_1 is the one implied by b_0 plus a constant c_1. 
  * The function b_2 is a constant c_2. The constants c_1 and c_2 are the same for all indices.
  * 
  * @author Marc Henrard
  */
 @BeanDefinition
-public class RationalTwoFactorHWShapePlusCstParameters
+public class RationalTwoFactor2HWShapePlusCstParameters
     implements RationalTwoFactorParameters, ImmutableBean, Serializable {
   
   /** Metadata */
@@ -65,33 +66,41 @@ public class RationalTwoFactorHWShapePlusCstParameters
           LabelParameterMetadata.of("a2"),
           LabelParameterMetadata.of("correlation"),
           LabelParameterMetadata.of("b_0_0"),
-          LabelParameterMetadata.of("eta"),
-          LabelParameterMetadata.of("kappa"),
+          LabelParameterMetadata.of("eta1"),
+          LabelParameterMetadata.of("kappa1"),
+          LabelParameterMetadata.of("eta2"),
+          LabelParameterMetadata.of("kappa2"),
           LabelParameterMetadata.of("c1"),
           LabelParameterMetadata.of("c2"));
   
-  /** The parameter of the first log-normal martingale. */
+  /** The parameter of the first log-normal martingale. Parameter 0. */
   @PropertyDefinition
   private final double a1;
-  /** The parameter of the second log-normal martingale. */
+  /** The parameter of the second log-normal martingale. Parameter 1. */
   @PropertyDefinition
   private final double a2;
-  /** The correlation between the X_1 and the X_2 random variables */
+  /** The correlation between the X_1 and the X_2 random variables. Parameter 2. */
   @PropertyDefinition(overrideGet = true)
   private final double correlation;
-  /** The starting value of the b0 curve.  Parameter 1. */
+  /** The starting value of the b0 curve. Parameter 3. */
   @PropertyDefinition
   private final double b00;
-  /** The volatility parameter.  Parameter 2. */
+  /** The volatility parameter. Parameter 4. */
   @PropertyDefinition
-  private final double eta;
-  /** The mean reversion parameter.  Parameter 3. */
+  private final double eta1;
+  /** The mean reversion parameter. Parameter 5. */
   @PropertyDefinition
-  private final double kappa;
-  /** The constant additive spread to the coefficient of the first martingale. */
+  private final double kappa1;
+  /** The volatility parameter. Parameter 6. */
+  @PropertyDefinition
+  private final double eta2;
+  /** The mean reversion parameter. Parameter 7. */
+  @PropertyDefinition
+  private final double kappa2;
+  /** The constant additive spread to the coefficient of the first martingale. Parameter 8. */
   @PropertyDefinition
   private final double c1;
-  /** The constant additive spread to the coefficient of the second martingale. */
+  /** The constant additive spread to the coefficient of the second martingale. Parameter 9. */
   @PropertyDefinition
   private final double c2;
   /** The mechanism to measure time for time to expiry. */
@@ -113,29 +122,32 @@ public class RationalTwoFactorHWShapePlusCstParameters
   /** The valuation zone.*/
   private final ZonedDateTime valuationDateTime;  // Not a property
   
-  public static RationalTwoFactorHWShapePlusCstParameters of(
+  public static RationalTwoFactor2HWShapePlusCstParameters of(
       DoubleArray parameters,
       TimeMeasurement timeMeasure,
       DiscountFactors discountFactors,
       LocalTime valuationTime, 
       ZoneId valuationZone) {
 
-    return RationalTwoFactorHWShapePlusCstParameters.builder()
+    return RationalTwoFactor2HWShapePlusCstParameters.builder()
         .a1(parameters.get(0)).a2(parameters.get(1)).correlation(parameters.get(2))
-        .b00(parameters.get(3)).eta(parameters.get(4)).kappa(parameters.get(5))
-        .c1(parameters.get(6)).c2(parameters.get(7))
+        .b00(parameters.get(3)).eta1(parameters.get(4)).kappa1(parameters.get(5))
+        .eta2(parameters.get(6)).kappa2(parameters.get(7))
+        .c1(parameters.get(8)).c2(parameters.get(9))
         .timeMeasure(timeMeasure).discountFactors(discountFactors).valuationTime(valuationTime)
         .valuationZone(valuationZone).build();
   }
 
   @ImmutableConstructor
-  private RationalTwoFactorHWShapePlusCstParameters(
-      double a1, 
-      double a2, 
-      double correlation, 
-      double b00, 
-      double eta, 
-      double kappa, 
+  private RationalTwoFactor2HWShapePlusCstParameters(
+      double a1,
+      double a2,
+      double correlation,
+      double b00,
+      double eta1,
+      double kappa1,
+      double eta2,
+      double kappa2,
       double c1,
       double c2,
       TimeMeasurement timeMeasure,
@@ -148,8 +160,10 @@ public class RationalTwoFactorHWShapePlusCstParameters
     this.a2 = a2;
     this.correlation = ArgChecker.inRangeInclusive(correlation, -1.0d, 1.0d, "correlation");
     this.b00 = b00;
-    this.eta = ArgChecker.notNegative(eta, "eta");
-    this.kappa = ArgChecker.notNegative(kappa, "kappa");
+    this.eta1 = ArgChecker.notNegative(eta1, "eta1");
+    this.kappa1 = ArgChecker.notNegativeOrZero(kappa1, "kappa1");
+    this.eta2 = ArgChecker.notNegative(eta2, "eta2");
+    this.kappa2 = ArgChecker.notNegativeOrZero(kappa2, "kappa2");
     this.c1 = c1;
     this.c2 = c2;
     this.timeMeasure = ArgChecker.notNull(timeMeasure, "time measure");
@@ -195,15 +209,21 @@ public class RationalTwoFactorHWShapePlusCstParameters
       return b00;
     }
     if(parameterIndex == 4) {
-      return eta;
+      return eta1;
     }
     if(parameterIndex == 5) {
-      return kappa;
+      return kappa1;
     }
     if(parameterIndex == 6) {
-      return c1;
+      return eta2;
     }
     if(parameterIndex == 7) {
+      return kappa2;
+    }
+    if(parameterIndex == 8) {
+      return c1;
+    }
+    if(parameterIndex == 9) {
       return c2;
     }
     throw new IllegalArgumentException(
@@ -212,12 +232,12 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   @Override
   public DoubleArray getParameters() {
-    return DoubleArray.of(a1, a2, correlation, b00, eta, kappa, c1, c2);
+    return DoubleArray.of(a1, a2, correlation, b00, eta1, kappa1, eta2, kappa2, c1, c2);
   }
 
   @Override
   public int getParameterCount() {
-    return 8; // Does not include discountFactors
+    return 10; // Does not include discountFactors
   }
 
   @Override
@@ -226,16 +246,18 @@ public class RationalTwoFactorHWShapePlusCstParameters
   }
 
   @Override
-  public RationalTwoFactorHWShapePlusCstParameters withParameter(int parameterIndex, double newValue) {
-    return new RationalTwoFactorHWShapePlusCstParameters(
+  public RationalTwoFactor2HWShapePlusCstParameters withParameter(int parameterIndex, double newValue) {
+    return new RationalTwoFactor2HWShapePlusCstParameters(
         (parameterIndex == 0) ? newValue : a1,
         (parameterIndex == 1) ? newValue : a2,
         (parameterIndex == 2) ? newValue : correlation,
         (parameterIndex == 3) ? newValue : b00,
-        (parameterIndex == 4) ? newValue : eta,
-        (parameterIndex == 5) ? newValue : kappa,
-        (parameterIndex == 6) ? newValue : c1,
-        (parameterIndex == 7) ? newValue : c2,
+        (parameterIndex == 4) ? newValue : eta1,
+        (parameterIndex == 5) ? newValue : kappa1,
+        (parameterIndex == 6) ? newValue : eta2,
+        (parameterIndex == 7) ? newValue : kappa2,
+        (parameterIndex == 8) ? newValue : c1,
+        (parameterIndex == 9) ? newValue : c2,
         timeMeasure, discountFactors, valuationTime, valuationZone);
   }
 
@@ -243,7 +265,9 @@ public class RationalTwoFactorHWShapePlusCstParameters
   public double b0(LocalDate date) {
     double u = timeMeasure.relativeTime(valuationDateTime, date);
     double pu = discountFactors.discountFactor(date);
-    return (b00 - eta /(a1 * kappa) * (1.0d - Math.exp(-kappa * u))) * pu;
+    return (b00 
+        - eta1 /(a1 * kappa1) * (1.0d - Math.exp(-kappa1 * u))
+        + eta2 /(a1 * kappa2) * (1.0d - Math.exp(-kappa2 * u))) * pu;
   }
 
   @Override
@@ -270,15 +294,15 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //------------------------- AUTOGENERATED START -------------------------
   /**
-   * The meta-bean for {@code RationalTwoFactorHWShapePlusCstParameters}.
+   * The meta-bean for {@code RationalTwoFactor2HWShapePlusCstParameters}.
    * @return the meta-bean, not null
    */
-  public static RationalTwoFactorHWShapePlusCstParameters.Meta meta() {
-    return RationalTwoFactorHWShapePlusCstParameters.Meta.INSTANCE;
+  public static RationalTwoFactor2HWShapePlusCstParameters.Meta meta() {
+    return RationalTwoFactor2HWShapePlusCstParameters.Meta.INSTANCE;
   }
 
   static {
-    MetaBean.register(RationalTwoFactorHWShapePlusCstParameters.Meta.INSTANCE);
+    MetaBean.register(RationalTwoFactor2HWShapePlusCstParameters.Meta.INSTANCE);
   }
 
   /**
@@ -290,18 +314,18 @@ public class RationalTwoFactorHWShapePlusCstParameters
    * Returns a builder used to create an instance of the bean.
    * @return the builder, not null
    */
-  public static RationalTwoFactorHWShapePlusCstParameters.Builder builder() {
-    return new RationalTwoFactorHWShapePlusCstParameters.Builder();
+  public static RationalTwoFactor2HWShapePlusCstParameters.Builder builder() {
+    return new RationalTwoFactor2HWShapePlusCstParameters.Builder();
   }
 
   @Override
-  public RationalTwoFactorHWShapePlusCstParameters.Meta metaBean() {
-    return RationalTwoFactorHWShapePlusCstParameters.Meta.INSTANCE;
+  public RationalTwoFactor2HWShapePlusCstParameters.Meta metaBean() {
+    return RationalTwoFactor2HWShapePlusCstParameters.Meta.INSTANCE;
   }
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the parameter of the first log-normal martingale.
+   * Gets the parameter of the first log-normal martingale. Parameter 0.
    * @return the value of the property
    */
   public double getA1() {
@@ -310,7 +334,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the parameter of the second log-normal martingale.
+   * Gets the parameter of the second log-normal martingale. Parameter 1.
    * @return the value of the property
    */
   public double getA2() {
@@ -319,7 +343,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the correlation between the X_1 and the X_2 random variables
+   * Gets the correlation between the X_1 and the X_2 random variables. Parameter 2.
    * @return the value of the property
    */
   @Override
@@ -329,7 +353,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the starting value of the b0 curve.  Parameter 1.
+   * Gets the starting value of the b0 curve. Parameter 3.
    * @return the value of the property
    */
   public double getB00() {
@@ -338,25 +362,43 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the volatility parameter.  Parameter 2.
+   * Gets the volatility parameter. Parameter 4.
    * @return the value of the property
    */
-  public double getEta() {
-    return eta;
+  public double getEta1() {
+    return eta1;
   }
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the mean reversion parameter.  Parameter 3.
+   * Gets the mean reversion parameter. Parameter 5.
    * @return the value of the property
    */
-  public double getKappa() {
-    return kappa;
+  public double getKappa1() {
+    return kappa1;
   }
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the constant additive spread to the coefficient of the first martingale.
+   * Gets the volatility parameter. Parameter 6.
+   * @return the value of the property
+   */
+  public double getEta2() {
+    return eta2;
+  }
+
+  //-----------------------------------------------------------------------
+  /**
+   * Gets the mean reversion parameter. Parameter 7.
+   * @return the value of the property
+   */
+  public double getKappa2() {
+    return kappa2;
+  }
+
+  //-----------------------------------------------------------------------
+  /**
+   * Gets the constant additive spread to the coefficient of the first martingale. Parameter 8.
    * @return the value of the property
    */
   public double getC1() {
@@ -365,7 +407,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the constant additive spread to the coefficient of the second martingale.
+   * Gets the constant additive spread to the coefficient of the second martingale. Parameter 9.
    * @return the value of the property
    */
   public double getC2() {
@@ -423,13 +465,15 @@ public class RationalTwoFactorHWShapePlusCstParameters
       return true;
     }
     if (obj != null && obj.getClass() == this.getClass()) {
-      RationalTwoFactorHWShapePlusCstParameters other = (RationalTwoFactorHWShapePlusCstParameters) obj;
+      RationalTwoFactor2HWShapePlusCstParameters other = (RationalTwoFactor2HWShapePlusCstParameters) obj;
       return JodaBeanUtils.equal(a1, other.a1) &&
           JodaBeanUtils.equal(a2, other.a2) &&
           JodaBeanUtils.equal(correlation, other.correlation) &&
           JodaBeanUtils.equal(b00, other.b00) &&
-          JodaBeanUtils.equal(eta, other.eta) &&
-          JodaBeanUtils.equal(kappa, other.kappa) &&
+          JodaBeanUtils.equal(eta1, other.eta1) &&
+          JodaBeanUtils.equal(kappa1, other.kappa1) &&
+          JodaBeanUtils.equal(eta2, other.eta2) &&
+          JodaBeanUtils.equal(kappa2, other.kappa2) &&
           JodaBeanUtils.equal(c1, other.c1) &&
           JodaBeanUtils.equal(c2, other.c2) &&
           JodaBeanUtils.equal(timeMeasure, other.timeMeasure) &&
@@ -447,8 +491,10 @@ public class RationalTwoFactorHWShapePlusCstParameters
     hash = hash * 31 + JodaBeanUtils.hashCode(a2);
     hash = hash * 31 + JodaBeanUtils.hashCode(correlation);
     hash = hash * 31 + JodaBeanUtils.hashCode(b00);
-    hash = hash * 31 + JodaBeanUtils.hashCode(eta);
-    hash = hash * 31 + JodaBeanUtils.hashCode(kappa);
+    hash = hash * 31 + JodaBeanUtils.hashCode(eta1);
+    hash = hash * 31 + JodaBeanUtils.hashCode(kappa1);
+    hash = hash * 31 + JodaBeanUtils.hashCode(eta2);
+    hash = hash * 31 + JodaBeanUtils.hashCode(kappa2);
     hash = hash * 31 + JodaBeanUtils.hashCode(c1);
     hash = hash * 31 + JodaBeanUtils.hashCode(c2);
     hash = hash * 31 + JodaBeanUtils.hashCode(timeMeasure);
@@ -460,8 +506,8 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   @Override
   public String toString() {
-    StringBuilder buf = new StringBuilder(416);
-    buf.append("RationalTwoFactorHWShapePlusCstParameters{");
+    StringBuilder buf = new StringBuilder(480);
+    buf.append("RationalTwoFactor2HWShapePlusCstParameters{");
     int len = buf.length();
     toString(buf);
     if (buf.length() > len) {
@@ -476,8 +522,10 @@ public class RationalTwoFactorHWShapePlusCstParameters
     buf.append("a2").append('=').append(JodaBeanUtils.toString(a2)).append(',').append(' ');
     buf.append("correlation").append('=').append(JodaBeanUtils.toString(correlation)).append(',').append(' ');
     buf.append("b00").append('=').append(JodaBeanUtils.toString(b00)).append(',').append(' ');
-    buf.append("eta").append('=').append(JodaBeanUtils.toString(eta)).append(',').append(' ');
-    buf.append("kappa").append('=').append(JodaBeanUtils.toString(kappa)).append(',').append(' ');
+    buf.append("eta1").append('=').append(JodaBeanUtils.toString(eta1)).append(',').append(' ');
+    buf.append("kappa1").append('=').append(JodaBeanUtils.toString(kappa1)).append(',').append(' ');
+    buf.append("eta2").append('=').append(JodaBeanUtils.toString(eta2)).append(',').append(' ');
+    buf.append("kappa2").append('=').append(JodaBeanUtils.toString(kappa2)).append(',').append(' ');
     buf.append("c1").append('=').append(JodaBeanUtils.toString(c1)).append(',').append(' ');
     buf.append("c2").append('=').append(JodaBeanUtils.toString(c2)).append(',').append(' ');
     buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
@@ -488,7 +536,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * The meta-bean for {@code RationalTwoFactorHWShapePlusCstParameters}.
+   * The meta-bean for {@code RationalTwoFactor2HWShapePlusCstParameters}.
    */
   public static class Meta extends DirectMetaBean {
     /**
@@ -500,62 +548,72 @@ public class RationalTwoFactorHWShapePlusCstParameters
      * The meta-property for the {@code a1} property.
      */
     private final MetaProperty<Double> a1 = DirectMetaProperty.ofImmutable(
-        this, "a1", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "a1", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code a2} property.
      */
     private final MetaProperty<Double> a2 = DirectMetaProperty.ofImmutable(
-        this, "a2", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "a2", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code correlation} property.
      */
     private final MetaProperty<Double> correlation = DirectMetaProperty.ofImmutable(
-        this, "correlation", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "correlation", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code b00} property.
      */
     private final MetaProperty<Double> b00 = DirectMetaProperty.ofImmutable(
-        this, "b00", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "b00", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
-     * The meta-property for the {@code eta} property.
+     * The meta-property for the {@code eta1} property.
      */
-    private final MetaProperty<Double> eta = DirectMetaProperty.ofImmutable(
-        this, "eta", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+    private final MetaProperty<Double> eta1 = DirectMetaProperty.ofImmutable(
+        this, "eta1", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
-     * The meta-property for the {@code kappa} property.
+     * The meta-property for the {@code kappa1} property.
      */
-    private final MetaProperty<Double> kappa = DirectMetaProperty.ofImmutable(
-        this, "kappa", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+    private final MetaProperty<Double> kappa1 = DirectMetaProperty.ofImmutable(
+        this, "kappa1", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
+    /**
+     * The meta-property for the {@code eta2} property.
+     */
+    private final MetaProperty<Double> eta2 = DirectMetaProperty.ofImmutable(
+        this, "eta2", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
+    /**
+     * The meta-property for the {@code kappa2} property.
+     */
+    private final MetaProperty<Double> kappa2 = DirectMetaProperty.ofImmutable(
+        this, "kappa2", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code c1} property.
      */
     private final MetaProperty<Double> c1 = DirectMetaProperty.ofImmutable(
-        this, "c1", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "c1", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code c2} property.
      */
     private final MetaProperty<Double> c2 = DirectMetaProperty.ofImmutable(
-        this, "c2", RationalTwoFactorHWShapePlusCstParameters.class, Double.TYPE);
+        this, "c2", RationalTwoFactor2HWShapePlusCstParameters.class, Double.TYPE);
     /**
      * The meta-property for the {@code timeMeasure} property.
      */
     private final MetaProperty<TimeMeasurement> timeMeasure = DirectMetaProperty.ofImmutable(
-        this, "timeMeasure", RationalTwoFactorHWShapePlusCstParameters.class, TimeMeasurement.class);
+        this, "timeMeasure", RationalTwoFactor2HWShapePlusCstParameters.class, TimeMeasurement.class);
     /**
      * The meta-property for the {@code discountFactors} property.
      */
     private final MetaProperty<DiscountFactors> discountFactors = DirectMetaProperty.ofImmutable(
-        this, "discountFactors", RationalTwoFactorHWShapePlusCstParameters.class, DiscountFactors.class);
+        this, "discountFactors", RationalTwoFactor2HWShapePlusCstParameters.class, DiscountFactors.class);
     /**
      * The meta-property for the {@code valuationTime} property.
      */
     private final MetaProperty<LocalTime> valuationTime = DirectMetaProperty.ofImmutable(
-        this, "valuationTime", RationalTwoFactorHWShapePlusCstParameters.class, LocalTime.class);
+        this, "valuationTime", RationalTwoFactor2HWShapePlusCstParameters.class, LocalTime.class);
     /**
      * The meta-property for the {@code valuationZone} property.
      */
     private final MetaProperty<ZoneId> valuationZone = DirectMetaProperty.ofImmutable(
-        this, "valuationZone", RationalTwoFactorHWShapePlusCstParameters.class, ZoneId.class);
+        this, "valuationZone", RationalTwoFactor2HWShapePlusCstParameters.class, ZoneId.class);
     /**
      * The meta-properties.
      */
@@ -565,8 +623,10 @@ public class RationalTwoFactorHWShapePlusCstParameters
         "a2",
         "correlation",
         "b00",
-        "eta",
-        "kappa",
+        "eta1",
+        "kappa1",
+        "eta2",
+        "kappa2",
         "c1",
         "c2",
         "timeMeasure",
@@ -591,10 +651,14 @@ public class RationalTwoFactorHWShapePlusCstParameters
           return correlation;
         case 95714:  // b00
           return b00;
-        case 100754:  // eta
-          return eta;
-        case 101817675:  // kappa
-          return kappa;
+        case 3123423:  // eta1
+          return eta1;
+        case -1138619322:  // kappa1
+          return kappa1;
+        case 3123424:  // eta2
+          return eta2;
+        case -1138619321:  // kappa2
+          return kappa2;
         case 3118:  // c1
           return c1;
         case 3119:  // c2
@@ -612,13 +676,13 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     @Override
-    public RationalTwoFactorHWShapePlusCstParameters.Builder builder() {
-      return new RationalTwoFactorHWShapePlusCstParameters.Builder();
+    public RationalTwoFactor2HWShapePlusCstParameters.Builder builder() {
+      return new RationalTwoFactor2HWShapePlusCstParameters.Builder();
     }
 
     @Override
-    public Class<? extends RationalTwoFactorHWShapePlusCstParameters> beanType() {
-      return RationalTwoFactorHWShapePlusCstParameters.class;
+    public Class<? extends RationalTwoFactor2HWShapePlusCstParameters> beanType() {
+      return RationalTwoFactor2HWShapePlusCstParameters.class;
     }
 
     @Override
@@ -660,19 +724,35 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * The meta-property for the {@code eta} property.
+     * The meta-property for the {@code eta1} property.
      * @return the meta-property, not null
      */
-    public final MetaProperty<Double> eta() {
-      return eta;
+    public final MetaProperty<Double> eta1() {
+      return eta1;
     }
 
     /**
-     * The meta-property for the {@code kappa} property.
+     * The meta-property for the {@code kappa1} property.
      * @return the meta-property, not null
      */
-    public final MetaProperty<Double> kappa() {
-      return kappa;
+    public final MetaProperty<Double> kappa1() {
+      return kappa1;
+    }
+
+    /**
+     * The meta-property for the {@code eta2} property.
+     * @return the meta-property, not null
+     */
+    public final MetaProperty<Double> eta2() {
+      return eta2;
+    }
+
+    /**
+     * The meta-property for the {@code kappa2} property.
+     * @return the meta-property, not null
+     */
+    public final MetaProperty<Double> kappa2() {
+      return kappa2;
     }
 
     /**
@@ -728,29 +808,33 @@ public class RationalTwoFactorHWShapePlusCstParameters
     protected Object propertyGet(Bean bean, String propertyName, boolean quiet) {
       switch (propertyName.hashCode()) {
         case 3056:  // a1
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getA1();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getA1();
         case 3057:  // a2
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getA2();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getA2();
         case 1706464642:  // correlation
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getCorrelation();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getCorrelation();
         case 95714:  // b00
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getB00();
-        case 100754:  // eta
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getEta();
-        case 101817675:  // kappa
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getKappa();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getB00();
+        case 3123423:  // eta1
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getEta1();
+        case -1138619322:  // kappa1
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getKappa1();
+        case 3123424:  // eta2
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getEta2();
+        case -1138619321:  // kappa2
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getKappa2();
         case 3118:  // c1
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getC1();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getC1();
         case 3119:  // c2
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getC2();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getC2();
         case 1642109393:  // timeMeasure
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getTimeMeasure();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getTimeMeasure();
         case -91613053:  // discountFactors
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getDiscountFactors();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getDiscountFactors();
         case 113591406:  // valuationTime
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getValuationTime();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getValuationTime();
         case 113775949:  // valuationZone
-          return ((RationalTwoFactorHWShapePlusCstParameters) bean).getValuationZone();
+          return ((RationalTwoFactor2HWShapePlusCstParameters) bean).getValuationZone();
       }
       return super.propertyGet(bean, propertyName, quiet);
     }
@@ -768,16 +852,18 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   //-----------------------------------------------------------------------
   /**
-   * The bean-builder for {@code RationalTwoFactorHWShapePlusCstParameters}.
+   * The bean-builder for {@code RationalTwoFactor2HWShapePlusCstParameters}.
    */
-  public static class Builder extends DirectFieldsBeanBuilder<RationalTwoFactorHWShapePlusCstParameters> {
+  public static class Builder extends DirectFieldsBeanBuilder<RationalTwoFactor2HWShapePlusCstParameters> {
 
     private double a1;
     private double a2;
     private double correlation;
     private double b00;
-    private double eta;
-    private double kappa;
+    private double eta1;
+    private double kappa1;
+    private double eta2;
+    private double kappa2;
     private double c1;
     private double c2;
     private TimeMeasurement timeMeasure;
@@ -795,13 +881,15 @@ public class RationalTwoFactorHWShapePlusCstParameters
      * Restricted copy constructor.
      * @param beanToCopy  the bean to copy from, not null
      */
-    protected Builder(RationalTwoFactorHWShapePlusCstParameters beanToCopy) {
+    protected Builder(RationalTwoFactor2HWShapePlusCstParameters beanToCopy) {
       this.a1 = beanToCopy.getA1();
       this.a2 = beanToCopy.getA2();
       this.correlation = beanToCopy.getCorrelation();
       this.b00 = beanToCopy.getB00();
-      this.eta = beanToCopy.getEta();
-      this.kappa = beanToCopy.getKappa();
+      this.eta1 = beanToCopy.getEta1();
+      this.kappa1 = beanToCopy.getKappa1();
+      this.eta2 = beanToCopy.getEta2();
+      this.kappa2 = beanToCopy.getKappa2();
       this.c1 = beanToCopy.getC1();
       this.c2 = beanToCopy.getC2();
       this.timeMeasure = beanToCopy.getTimeMeasure();
@@ -822,10 +910,14 @@ public class RationalTwoFactorHWShapePlusCstParameters
           return correlation;
         case 95714:  // b00
           return b00;
-        case 100754:  // eta
-          return eta;
-        case 101817675:  // kappa
-          return kappa;
+        case 3123423:  // eta1
+          return eta1;
+        case -1138619322:  // kappa1
+          return kappa1;
+        case 3123424:  // eta2
+          return eta2;
+        case -1138619321:  // kappa2
+          return kappa2;
         case 3118:  // c1
           return c1;
         case 3119:  // c2
@@ -858,11 +950,17 @@ public class RationalTwoFactorHWShapePlusCstParameters
         case 95714:  // b00
           this.b00 = (Double) newValue;
           break;
-        case 100754:  // eta
-          this.eta = (Double) newValue;
+        case 3123423:  // eta1
+          this.eta1 = (Double) newValue;
           break;
-        case 101817675:  // kappa
-          this.kappa = (Double) newValue;
+        case -1138619322:  // kappa1
+          this.kappa1 = (Double) newValue;
+          break;
+        case 3123424:  // eta2
+          this.eta2 = (Double) newValue;
+          break;
+        case -1138619321:  // kappa2
+          this.kappa2 = (Double) newValue;
           break;
         case 3118:  // c1
           this.c1 = (Double) newValue;
@@ -895,14 +993,16 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     @Override
-    public RationalTwoFactorHWShapePlusCstParameters build() {
-      return new RationalTwoFactorHWShapePlusCstParameters(
+    public RationalTwoFactor2HWShapePlusCstParameters build() {
+      return new RationalTwoFactor2HWShapePlusCstParameters(
           a1,
           a2,
           correlation,
           b00,
-          eta,
-          kappa,
+          eta1,
+          kappa1,
+          eta2,
+          kappa2,
           c1,
           c2,
           timeMeasure,
@@ -913,7 +1013,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
     //-----------------------------------------------------------------------
     /**
-     * Sets the parameter of the first log-normal martingale.
+     * Sets the parameter of the first log-normal martingale. Parameter 0.
      * @param a1  the new value
      * @return this, for chaining, not null
      */
@@ -923,7 +1023,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * Sets the parameter of the second log-normal martingale.
+     * Sets the parameter of the second log-normal martingale. Parameter 1.
      * @param a2  the new value
      * @return this, for chaining, not null
      */
@@ -933,7 +1033,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * Sets the correlation between the X_1 and the X_2 random variables
+     * Sets the correlation between the X_1 and the X_2 random variables. Parameter 2.
      * @param correlation  the new value
      * @return this, for chaining, not null
      */
@@ -943,7 +1043,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * Sets the starting value of the b0 curve.  Parameter 1.
+     * Sets the starting value of the b0 curve. Parameter 3.
      * @param b00  the new value
      * @return this, for chaining, not null
      */
@@ -953,27 +1053,47 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * Sets the volatility parameter.  Parameter 2.
-     * @param eta  the new value
+     * Sets the volatility parameter. Parameter 4.
+     * @param eta1  the new value
      * @return this, for chaining, not null
      */
-    public Builder eta(double eta) {
-      this.eta = eta;
+    public Builder eta1(double eta1) {
+      this.eta1 = eta1;
       return this;
     }
 
     /**
-     * Sets the mean reversion parameter.  Parameter 3.
-     * @param kappa  the new value
+     * Sets the mean reversion parameter. Parameter 5.
+     * @param kappa1  the new value
      * @return this, for chaining, not null
      */
-    public Builder kappa(double kappa) {
-      this.kappa = kappa;
+    public Builder kappa1(double kappa1) {
+      this.kappa1 = kappa1;
       return this;
     }
 
     /**
-     * Sets the constant additive spread to the coefficient of the first martingale.
+     * Sets the volatility parameter. Parameter 6.
+     * @param eta2  the new value
+     * @return this, for chaining, not null
+     */
+    public Builder eta2(double eta2) {
+      this.eta2 = eta2;
+      return this;
+    }
+
+    /**
+     * Sets the mean reversion parameter. Parameter 7.
+     * @param kappa2  the new value
+     * @return this, for chaining, not null
+     */
+    public Builder kappa2(double kappa2) {
+      this.kappa2 = kappa2;
+      return this;
+    }
+
+    /**
+     * Sets the constant additive spread to the coefficient of the first martingale. Parameter 8.
      * @param c1  the new value
      * @return this, for chaining, not null
      */
@@ -983,7 +1103,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
     }
 
     /**
-     * Sets the constant additive spread to the coefficient of the second martingale.
+     * Sets the constant additive spread to the coefficient of the second martingale. Parameter 9.
      * @param c2  the new value
      * @return this, for chaining, not null
      */
@@ -1039,8 +1159,8 @@ public class RationalTwoFactorHWShapePlusCstParameters
     //-----------------------------------------------------------------------
     @Override
     public String toString() {
-      StringBuilder buf = new StringBuilder(416);
-      buf.append("RationalTwoFactorHWShapePlusCstParameters.Builder{");
+      StringBuilder buf = new StringBuilder(480);
+      buf.append("RationalTwoFactor2HWShapePlusCstParameters.Builder{");
       int len = buf.length();
       toString(buf);
       if (buf.length() > len) {
@@ -1055,8 +1175,10 @@ public class RationalTwoFactorHWShapePlusCstParameters
       buf.append("a2").append('=').append(JodaBeanUtils.toString(a2)).append(',').append(' ');
       buf.append("correlation").append('=').append(JodaBeanUtils.toString(correlation)).append(',').append(' ');
       buf.append("b00").append('=').append(JodaBeanUtils.toString(b00)).append(',').append(' ');
-      buf.append("eta").append('=').append(JodaBeanUtils.toString(eta)).append(',').append(' ');
-      buf.append("kappa").append('=').append(JodaBeanUtils.toString(kappa)).append(',').append(' ');
+      buf.append("eta1").append('=').append(JodaBeanUtils.toString(eta1)).append(',').append(' ');
+      buf.append("kappa1").append('=').append(JodaBeanUtils.toString(kappa1)).append(',').append(' ');
+      buf.append("eta2").append('=').append(JodaBeanUtils.toString(eta2)).append(',').append(' ');
+      buf.append("kappa2").append('=').append(JodaBeanUtils.toString(kappa2)).append(',').append(' ');
       buf.append("c1").append('=').append(JodaBeanUtils.toString(c1)).append(',').append(' ');
       buf.append("c2").append('=').append(JodaBeanUtils.toString(c2)).append(',').append(' ');
       buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');

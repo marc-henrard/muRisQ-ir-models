@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 import com.opengamma.strata.basics.currency.Currency;
+import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.market.param.ParameterizedData;
 
 /**
@@ -57,5 +58,18 @@ public interface RationalParameters
    * @return the time
    */
   public double relativeTime(ZonedDateTime dateTime);
+
+  /**
+   * 
+   * @return
+   */
+  public default DoubleArray getParameters() {
+    int nbParam = getParameterCount();
+    double[] p = new double[nbParam];
+    for (int i = 0; i < nbParam; i++) {
+      p[i] = getParameter(i);
+    }
+    return DoubleArray.ofUnsafe(p);
+  }
 
 }

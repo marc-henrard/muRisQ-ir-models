@@ -15,6 +15,7 @@ import com.opengamma.strata.math.impl.integration.IntegratorRepeated2D;
 import com.opengamma.strata.math.impl.integration.RungeKuttaIntegrator1D;
 import com.opengamma.strata.math.impl.statistics.distribution.NormalDistribution;
 import com.opengamma.strata.math.impl.statistics.distribution.ProbabilityDistribution;
+import com.opengamma.strata.pricer.impl.option.BlackFormulaRepository;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.rate.FixedRateComputation;
@@ -175,6 +176,11 @@ public class RationalTwoFactorFormulas {
     }
     if(Math.abs(x[1])<=SMALL && Math.abs(x[2]*x[0]) <= SMALL) {
       return 0.0d;
+    }
+    if ((x[0] * x[1] < 0) && (Math.abs(x[2]) <= SMALL)) { // Equivalent to 1-factor
+      double omega = Math.signum(x[1]);
+      double pv = BlackFormulaRepository.price(omega * x[1], -omega * x[0], t, a1, x[1] > 0);
+      return pv;
     }
     double d2 = Math.exp(-0.5 * a2 * a2 * t);
     double sqrtt = Math.sqrt(t);

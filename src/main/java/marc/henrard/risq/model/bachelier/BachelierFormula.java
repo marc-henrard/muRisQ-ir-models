@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - Marc Henrard.
+ * Copyright (C) 2016 - present by Marc Henrard.
  */
 package marc.henrard.risq.model.bachelier;
 
