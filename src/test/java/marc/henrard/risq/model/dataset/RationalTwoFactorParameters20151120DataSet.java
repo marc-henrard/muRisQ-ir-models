@@ -20,12 +20,14 @@ import com.opengamma.strata.market.curve.DefaultCurveMetadata;
 import com.opengamma.strata.market.curve.InterpolatedNodalCurve;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolator;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolators;
+import com.opengamma.strata.pricer.DiscountFactors;
 
 import marc.henrard.risq.model.generic.GenericParameterDateCurve;
 import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorHWShapePlusCstParameters;
 
 /**
  * Examples of data sets for the Rational Two-Factor model.
@@ -79,5 +81,21 @@ public class RationalTwoFactorParameters20151120DataSet {
     return RationalTwoFactorGenericParameters
         .of(EUR, A1, A2, RHO, B0, BX_INDICES, B1, B2, TIME_MEAS, VALUATION_DATE, localTime, zone);
   }
+
+  private static final double B_0_0 = 0.50;
+  private static final double ETA = 0.01;
+  private static final double KAPPA = 0.03;
+  private static final double C1 = 0.0010;
+  private static final double C2 = 0.0020;
+  
+  public static final RationalTwoFactorHWShapePlusCstParameters rational2FactorHwCst(
+      DiscountFactors discountFactors, 
+      LocalTime localTime, 
+      ZoneId zone) {
+    return RationalTwoFactorHWShapePlusCstParameters
+        .of(DoubleArray.of(A1, A2, RHO, B_0_0, ETA, KAPPA, C1, C2), 
+            TIME_MEAS, discountFactors, localTime, zone);
+  }
+      
   
 }
