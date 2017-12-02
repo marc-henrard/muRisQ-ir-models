@@ -120,7 +120,7 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <og-strata.version>1.5.0</og-strata.version>
+    <og-strata.version>1.6.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>1.9.2</joda-convert.version>
     <joda-beans.version>2.0.2</joda-beans.version>
