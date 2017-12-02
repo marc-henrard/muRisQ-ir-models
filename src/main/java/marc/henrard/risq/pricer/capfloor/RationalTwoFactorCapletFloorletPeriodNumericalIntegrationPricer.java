@@ -45,8 +45,8 @@ public class RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer
   private final int nbSteps;
 
   /**
-  * Creates an instance.
-  */
+   * Creates an instance.
+   */
   public RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer(int nbIntegrationSteps) {
     this.nbSteps = nbIntegrationSteps;
   }
