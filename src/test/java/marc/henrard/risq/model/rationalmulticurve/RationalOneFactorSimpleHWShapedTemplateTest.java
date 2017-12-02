@@ -10,6 +10,7 @@ import static org.testng.Assert.assertEquals;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.BitSet;
 
 import org.testng.annotations.Test;
 
@@ -51,10 +52,14 @@ public class RationalOneFactorSimpleHWShapedTemplateTest {
   private static final double ETA = 0.01;
   private static final double KAPPA = 0.03;
   private static final DoubleArray GUESS = DoubleArray.of(0.1, 0.2, 0.3, 0.4);
+  private static final BitSet FIXED = new BitSet(4);
+  static {
+    FIXED.set(2);
+  }
   
   public void of() {
     RationalOneFactorSimpleHWShapedTemplate test = RationalOneFactorSimpleHWShapedTemplate
-        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS);
+        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS, FIXED);
     assertEquals(test.getTimeMeasure(), TIME_MEASURE);
     assertEquals(test.getDiscountFactors(), DF);
     assertEquals(test.getValuationTime(), VAL_DATE_TIME.toLocalTime());
@@ -64,7 +69,7 @@ public class RationalOneFactorSimpleHWShapedTemplateTest {
 
   public void generate() {
     RationalOneFactorSimpleHWShapedTemplate test = RationalOneFactorSimpleHWShapedTemplate
-        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS);
+        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS, FIXED);
     DoubleArray parameters = DoubleArray.of(A, B_0_0, ETA, KAPPA);
     RationalOneFactorSimpleHWShapedParameters modelComputed = test.generate(parameters);
     RationalOneFactorSimpleHWShapedParameters modelExpected =
