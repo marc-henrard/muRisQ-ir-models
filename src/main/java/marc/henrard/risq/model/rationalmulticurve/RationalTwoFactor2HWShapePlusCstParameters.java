@@ -161,9 +161,9 @@ public class RationalTwoFactor2HWShapePlusCstParameters
     this.correlation = ArgChecker.inRangeInclusive(correlation, -1.0d, 1.0d, "correlation");
     this.b00 = b00;
     this.eta1 = ArgChecker.notNegative(eta1, "eta1");
-    this.kappa1 = ArgChecker.notNegative(kappa1, "kappa1");
+    this.kappa1 = ArgChecker.notNegativeOrZero(kappa1, "kappa1");
     this.eta2 = ArgChecker.notNegative(eta2, "eta2");
-    this.kappa2 = ArgChecker.notNegative(kappa2, "kappa2");
+    this.kappa2 = ArgChecker.notNegativeOrZero(kappa2, "kappa2");
     this.c1 = c1;
     this.c2 = c2;
     this.timeMeasure = ArgChecker.notNull(timeMeasure, "time measure");
