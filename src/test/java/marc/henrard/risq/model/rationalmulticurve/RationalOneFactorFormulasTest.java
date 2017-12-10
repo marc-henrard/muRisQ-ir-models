@@ -50,7 +50,7 @@ import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapedParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
 
 /**
  * Tests {@link RationalOneFactorFormulas}
@@ -104,8 +104,8 @@ public class RationalOneFactorFormulasTest {
   private static final InterpolatedNodalCurve ZERO_RATES = InterpolatedNodalCurve.of(METADATA, TIMES_ZR, ZR, INTERPOLATOR_LINEAR);
   private static final DiscountFactors DF = ZeroRateDiscountFactors.of(EUR, VAL_DATE, ZERO_RATES);
   
-  private static final RationalOneFactorSimpleHWShapedParameters PARAMETERS =
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
+  private static final RationalOneFactorSimpleHWShapeParameters PARAMETERS =
+      RationalOneFactorSimpleHWShapeParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
   private static final RationalOneFactorFormulas FORMULAS = 
       RationalOneFactorFormulas.DEFAULT;
   

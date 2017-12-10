@@ -39,7 +39,7 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapedParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
 
 /**
  * Tests {@link RationalOneFactorSwaptionPhysicalProductExplicitPricer} and
@@ -85,8 +85,8 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitNiPricerTest {
   private static final double ETA = 0.01;
   private static final double KAPPA = 0.03;
   private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
-  private static final RationalOneFactorSimpleHWShapedParameters MODEL_SIMPLE = 
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, MULTICURVE_EUR.discountFactors(EUR));
+  private static final RationalOneFactorSimpleHWShapeParameters MODEL_SIMPLE = 
+      RationalOneFactorSimpleHWShapeParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, MULTICURVE_EUR.discountFactors(EUR));
 
   /* Descriptions of swaptions */
   private static final Period[] EXPIRIES_PER = new Period[] {
