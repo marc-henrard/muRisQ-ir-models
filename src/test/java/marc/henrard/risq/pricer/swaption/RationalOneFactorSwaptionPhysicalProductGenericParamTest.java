@@ -53,7 +53,7 @@ import marc.henrard.risq.model.generic.ParameterDateCurve;
 import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapedParameters;
+import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
 
 /**
  * Tests {@link RationalOneFactorSwaptionPhysicalProductExplicitPricer} 
@@ -98,8 +98,8 @@ public class RationalOneFactorSwaptionPhysicalProductGenericParamTest {
   private static final double KAPPA = 0.03;
   private static final TimeMeasurement TIME_MEAS = ScaledSecondTime.DEFAULT;
   private static final DiscountFactors DF = MULTICURVE_EUR.discountFactors(EUR);
-  private static final RationalOneFactorSimpleHWShapedParameters MODEL_HWSHAPED = 
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, DF);
+  private static final RationalOneFactorSimpleHWShapeParameters MODEL_HWSHAPED = 
+      RationalOneFactorSimpleHWShapeParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEAS, DF);
 
   private static final Curve CURVE_B0 =
       ParameterizedFunctionalCurve.of(DefaultCurveMetadata.of("B0"),

@@ -59,8 +59,8 @@ public class RationalOneFactorSimpleHWShapedParametersTest {
   private static final InterpolatedNodalCurve ZERO_RATES = InterpolatedNodalCurve.of(METADATA, TIMES_ZR, ZR, INTERPOLATOR_LINEAR);
   private static final DiscountFactors DF = ZeroRateDiscountFactors.of(EUR, VAL_DATE, ZERO_RATES);
   
-  private static final RationalOneFactorSimpleHWShapedParameters PARAMETERS =
-      RationalOneFactorSimpleHWShapedParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
+  private static final RationalOneFactorSimpleHWShapeParameters PARAMETERS =
+      RationalOneFactorSimpleHWShapeParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
   
   private static final LocalDate[] TEST_DATES = new LocalDate[]{
       LocalDate.of(2016, 8, 18), LocalDate.of(2016, 8, 19), LocalDate.of(2017, 8, 18), LocalDate.of(2021, 8, 18)};
@@ -133,7 +133,7 @@ public class RationalOneFactorSimpleHWShapedParametersTest {
   public void parameters_with() {
     double test = 0.123456;
     for (int i = 0; i < PARAMETERS.getParameterCount(); i++) {
-      RationalOneFactorSimpleHWShapedParameters newParam = PARAMETERS.withParameter(i, test);
+      RationalOneFactorSimpleHWShapeParameters newParam = PARAMETERS.withParameter(i, test);
       for (int j = 0; j < PARAMETERS.getParameterCount(); j++) {
         assertEquals(newParam.getParameter(j), (i == j) ? test : PARAMETERS.getParameter(j));
       }

@@ -5,6 +5,7 @@ package marc.henrard.risq.model.rationalmulticurve;
 
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.date.DayCounts.ACT_365F;
+import static com.opengamma.strata.collect.TestHelper.assertThrowsIllegalArg;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
@@ -28,12 +29,12 @@ import marc.henrard.risq.model.generic.ScaledSecondTime;
 import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
- * Tests {@link RationalOneFactorSimpleHWShapeTemplate}
+ * Tests {@link RationalTwoFactor2HWShapeMultiplyTemplate}
  * 
  * @author Marc Henrard
  */
 @Test
-public class RationalOneFactorSimpleHWShapedTemplateTest {
+public class RationalTwoFactor2HWShapeMultiplyTemplateTest {
 
   private static final ZonedDateTime VAL_DATE_TIME = ZonedDateTime.of(2016, 8, 18, 11, 12, 13, 0, ZoneId.of("Europe/Brussels"));
   private static final LocalDate VAL_DATE = VAL_DATE_TIME.toLocalDate();
@@ -47,18 +48,25 @@ public class RationalOneFactorSimpleHWShapedTemplateTest {
   private static final InterpolatedNodalCurve ZERO_RATES = InterpolatedNodalCurve.of(METADATA, TIMES_ZR, ZR, INTERPOLATOR_LINEAR);
   private static final DiscountFactors DF = ZeroRateDiscountFactors.of(EUR, VAL_DATE, ZERO_RATES);
 
-  private static final double A = 0.75;
+  private static final double A_1 = 0.75;
+  private static final double A_2 = 0.50;
+  private static final double RHO = 0.10;
   private static final double B_0_0 = 0.50;
-  private static final double ETA = 0.01;
-  private static final double KAPPA = 0.03;
-  private static final DoubleArray GUESS = DoubleArray.of(0.1, 0.2, 0.3, 0.4);
-  private static final BitSet FIXED = new BitSet(4);
+  private static final double ETA_1 = 0.01;
+  private static final double KAPPA_1 = 0.03;
+  private static final double ETA_2 = 0.015;
+  private static final double KAPPA_2 = 0.20;
+  private static final double C_1 = 1.10;
+  private static final double C_2 = 0.25;
+  private static final DoubleArray GUESS = DoubleArray.of(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
+  private static final BitSet FIXED = new BitSet(10);
   static {
     FIXED.set(2);
+    FIXED.set(8);
   }
   
   public void of() {
-    RationalOneFactorSimpleHWShapeTemplate test = RationalOneFactorSimpleHWShapeTemplate
+    RationalTwoFactor2HWShapeMultiplyTemplate test = RationalTwoFactor2HWShapeMultiplyTemplate
         .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS, FIXED);
     assertEquals(test.getTimeMeasure(), TIME_MEASURE);
     assertEquals(test.getDiscountFactors(), DF);
@@ -68,13 +76,28 @@ public class RationalOneFactorSimpleHWShapedTemplateTest {
   }
 
   public void generate() {
-    RationalOneFactorSimpleHWShapeTemplate test = RationalOneFactorSimpleHWShapeTemplate
+    RationalTwoFactor2HWShapeMultiplyTemplate test = RationalTwoFactor2HWShapeMultiplyTemplate
         .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS, FIXED);
-    DoubleArray parameters = DoubleArray.of(A, B_0_0, ETA, KAPPA);
-    RationalOneFactorSimpleHWShapeParameters modelComputed = test.generate(parameters);
-    RationalOneFactorSimpleHWShapeParameters modelExpected =
-        RationalOneFactorSimpleHWShapeParameters.of(A, B_0_0, ETA, KAPPA, TIME_MEASURE, DF, VAL_DATE_TIME);
+    DoubleArray parameters = DoubleArray.of(A_1, A_2, RHO, B_0_0, ETA_1, KAPPA_1, ETA_2, KAPPA_2, C_1, C_2);
+    RationalTwoFactor2HWShapeMultiplyParameters modelComputed = test.generate(parameters);
+    RationalTwoFactor2HWShapeMultiplyParameters modelExpected =
+        RationalTwoFactor2HWShapeMultiplyParameters.of(
+            DoubleArray.of(A_1, A_2, RHO, B_0_0, ETA_1, KAPPA_1, ETA_2, KAPPA_2, C_1, C_2), 
+            TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone());
     assertEquals(modelComputed, modelExpected);
+  }
+
+  public void incorrectInput() {
+    BitSet fixed = new BitSet(10);
+    fixed.set(11);
+    assertThrowsIllegalArg(() -> RationalTwoFactor2HWShapeMultiplyTemplate
+        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), GUESS, fixed));
+    DoubleArray guess11 = DoubleArray.of(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1);
+    assertThrowsIllegalArg(() -> RationalTwoFactor2HWShapeMultiplyTemplate
+        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), guess11, FIXED));
+    DoubleArray guess9 = DoubleArray.of(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9);
+    assertThrowsIllegalArg(() -> RationalTwoFactor2HWShapeMultiplyTemplate
+        .of(TIME_MEASURE, DF, VAL_DATE_TIME.toLocalTime(), VAL_DATE_TIME.getZone(), guess9, FIXED));
   }
   
 }
