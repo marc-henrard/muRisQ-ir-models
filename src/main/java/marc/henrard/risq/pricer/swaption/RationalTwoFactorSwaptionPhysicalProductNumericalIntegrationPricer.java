@@ -69,7 +69,7 @@ public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer
     ResolvedSwap underlying = swaption.getUnderlying();
     double[] c = FORMULAS.swapCoefficients(underlying, rates, model2);
     double pvNum = FORMULAS
-        .pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
+        .pvNumericalIntegration(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
     return CurrencyAmount.of(ccy, pvNum * ((swaption.getLongShort() == LongShort.LONG) ? 1.0 : -1.0));
   }
 
