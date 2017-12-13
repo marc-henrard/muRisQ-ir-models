@@ -65,8 +65,8 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
     double expiryTime = model.relativeTime(expiryDateTime);
     ResolvedSwap underlying = swaption.getUnderlying();
     double[] c = FORMULAS_2.swapCoefficients(underlying, rates, model2);
-    double pvNum = 
-        FORMULAS_2.pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
+    double pvNum = FORMULAS_2
+        .pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
     return CurrencyAmount.of(ccy, (swaption.getLongShort() == LongShort.LONG) ? pvNum : -pvNum);
   }
 

@@ -70,7 +70,7 @@ public class RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer
     double[] c = FORMULAS.capletCoefficients(caplet, multicurve, model2);
     double pvNum = multicurve.discountFactor(ccy, caplet.getPaymentDate()) /
         multicurve.discountFactor(ccy, caplet.getIborRate().getMaturityDate()) *
-        FORMULAS.pvSemiExplicit(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
+        FORMULAS.pvNumericalIntegration(c, expiryTime, model2.a1(), model2.a2(), model2.getCorrelation(), nbSteps);
     return CurrencyAmount.of(ccy, (caplet.getNotional() > 0) ? pvNum : -pvNum);
   }
 
