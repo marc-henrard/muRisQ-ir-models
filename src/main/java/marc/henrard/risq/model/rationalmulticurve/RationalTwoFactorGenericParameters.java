@@ -171,11 +171,13 @@ public final class RationalTwoFactorGenericParameters
 
   @Override
   public double b1(IborIndexObservation obs) {
+    validateObservation(obs);
     return b1Map.get(obs.getIndex()).parameterValue(obs.getFixingDate());
   }
 
   @Override
   public double b2(IborIndexObservation obs) {
+    validateObservation(obs);
     return b2Map.get(obs.getIndex()).parameterValue(obs.getFixingDate());
   }
 

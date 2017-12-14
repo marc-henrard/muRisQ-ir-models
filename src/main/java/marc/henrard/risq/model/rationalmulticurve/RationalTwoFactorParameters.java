@@ -6,6 +6,7 @@ package marc.henrard.risq.model.rationalmulticurve;
 import java.time.LocalDate;
 
 import com.opengamma.strata.basics.index.IborIndexObservation;
+import com.opengamma.strata.collect.ArgChecker;
 
 /**
  * Interest rate multi-curve rational model.
@@ -28,6 +29,9 @@ public interface RationalTwoFactorParameters
   
   /**
    * Returns the b0 parameter at a given date.
+   * <p>
+   * The date must be after the model valuation date.
+   * 
    * @param date  the date
    * @return  the parameter
    */
@@ -72,5 +76,24 @@ public interface RationalTwoFactorParameters
    * @return the correlation
    */
   public double getCorrelation();
+  
+  /**
+   * Validate that a date used is on or after the valuation date.
+   * 
+   * @param date  the date
+   */
+  default public void validateDate(LocalDate date) {
+    ArgChecker.isFalse(date.isBefore(getValuationDate()), "date should be on or after valuation date");
+  }
+  
+  /**
+   * Validate that an Ibor observation has not fixed yet.
+   * 
+   * @param date  the date
+   */
+  default public void validateObservation(IborIndexObservation obs) {
+    ArgChecker.isFalse(obs.getFixingDate().isBefore(getValuationDate()), 
+        "fixing date should be on or after valuation date");
+  }
 
 }

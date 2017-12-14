@@ -20,10 +20,12 @@ import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.rate.FixedRateComputation;
 import com.opengamma.strata.product.rate.IborRateComputation;
+import com.opengamma.strata.product.rate.OvernightCompoundedRateComputation;
 import com.opengamma.strata.product.swap.RateAccrualPeriod;
 import com.opengamma.strata.product.swap.RatePaymentPeriod;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
+import com.opengamma.strata.product.swap.SwapLegType;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
 /**
@@ -64,7 +66,10 @@ public class RationalTwoFactorFormulas {
   
   /**
    * In the rational two-factor model, for the description of a swap dynamic, the constant, the coefficients of
-   * exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...)
+   * exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...).
+   * <p>
+   * The swap can have any number of leg, they must be of the type fixed, Ibor (no composition) or OIS (compounded).
+   * The coefficients computed are valid only if the model date is before the fixing of all the floating payments.
    * 
    * @param swap  the swap
    * @param rates  the rates/multi-curve provider
@@ -75,11 +80,45 @@ public class RationalTwoFactorFormulas {
       ResolvedSwap swap, 
       RatesProvider rates,
       RationalTwoFactorParameters model) {
-    
+
     double[] c = new double[3];
-    ResolvedSwapLeg fixedLeg = RationalNFactorFormulas.fixedLeg(swap);
-    ResolvedSwapLeg iborLeg = RationalNFactorFormulas.iborLeg(swap);
+    for (ResolvedSwapLeg leg : swap.getLegs()) {
+      double[] cLeg = new double[3];
+      if (leg.getType().equals(SwapLegType.FIXED)) {
+        cLeg = legFixedCoefficients(leg, rates, model);
+      }
+      if (leg.getType().equals(SwapLegType.IBOR)) {
+        cLeg = legIborCoefficients(leg, rates, model);
+      }
+      if (leg.getType().equals(SwapLegType.OVERNIGHT)) {
+        cLeg = legOisCoefficients(leg, rates, model);
+      }
+      for (int i = 0; i < 3; i++) {
+        c[i] += cLeg[i];
+      }
+    }
+    return c;
+  }
+  
+  /**
+   * In the rational two-factor model, for the description of a swap's fixed leg dynamic, the constant, 
+   * the coefficients of exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...).
+   * <p>
+   * The swap leg must be of the type FIXED.
+   * The coefficients computed are valid only if the model valuation date is before all the payments.
+   * 
+   * @param fixedLeg  the fixed leg
+   * @param rates  the rates/multi-curve provider
+   * @param model  the rational 2-factor model
+   * @return the coefficients
+   */
+  public double[] legFixedCoefficients(
+      ResolvedSwapLeg fixedLeg,
+      RatesProvider rates,
+      RationalTwoFactorParameters model) {
+
     Currency ccy = fixedLeg.getCurrency();
+    double[] c = new double[3];
     for (SwapPaymentPeriod period : fixedLeg.getPaymentPeriods()) {
       RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
       ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
@@ -92,6 +131,29 @@ public class RationalTwoFactorFormulas {
       c[1] += ratePeriod.getNotional() * obs.getRate() * accrualPeriod.getYearFraction() 
           * model.b0(ratePeriod.getPaymentDate());
     }
+    c[0] -= c[1] + c[2];
+    return c;
+  }
+
+  /**
+   * In the rational two-factor model, for the description of a swap's ibor leg dynamic, the constant, 
+   * the coefficients of exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...).
+   * <p>
+   * The swap leg must be of the type IBOR.
+   * The coefficients computed are valid only if the model valuation date is before all the payment fixing dates.
+   * 
+   * @param iborLeg  the ibor leg
+   * @param rates  the rates/multi-curve provider
+   * @param model  the rational 2-factor model
+   * @return the coefficients
+   */
+  public double[] legIborCoefficients(
+      ResolvedSwapLeg iborLeg,
+      RatesProvider rates,
+      RationalTwoFactorParameters model) {
+
+    Currency ccy = iborLeg.getCurrency();
+    double[] c = new double[3];
     for (SwapPaymentPeriod period : iborLeg.getPaymentPeriods()) {
       RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
       ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
@@ -106,6 +168,48 @@ public class RationalTwoFactorFormulas {
           model.b1(obs.getObservation());
       c[2] += ratePeriod.getNotional() * accrualPeriod.getYearFraction()  * 
           model.b2(obs.getObservation());
+    }
+    c[0] -= c[1] + c[2];
+    return c;
+  }
+
+  /**
+   * In the rational two-factor model, for the description of a swap's ibor leg dynamic, the constant, 
+   * the coefficients of exp(a_1 X(1) - ...) and the coefficients of exp(a_2 X(2) - ...).
+   * <p>
+   * The swap leg must be of the type OVERNIGHT and the accrual period of the type {@link OvernightCompoundedRateComputation}.
+   * The coefficients computed are valid only if the model valuation date is before all the payment fixing dates.
+   * 
+   * @param oisLeg  the OIS leg
+   * @param rates  the rates/multi-curve provider
+   * @param model  the rational 2-factor model
+   * @return the coefficients
+   */
+  public double[]  legOisCoefficients(
+      ResolvedSwapLeg oisLeg,
+      RatesProvider rates,
+      RationalTwoFactorParameters model) {
+
+    Currency ccy = oisLeg.getCurrency();
+    double[] c = new double[3];
+    for (SwapPaymentPeriod period : oisLeg.getPaymentPeriods()) {
+      RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
+      ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
+      ArgChecker.isTrue(accrualPeriods.size() == 1, "only one accrual period per payment period supported");
+      RateAccrualPeriod accrualPeriod = accrualPeriods.get(0);
+      ArgChecker.isTrue(accrualPeriod.getRateComputation() instanceof OvernightCompoundedRateComputation,
+          "overnight compounded");
+      OvernightCompoundedRateComputation obs =
+          (OvernightCompoundedRateComputation) accrualPeriod.getRateComputation();
+      double dfPayment = rates.discountFactor(ccy, ratePeriod.getPaymentDate());
+      double dfStart = rates.discountFactor(ccy, obs.getStartDate());
+      double dfEnd = rates.discountFactor(ccy, obs.getEndDate());
+      double spread = accrualPeriod.getSpread();
+      double af = accrualPeriod.getYearFraction();
+      c[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 + af * spread) * dfPayment);
+      c[1] += ratePeriod.getNotional() *
+          (dfPayment / dfEnd * model.b0(obs.getStartDate()) -
+              (1 + af * spread) * model.b0(ratePeriod.getPaymentDate()));
     }
     c[0] -= c[1] + c[2];
     return c;
