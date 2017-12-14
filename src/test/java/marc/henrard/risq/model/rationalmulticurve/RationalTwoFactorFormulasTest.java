@@ -6,6 +6,7 @@ package marc.henrard.risq.model.rationalmulticurve;
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_6M;
+import static com.opengamma.strata.product.swap.type.FixedOvernightSwapConventions.EUR_FIXED_1Y_EONIA_OIS;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.Tenor;
+import com.opengamma.strata.basics.value.ValueSchedule;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.collect.io.ResourceLocator;
 import com.opengamma.strata.data.MarketData;
@@ -33,9 +35,13 @@ import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.rate.IborRateComputation;
+import com.opengamma.strata.product.rate.OvernightCompoundedRateComputation;
+import com.opengamma.strata.product.swap.OvernightRateCalculation;
 import com.opengamma.strata.product.swap.RateAccrualPeriod;
+import com.opengamma.strata.product.swap.RateCalculationSwapLeg;
 import com.opengamma.strata.product.swap.RatePaymentPeriod;
 import com.opengamma.strata.product.swap.ResolvedSwap;
+import com.opengamma.strata.product.swap.Swap;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
 import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
@@ -93,6 +99,24 @@ public class RationalTwoFactorFormulasTest {
         .resolve(REF_DATA).getProduct();
     double[] cComputed = FORMULAS.swapCoefficients(swap, MULTICURVE_EUR, PARAMETERS);
     assertEquals(cComputed.length, 3);
+    double[] cFixed = FORMULAS.legFixedCoefficients(swap.getLegs().get(0), MULTICURVE_EUR, PARAMETERS);
+    double[] cIbor = FORMULAS.legIborCoefficients(swap.getLegs().get(1), MULTICURVE_EUR, PARAMETERS);
+    double[] cExpected = new double[3];
+    for (int i = 0; i < 3; i++) {
+      cExpected[i] = cFixed[i] + cIbor[i];
+    }
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+
+  /* Tests the swap coefficients for a fixed leg. */
+  public void swap_coefficients_fixed() {
+    double fixedRate = 0.02d;
+    double notional = 123456.78d;
+    ResolvedSwap swap = EUR_FIXED_1Y_EURIBOR_6M
+        .createTrade(VALUATION_DATE, Period.ofYears(1), Tenor.TENOR_2Y, BuySell.BUY, notional, fixedRate, REF_DATA)
+        .resolve(REF_DATA).getProduct();
+    double[] cComputed = FORMULAS.legFixedCoefficients(swap.getLegs().get(0), MULTICURVE_EUR, PARAMETERS);
+    assertEquals(cComputed.length, 3);
     double[] cExpected = new double[3];
     for (SwapPaymentPeriod period : swap.getLegs().get(0).getPaymentPeriods()) {
       RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
@@ -103,6 +127,20 @@ public class RationalTwoFactorFormulasTest {
       cExpected[1] += -notional * fixedRate * accrualPeriod.getYearFraction() *
           PARAMETERS.b0(ratePeriod.getPaymentDate());
     }
+    cExpected[0] -= cExpected[1] + cExpected[2];
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+  
+  /* Tests the swap coefficients for a Ibor leg. */
+  public void swap_coefficients_ibor() {
+    double fixedRate = 0.02d;
+    double notional = 123456.78d;
+    ResolvedSwap swap = EUR_FIXED_1Y_EURIBOR_6M
+        .createTrade(VALUATION_DATE, Period.ofYears(1), Tenor.TENOR_2Y, BuySell.BUY, notional, fixedRate, REF_DATA)
+        .resolve(REF_DATA).getProduct();
+    double[] cComputed = FORMULAS.legIborCoefficients(swap.getLegs().get(1), MULTICURVE_EUR, PARAMETERS);
+    assertEquals(cComputed.length, 3);
+    double[] cExpected = new double[3];
     for (SwapPaymentPeriod period : swap.getLegs().get(1).getPaymentPeriods()) {
       RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
       ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
@@ -116,6 +154,74 @@ public class RationalTwoFactorFormulasTest {
           PARAMETERS.b1(obs.getObservation());
       cExpected[2] += notional * accrualPeriod.getYearFraction() *
           PARAMETERS.b2(obs.getObservation());
+    }
+    cExpected[0] -= cExpected[1] + cExpected[2];
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+  
+  /* Tests the swap coefficients for a OIS leg. */
+  public void swap_coefficients_ois() {
+    double fixedRate = 0.02d;
+    double notional = 123456.78d;
+    ResolvedSwap swap = EUR_FIXED_1Y_EONIA_OIS
+        .createTrade(VALUATION_DATE, Period.ofYears(1), Tenor.TENOR_2Y, BuySell.BUY, notional, fixedRate, REF_DATA)
+        .resolve(REF_DATA).getProduct();
+    double[] cComputed = FORMULAS.legOisCoefficients(swap.getLegs().get(1), MULTICURVE_EUR, PARAMETERS);
+    assertEquals(cComputed.length, 3);
+    double[] cExpected = new double[3];
+    for (SwapPaymentPeriod period : swap.getLegs().get(1).getPaymentPeriods()) {
+      RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
+      ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
+      ArgChecker.isTrue(accrualPeriods.size() == 1, "only one accrual period per payment period supported");
+      RateAccrualPeriod accrualPeriod = accrualPeriods.get(0);
+      ArgChecker.isTrue(accrualPeriod.getRateComputation() instanceof OvernightCompoundedRateComputation,
+          "overnight compounded");
+      OvernightCompoundedRateComputation obs =
+          (OvernightCompoundedRateComputation) accrualPeriod.getRateComputation();
+      double dfPayment = MULTICURVE_EUR.discountFactor(EUR, ratePeriod.getPaymentDate());
+      double dfStart = MULTICURVE_EUR.discountFactor(EUR, obs.getStartDate());
+      double dfEnd = MULTICURVE_EUR.discountFactor(EUR, obs.getEndDate());
+      cExpected[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - dfPayment);
+      cExpected[1] += ratePeriod.getNotional() *
+          (dfPayment / dfEnd * PARAMETERS.b0(obs.getStartDate()) - PARAMETERS.b0(ratePeriod.getPaymentDate()));
+    }
+    cExpected[0] -= cExpected[1] + cExpected[2];
+    ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
+  }
+  
+  /* Tests the swap coefficients for a OIS leg + spread. */
+  public void swap_coefficients_ois_spread() {
+    double fixedRate = 0.02d;
+    double notional = 123456.78d;
+    double spread = 0.0010;
+    Swap swap0 = EUR_FIXED_1Y_EONIA_OIS
+        .createTrade(VALUATION_DATE, Period.ofYears(1), Tenor.TENOR_2Y, BuySell.BUY, notional, fixedRate, REF_DATA)
+        .getProduct();
+    RateCalculationSwapLeg legOis0 = (RateCalculationSwapLeg) swap0.getLegs().get(1);
+    OvernightRateCalculation onCal0 = (OvernightRateCalculation) legOis0.getCalculation();
+    RateCalculationSwapLeg legOisSpread = 
+        legOis0.toBuilder().calculation(onCal0.toBuilder().spread(ValueSchedule.of(spread)).build()).build();
+    ResolvedSwap swap = Swap.of(swap0.getLegs().get(0), legOisSpread).resolve(REF_DATA);
+    double[] cComputed = FORMULAS.legOisCoefficients(swap.getLegs().get(1), MULTICURVE_EUR, PARAMETERS);
+    assertEquals(cComputed.length, 3);
+    double[] cExpected = new double[3];
+    for (SwapPaymentPeriod period : swap.getLegs().get(1).getPaymentPeriods()) {
+      RatePaymentPeriod ratePeriod = (RatePaymentPeriod) period;
+      ImmutableList<RateAccrualPeriod> accrualPeriods = ratePeriod.getAccrualPeriods();
+      ArgChecker.isTrue(accrualPeriods.size() == 1, "only one accrual period per payment period supported");
+      RateAccrualPeriod accrualPeriod = accrualPeriods.get(0);
+      ArgChecker.isTrue(accrualPeriod.getRateComputation() instanceof OvernightCompoundedRateComputation,
+          "overnight compounded");
+      OvernightCompoundedRateComputation obs =
+          (OvernightCompoundedRateComputation) accrualPeriod.getRateComputation();
+      double dfPayment = MULTICURVE_EUR.discountFactor(EUR, ratePeriod.getPaymentDate());
+      double dfStart = MULTICURVE_EUR.discountFactor(EUR, obs.getStartDate());
+      double dfEnd = MULTICURVE_EUR.discountFactor(EUR, obs.getEndDate());
+      double af = accrualPeriod.getYearFraction();
+      cExpected[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 + af * spread) * dfPayment);
+      cExpected[1] += ratePeriod.getNotional() *
+          (dfPayment / dfEnd * PARAMETERS.b0(obs.getStartDate()) -
+              (1 + af * spread) * PARAMETERS.b0(ratePeriod.getPaymentDate()));
     }
     cExpected[0] -= cExpected[1] + cExpected[2];
     ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
@@ -153,7 +259,7 @@ public class RationalTwoFactorFormulasTest {
     ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
   }
   
-  /* Tests the semi-explicit integral value for edge cases. TODO */
+  /* Tests the semi-explicit integral value for edge cases. */
   public void semi_explicit_t_0() {
     double pvP = FORMULAS.pvSemiExplicit(new double[] {1.0d, 2.0d, 3.0d}, 0.0, 0.5, 0.5, 0.1, 10);
     assertEquals(pvP, 1.0d + 2.0d + 3.0d, TOLERANCE);

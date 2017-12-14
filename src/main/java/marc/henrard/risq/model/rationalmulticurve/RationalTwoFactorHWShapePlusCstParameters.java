@@ -241,6 +241,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   @Override
   public double b0(LocalDate date) {
+    validateDate(date);
     double u = timeMeasure.relativeTime(valuationDateTime, date);
     double pu = discountFactors.discountFactor(date);
     return (b00 - eta /(a1 * kappa) * (1.0d - Math.exp(-kappa * u))) * pu;
@@ -248,6 +249,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   @Override
   public double b1(IborIndexObservation obs) {
+    validateObservation(obs);
     // Same coefficient for all indices
     double delta = obs.getIndex().getDayCount().yearFraction(obs.getEffectiveDate(), obs.getMaturityDate());
     return (b0(obs.getEffectiveDate()) - b0(obs.getMaturityDate())) / delta + c1;
@@ -255,6 +257,7 @@ public class RationalTwoFactorHWShapePlusCstParameters
 
   @Override
   public double b2(IborIndexObservation obs) {
+    validateObservation(obs);
     return c2;
   }
 

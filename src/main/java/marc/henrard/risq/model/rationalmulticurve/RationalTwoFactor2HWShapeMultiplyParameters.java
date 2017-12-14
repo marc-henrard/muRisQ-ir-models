@@ -266,6 +266,7 @@ public class RationalTwoFactor2HWShapeMultiplyParameters
 
   @Override
   public double b0(LocalDate date) {
+    validateDate(date);
     double u = timeMeasure.relativeTime(valuationDateTime, date);
     double pu = discountFactors.discountFactor(date);
     return (b00 
@@ -275,6 +276,7 @@ public class RationalTwoFactor2HWShapeMultiplyParameters
 
   @Override
   public double b1(IborIndexObservation obs) {
+    validateObservation(obs);
     // Same coefficient for all indices
     double delta = obs.getIndex().getDayCount().yearFraction(obs.getEffectiveDate(), obs.getMaturityDate());
     return c1 * (b0(obs.getEffectiveDate()) - b0(obs.getMaturityDate())) / delta;
@@ -282,6 +284,7 @@ public class RationalTwoFactor2HWShapeMultiplyParameters
 
   @Override
   public double b2(IborIndexObservation obs) {
+    validateObservation(obs);
     // Same coefficient for all indices
     double delta = obs.getIndex().getDayCount().yearFraction(obs.getEffectiveDate(), obs.getMaturityDate());
     return c2 * (b0(obs.getEffectiveDate()) - b0(obs.getMaturityDate())) / delta;
