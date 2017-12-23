@@ -9,6 +9,7 @@ import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 
 import marc.henrard.risq.model.generic.ParameterDateCurve;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
  * Interest rate multi-curve rational model with one factor.
@@ -23,7 +24,7 @@ import marc.henrard.risq.model.generic.ParameterDateCurve;
  * @author Marc Henrard <a href="http://multi-curve-framework.blogspot.com/">Multi-curve Framework</a>
  */
 public interface RationalOneFactorParameters
-    extends RationalParameters {
+    extends SingleCurrencyModelParameters {
   
   /**
    * Returns the parameter of the log-normal martingale.

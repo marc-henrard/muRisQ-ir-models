@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2015 - present by Marc Henrard.
  */
-package marc.henrard.risq.model.rationalmulticurve;
+package marc.henrard.risq.model.generic;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -22,7 +22,7 @@ import com.opengamma.strata.market.param.ParameterizedData;
  * 
  * @author Marc Henrard
  */
-public interface RationalParameters
+public interface SingleCurrencyModelParameters
     extends ParameterizedData {
 
   /**
@@ -60,8 +60,9 @@ public interface RationalParameters
   public double relativeTime(ZonedDateTime dateTime);
 
   /**
+   * The model parameters.
    * 
-   * @return
+   * @return the parameters
    */
   public default DoubleArray getParameters() {
     int nbParam = getParameterCount();

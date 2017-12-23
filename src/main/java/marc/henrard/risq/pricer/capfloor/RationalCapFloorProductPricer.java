@@ -11,7 +11,7 @@ import com.opengamma.strata.product.capfloor.ResolvedIborCapFloor;
 import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorLeg;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
  * Price of cap/floor product in a multi-curve rational model.
@@ -56,7 +56,7 @@ public class RationalCapFloorProductPricer {
   public MultiCurrencyAmount presentValue(
       ResolvedIborCapFloor capFloor,
       RatesProvider multicurve,
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     CurrencyAmount pvCapFloorLeg =
         capFloorLegPricer.presentValue(capFloor.getCapFloorLeg(), multicurve, model);

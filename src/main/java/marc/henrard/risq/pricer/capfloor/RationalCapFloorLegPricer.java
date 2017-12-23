@@ -21,7 +21,7 @@ import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorLeg;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
  * Measures for cap/floor legs in a multi-curve rational model.
@@ -42,14 +42,14 @@ public class RationalCapFloorLegPricer {
   private static final double TOLERANCE_ABS = 1.0E-8;
   
   /** Pricer for {@link IborCapletFloorletPeriod} in the rational model. */
-  private final RationalCapletFloorletPeriodPricer periodPricer;
+  private final SingleCurrencyModelCapletFloorletPeriodPricer periodPricer;
 
   /**
    * Creates an instance.
    * 
    * @param periodPricer  the pricer for {@link IborCapletFloorletPeriod}.
    */
-  public RationalCapFloorLegPricer(RationalCapletFloorletPeriodPricer periodPricer) {
+  public RationalCapFloorLegPricer(SingleCurrencyModelCapletFloorletPeriodPricer periodPricer) {
     this.periodPricer = ArgChecker.notNull(periodPricer, "periodPricer");
   }
   
@@ -66,7 +66,7 @@ public class RationalCapFloorLegPricer {
   public CurrencyAmount presentValue(
       ResolvedIborCapFloorLeg capFloorLeg,
       RatesProvider multicurve,
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     return capFloorLeg.getCapletFloorletPeriods()
         .stream()
@@ -90,7 +90,7 @@ public class RationalCapFloorLegPricer {
   public double impliedVolatilityBachelier(
       ResolvedIborCapFloorLeg capFloorLeg,
       RatesProvider multicurve,
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     double pvRational = presentValue(capFloorLeg, multicurve, model).getAmount();
     return impliedVolatilityBachelier(capFloorLeg, multicurve, pvRational, model.getValuationDateTime());

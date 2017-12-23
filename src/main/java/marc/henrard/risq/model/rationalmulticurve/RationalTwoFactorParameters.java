@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import com.opengamma.strata.basics.index.IborIndexObservation;
 import com.opengamma.strata.collect.ArgChecker;
 
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
+
 /**
  * Interest rate multi-curve rational model.
  * <p>
@@ -25,7 +27,7 @@ import com.opengamma.strata.collect.ArgChecker;
  * @author Marc Henrard
  */
 public interface RationalTwoFactorParameters 
-    extends RationalParameters {
+    extends SingleCurrencyModelParameters {
   
   /**
    * Returns the b0 parameter at a given date.

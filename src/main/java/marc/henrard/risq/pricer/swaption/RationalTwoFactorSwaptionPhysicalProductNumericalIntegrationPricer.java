@@ -13,7 +13,7 @@ import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
 
@@ -34,7 +34,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  * @author Marc Henrard
  */
 public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer  
-    extends RationalSwaptionPhysicalProductPricer {
+    extends SingleCurrencyModelSwaptionPhysicalProductPricer {
 
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
@@ -58,7 +58,7 @@ public class RationalTwoFactorSwaptionPhysicalProductNumericalIntegrationPricer
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption,
       RatesProvider rates,
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     ArgChecker.isTrue(model instanceof RationalTwoFactorParameters);
     RationalTwoFactorParameters model2 = (RationalTwoFactorParameters) model;

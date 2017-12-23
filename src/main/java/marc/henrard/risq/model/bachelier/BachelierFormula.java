@@ -38,6 +38,8 @@ public class BachelierFormula {
       110475347.0617102, 545792367.0681282, 1033254933.287134, 695066365.5403566, 123629089.1036043,
       756.3653755877336, 173.9755977685531, 6591.71234898389, 82796.56941455391, 396398.9698566103,
       739196.7396982114, 493626.035952601, 87510.31231623856 };
+  
+  private static final double VERY_SMALL_VOL = 1.0E-12;
 
   /**
    * Approximated Bachelier implied volatility from the option price.
@@ -63,7 +65,10 @@ public class BachelierFormula {
     double price = optionPrice / numeraire;
     double sign = (putCall.equals(PutCall.CALL)) ? 1.0d : -1.0d;
     double intrinsic = Math.max((forward - strike) * sign, 0);
-    ArgChecker.isTrue(price > Math.max((forward - strike) * sign, 0),
+    if(Math.abs(price - intrinsic) < Math.sqrt(timeToExpiry) * VERY_SMALL_VOL) {
+      return 0.0d; // To accommodate rounding error in the price when model has finite range.
+    }
+    ArgChecker.isTrue(price > intrinsic,
         "optionPrice must be greater than intrinsic value. Have price=" + price + " and intrinsic=" + intrinsic);
 
     double betaStart = -Math.log(LFK4_CUTOFF_1);

@@ -13,19 +13,14 @@ import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.common.PutCall;
 
 import marc.henrard.risq.model.bachelier.BachelierFormula;
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
- * Price of caplet/floorlet in the multi-curve rational model.
- * <p>
- * <i>Reference: </i>
- * <p>
- * Theoretical description: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2016).
- * Rational multi-curve models with counterparty-risk valuation adjustments. <i>Quantitative Finance</i>, 16(6): 847-866.
+ * Price of caplet/floorlet in the single currency model.
  * 
  * @author Marc Henrard
  */
-public abstract class RationalCapletFloorletPeriodPricer {
+public abstract class SingleCurrencyModelCapletFloorletPeriodPricer {
   
   /**
    * Computes the present value of a caplet/floorlet in the rational model.
@@ -43,7 +38,7 @@ public abstract class RationalCapletFloorletPeriodPricer {
   public abstract CurrencyAmount presentValue(
       IborCapletFloorletPeriod caplet,
       RatesProvider multicurve,
-      RationalParameters model);
+      SingleCurrencyModelParameters model);
   
   /**
    * Computes the implied volatility in the Black model.
@@ -59,7 +54,7 @@ public abstract class RationalCapletFloorletPeriodPricer {
   public double impliedVolatilityBlack(
       IborCapletFloorletPeriod caplet, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
     
     ArgChecker.notNegative(caplet.getStrike(), "for Black implied volatility, strike must be non-negative");
     double price = presentValue(caplet, multicurve, model).getAmount();
@@ -88,7 +83,7 @@ public abstract class RationalCapletFloorletPeriodPricer {
   public double impliedVolatilityBachelier(
       IborCapletFloorletPeriod caplet, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
     
     double price = presentValue(caplet, multicurve, model).getAmount();
     double forwardRate = 
@@ -111,7 +106,7 @@ public abstract class RationalCapletFloorletPeriodPricer {
   protected void validate(
       RatesProvider rates, 
       IborCapletFloorletPeriod caplet, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
     
     ArgChecker.isTrue(model.getValuationDate().equals(rates.getValuationDate()),
         "volatility and rate data should be for the same date, have {} and {}",

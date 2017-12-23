@@ -218,10 +218,10 @@ public class RationalTwoFactorFormulasTest {
       double dfStart = MULTICURVE_EUR.discountFactor(EUR, obs.getStartDate());
       double dfEnd = MULTICURVE_EUR.discountFactor(EUR, obs.getEndDate());
       double af = accrualPeriod.getYearFraction();
-      cExpected[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 + af * spread) * dfPayment);
+      cExpected[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 - af * spread) * dfPayment);
       cExpected[1] += ratePeriod.getNotional() *
           (dfPayment / dfEnd * PARAMETERS.b0(obs.getStartDate()) -
-              (1 + af * spread) * PARAMETERS.b0(ratePeriod.getPaymentDate()));
+              (1 - af * spread) * PARAMETERS.b0(ratePeriod.getPaymentDate()));
     }
     cExpected[0] -= cExpected[1] + cExpected[2];
     ArrayAsserts.assertArrayEquals(cExpected, cComputed, TOLERANCE);
