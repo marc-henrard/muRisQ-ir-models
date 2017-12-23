@@ -206,10 +206,10 @@ public class RationalTwoFactorFormulas {
       double dfEnd = rates.discountFactor(ccy, obs.getEndDate());
       double spread = accrualPeriod.getSpread();
       double af = accrualPeriod.getYearFraction();
-      c[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 + af * spread) * dfPayment);
-      c[1] += ratePeriod.getNotional() *
-          (dfPayment / dfEnd * model.b0(obs.getStartDate()) -
-              (1 + af * spread) * model.b0(ratePeriod.getPaymentDate()));
+      c[0] += ratePeriod.getNotional() * (dfStart * dfPayment / dfEnd - (1 - af * spread) * dfPayment);
+      double tmp1 = (dfPayment / dfEnd * model.b0(obs.getStartDate()) - model.b0(ratePeriod.getPaymentDate()));
+      double tmp2 = (af * spread) * model.b0(ratePeriod.getPaymentDate());
+      c[1] += ratePeriod.getNotional() * (tmp1 + tmp2);
     }
     c[0] -= c[1] + c[2];
     return c;
@@ -245,8 +245,8 @@ public class RationalTwoFactorFormulas {
     double[] c = new double[3];
     c[1] = (model.b1(obs) - strike * model.b0(maturity)) * factor;
     c[2] = model.b2(obs) * factor;
-    c[0] = (rates.iborIndexRates(obs.getIndex()).rate(obs) -
-        strike) * rates.discountFactor(caplet.getCurrency(), maturity) * factor;
+    c[0] = (rates.iborIndexRates(obs.getIndex()).rate(obs) - strike) 
+        * rates.discountFactor(caplet.getCurrency(), maturity) * factor;
     c[0] -= c[1] + c[2];
     return c;
   }
@@ -398,7 +398,7 @@ public class RationalTwoFactorFormulas {
     return pv;
   }
 
-  /** Inner class to implement the 2-dimentional integration used in price replication. */
+  /** Inner class to implement the 2-dimensional integration used in price replication. */
   private static final class PriceIntegrant2 implements BiFunction<Double, Double, Double> {
 
     private final double[] a;

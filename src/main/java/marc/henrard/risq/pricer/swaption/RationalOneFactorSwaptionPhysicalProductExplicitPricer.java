@@ -13,9 +13,9 @@ import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorParameters;
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
 
 /**
  * Price physical delivery European swaptions in the simplified one-factor rational model by explicit formula.
@@ -30,7 +30,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
  * @author Marc Henrard
  */
 public class RationalOneFactorSwaptionPhysicalProductExplicitPricer 
-    extends RationalSwaptionPhysicalProductPricer {
+    extends SingleCurrencyModelSwaptionPhysicalProductPricer {
 
   /**
    * Default implementation.
@@ -51,7 +51,7 @@ public class RationalOneFactorSwaptionPhysicalProductExplicitPricer
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     ArgChecker.isTrue(model instanceof RationalOneFactorParameters);
     RationalOneFactorParameters model1 = (RationalOneFactorParameters) model;

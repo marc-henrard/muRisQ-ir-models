@@ -13,15 +13,15 @@ import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
 
 /**
  * Price of physical delivery European swaptions in the two-factor rational model.
  * <p>
- * Reference for the model: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2015).
- * Rational multi-curve models with counterparty-risk valuation adjustments. arXiv.
+ * Theoretical description: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2016).
+ * Rational multi-curve models with counterparty-risk valuation adjustments. <i>Quantitative Finance</i>, 16(6): 847-866.
  * <p>
  * The martingales are A(1) = exp(a_1 X_1 + ...) - 1, A(2) = exp(a_2 X_2 + ...) - 1.
  * The Libor process numerator is of the form L(0) + b_2 A(1) + b_3 A(2)
@@ -30,7 +30,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  * @author Marc Henrard
  */
 public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
-    extends RationalSwaptionPhysicalProductPricer {
+    extends SingleCurrencyModelSwaptionPhysicalProductPricer {
 
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
@@ -55,7 +55,7 @@ public class RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption,
       RatesProvider rates,
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     ArgChecker.isTrue(model instanceof RationalTwoFactorParameters);
     RationalTwoFactorParameters model2 = (RationalTwoFactorParameters) model;

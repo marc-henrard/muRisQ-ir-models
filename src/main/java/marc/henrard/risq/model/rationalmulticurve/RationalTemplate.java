@@ -9,6 +9,8 @@ import java.util.function.Function;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.minimization.NonLinearParameterTransforms;
 
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
+
 /**
  * Template for rational model. 
  * <p>
@@ -38,7 +40,7 @@ public interface RationalTemplate {
    * @param parameters  the parameters
    * @return the model
    */
-  public abstract RationalParameters generate(DoubleArray parameters);
+  public abstract SingleCurrencyModelParameters generate(DoubleArray parameters);
   
   /**
    * Returns the parameter transform to take the parameters bounds into account.

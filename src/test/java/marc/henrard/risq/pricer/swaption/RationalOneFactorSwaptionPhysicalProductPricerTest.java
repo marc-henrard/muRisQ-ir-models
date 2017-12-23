@@ -53,7 +53,7 @@ import marc.henrard.risq.model.generic.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
 
 /**
- * Tests {@link RationalSwaptionPhysicalProductPricer}.
+ * Tests {@link SingleCurrencyModelSwaptionPhysicalProductPricer}.
  * 
  * @author Marc Henrard
  */

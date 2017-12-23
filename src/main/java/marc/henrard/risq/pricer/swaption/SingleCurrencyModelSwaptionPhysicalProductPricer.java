@@ -16,7 +16,7 @@ import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
 import marc.henrard.risq.model.bachelier.BachelierFormula;
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
  * Price of physical delivery European swaptions in the two-factor rational model.
@@ -34,7 +34,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
  * 
  * @author Marc Henrard
  */
-public abstract class RationalSwaptionPhysicalProductPricer {
+public abstract class SingleCurrencyModelSwaptionPhysicalProductPricer {
 
   /** The pricer used for swap measures. */
   private static final DiscountingSwapProductPricer PRICER_SWAP = 
@@ -53,7 +53,7 @@ public abstract class RationalSwaptionPhysicalProductPricer {
   public abstract CurrencyAmount presentValue(
       ResolvedSwaption swaption,
       RatesProvider rates,
-      RationalParameters model);
+      SingleCurrencyModelParameters model);
   
   /**
    * Computes the implied volatility in the Black model.
@@ -69,7 +69,7 @@ public abstract class RationalSwaptionPhysicalProductPricer {
   public double impliedVolatilityBlack(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
     
     double price = presentValue(swaption, multicurve, model).getAmount();
     double parRate = PRICER_SWAP.parRate(swaption.getUnderlying(), multicurve);
@@ -95,11 +95,32 @@ public abstract class RationalSwaptionPhysicalProductPricer {
   public double impliedVolatilityBachelier(
       ResolvedSwaption swaption, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     double price = presentValue(swaption, multicurve, model).getAmount();
-    double parRate = PRICER_SWAP.parRate(swaption.getUnderlying(), multicurve);
     double timeToEpiry = model.relativeTime(swaption.getExpiry());
+    return impliedVolatilityBachelier(swaption, multicurve, price, timeToEpiry);
+  }
+
+  /**
+   * Computes the implied volatility in the Bachelier model.
+   * <p>
+   * The implied volatility for the given price is computed.
+   * The Bachelier formula inversion is done using {@link BachelierFormula#impliedVolatilityApproxLfk4}.
+   * 
+   * @param swaption  the product to price
+   * @param multicurve  the rates provider
+   * @param price  the swaption price
+   * @param timeToEpiry  the time to expiry as computed by the model
+   * @return the implied volatility in the Bachelier model
+   */
+  public double impliedVolatilityBachelier(
+      ResolvedSwaption swaption, 
+      RatesProvider multicurve, 
+      double price,
+      double timeToEpiry) {
+
+    double parRate = PRICER_SWAP.parRate(swaption.getUnderlying(), multicurve);
     ResolvedSwapLeg legFixed = swaption.getUnderlying().getLegs(SwapLegType.FIXED).get(0);
     double pvbp = PRICER_SWAP.getLegPricer().pvbp(legFixed, multicurve);
     double strike = PRICER_SWAP.getLegPricer().couponEquivalent(legFixed, multicurve, pvbp);
@@ -118,7 +139,7 @@ public abstract class RationalSwaptionPhysicalProductPricer {
   protected void validate(
       RatesProvider rates, 
       ResolvedSwaption swaption, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
     
     ArgChecker.isTrue(model.getValuationDate().equals(rates.getValuationDate()),
         "volatility and rate data should be for the same date");
@@ -126,12 +147,6 @@ public abstract class RationalSwaptionPhysicalProductPricer {
         "underlying swap should be single currency");
     ArgChecker.isTrue(swaption.getSwaptionSettlement() == PhysicalSwaptionSettlement.DEFAULT, 
         "swaption should be physical settlement");
-    ArgChecker.isTrue(swaption.getUnderlying().getLegs().size() == 2, 
-        "underlying swap should have two legs");
-    ArgChecker.isTrue(swaption.getUnderlying().getLegs(SwapLegType.FIXED).size() == 1, 
-        "underlying swap should have one fixed leg");
-    ArgChecker.isTrue(swaption.getUnderlying().getLegs(SwapLegType.IBOR).size() == 1, 
-        "underlying swap should have one Ibor leg");
   }
   
   /**

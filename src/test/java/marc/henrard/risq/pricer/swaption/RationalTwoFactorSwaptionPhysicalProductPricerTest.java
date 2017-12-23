@@ -50,7 +50,7 @@ import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSe
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 
 /**
- * Tests {@link RationalSwaptionPhysicalProductPricer}.
+ * Tests {@link SingleCurrencyModelSwaptionPhysicalProductPricer}.
  * 
  * @author Marc Henrard
  */

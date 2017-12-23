@@ -11,7 +11,7 @@ import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 
-import marc.henrard.risq.model.rationalmulticurve.RationalParameters;
+import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorFormulas;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
 
@@ -34,7 +34,7 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorParameters;
  * @author Marc Henrard and Paola Mosconi
  */
 public class RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer  
-    extends RationalCapletFloorletPeriodPricer{
+    extends SingleCurrencyModelCapletFloorletPeriodPricer{
   
   /** Minimal number of integration steps in the integration. Default value. */
   private static final int NB_INTEGRATION_STEPS_DEFAULT = 10;
@@ -59,7 +59,7 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer
   public CurrencyAmount presentValue(
       IborCapletFloorletPeriod caplet, 
       RatesProvider multicurve, 
-      RationalParameters model) {
+      SingleCurrencyModelParameters model) {
 
     ArgChecker.isTrue(model instanceof RationalTwoFactorParameters);
     RationalTwoFactorParameters model2 = (RationalTwoFactorParameters) model;
