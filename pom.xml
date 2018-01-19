@@ -33,6 +33,12 @@
   
   <!-- ==========          Dependencies          ========== -->
   <dependencies>
+    <!--  muRisQ -->
+    <dependency>
+      <groupId>marc.henrard</groupId>
+      <artifactId>murisq-basics</artifactId>
+      <version>${murisq-basics.version}</version>
+    </dependency> 
     <!--  Strata -->
     <dependency>
       <groupId>com.opengamma.strata</groupId>
@@ -120,6 +126,7 @@
 
   <!-- ==================================================================== -->
   <properties>
+    <murisq-basics.version>0.1.0-SNAPSHOT</murisq-basics.version>
     <og-strata.version>1.6.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>1.9.2</joda-convert.version>
