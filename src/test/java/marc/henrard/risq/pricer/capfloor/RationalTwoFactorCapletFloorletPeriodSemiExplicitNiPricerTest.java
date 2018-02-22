@@ -43,7 +43,8 @@ import marc.henrard.risq.pricer.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.risq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
 
 /**
- * Tests of {@link RationalTwoFactorSwaptionPhysicalProductPricer}.
+ * Tests of {@link RationalTwoFactorCapletFloorletPeriodNumericalIntegrationPricer} and
+ * {@link RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer}.
  * 
  * @author Marc Henrard
  */

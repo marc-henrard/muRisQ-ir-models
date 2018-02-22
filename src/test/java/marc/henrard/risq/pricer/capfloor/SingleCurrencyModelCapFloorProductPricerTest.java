@@ -18,8 +18,6 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableSet;
 import com.opengamma.strata.basics.ReferenceData;
-import com.opengamma.strata.basics.currency.AdjustablePayment;
-import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.basics.currency.MultiCurrencyAmount;
 import com.opengamma.strata.basics.date.BusinessDayAdjustment;
 import com.opengamma.strata.basics.date.BusinessDayConventions;
@@ -29,14 +27,11 @@ import com.opengamma.strata.basics.schedule.PeriodicSchedule;
 import com.opengamma.strata.basics.schedule.RollConventions;
 import com.opengamma.strata.basics.schedule.StubConvention;
 import com.opengamma.strata.basics.value.ValueSchedule;
-import com.opengamma.strata.pricer.DiscountingPaymentPricer;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapLegPricer;
-import com.opengamma.strata.product.TradeInfo;
 import com.opengamma.strata.product.capfloor.IborCapFloor;
 import com.opengamma.strata.product.capfloor.IborCapFloorLeg;
-import com.opengamma.strata.product.capfloor.IborCapFloorTrade;
-import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorTrade;
+import com.opengamma.strata.product.capfloor.ResolvedIborCapFloor;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.common.PayReceive;
 import com.opengamma.strata.product.swap.IborRateCalculation;
@@ -47,12 +42,12 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParame
 import marc.henrard.risq.pricer.dataset.MulticurveEur20151120DataSet;
 
 /**
- * Tests {@link RationalCapFloorTradePricer}.
+ * Tests {@link SingleCurrencyModelCapFloorProductPricer}.
  * 
  * @author Marc Henrard
  */
 @Test
-public class RationalCapFloorTradePricerTest {
+public class SingleCurrencyModelCapFloorProductPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   private static final LocalDate VALUATION_DATE = MulticurveEur20151120DataSet.VALUATION_DATE;
@@ -61,15 +56,12 @@ public class RationalCapFloorTradePricerTest {
   public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
 
   private static final DiscountingSwapLegPricer PRICER_SWAP_LEG = DiscountingSwapLegPricer.DEFAULT;
-  private static final DiscountingPaymentPricer PRICER_PAYMENT = DiscountingPaymentPricer.DEFAULT;
   private static final RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer PRICER_CAPLET_S_EX =
       RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer.DEFAULT;
-  private static final RationalCapFloorLegPricer PRICER_LEG_S_EX =
-      new RationalCapFloorLegPricer(PRICER_CAPLET_S_EX);
-  private static final RationalCapFloorProductPricer PRICER_PRODUCT =
-      new RationalCapFloorProductPricer(PRICER_LEG_S_EX, PRICER_SWAP_LEG);
-  private static final RationalCapFloorTradePricer PRICER_TRADE =
-      new RationalCapFloorTradePricer(PRICER_PRODUCT, PRICER_PAYMENT);
+  private static final SingleCurrencyModelCapFloorLegPricer PRICER_LEG_S_EX =
+      new SingleCurrencyModelCapFloorLegPricer(PRICER_CAPLET_S_EX);
+  private static final SingleCurrencyModelCapFloorProductPricer PRICER_CAP_S_EX =
+      new SingleCurrencyModelCapFloorProductPricer(PRICER_LEG_S_EX, PRICER_SWAP_LEG);
   
   /* Descriptions of swaptions */
   private static final Period[] MATURITIES_PER = new Period[] {
@@ -88,8 +80,8 @@ public class RationalCapFloorTradePricerTest {
   /* Constants */
   private static final double TOLERANCE_PV = 1.0E-1;
 
-  /* Tests present value as sum of produce and premium. */
-  public void present_value_trade() {
+  /* Tests present value as sum of legs. */
+  public void present_value_product() {
     LocalDate spot6M = EUR_EURIBOR_6M.calculateMaturityFromFixing(VALUATION_DATE, REF_DATA);
     for (int i = 0; i < NB_MATURITIES; i++) {
       LocalDate maturity = spot6M.plus(MATURITIES_PER[i]);
@@ -107,17 +99,12 @@ public class RationalCapFloorTradePricerTest {
         SwapTrade swapTrade = EUR_FIXED_1Y_EURIBOR_6M
             .createTrade(VALUATION_DATE, Tenor.of(MATURITIES_PER[i]), BuySell.SELL, NOTIONAL, 0.01, REF_DATA);
         IborCapFloor cap = IborCapFloor.of(leg, swapTrade.getProduct().getLegs().get(0));
-        AdjustablePayment premium = AdjustablePayment.of(CurrencyAmount.of(EUR, 10_000.0d), spot6M);
-        IborCapFloorTrade capTrade = IborCapFloorTrade.builder()
-            .product(cap)
-            .premium(premium)
-            .info(TradeInfo.of(VALUATION_DATE)).build();
-        ResolvedIborCapFloorTrade resolvedCapTrade = capTrade.resolve(REF_DATA);
-        MultiCurrencyAmount pvComputed = PRICER_TRADE.presentValue(resolvedCapTrade, MULTICURVE, RATIONAL_2F);
+        ResolvedIborCapFloor resolvedCap = cap.resolve(REF_DATA);
+        MultiCurrencyAmount pvComputed = PRICER_CAP_S_EX.presentValue(resolvedCap, MULTICURVE, RATIONAL_2F);
         assertEquals(pvComputed.getCurrencies(), ImmutableSet.of(EUR));
-        double pvExpected = PRICER_PRODUCT.presentValue(
-            resolvedCapTrade.getProduct(), MULTICURVE, RATIONAL_2F).getAmount(EUR).getAmount();
-        pvExpected += PRICER_PAYMENT.presentValue(resolvedCapTrade.getPremium().get(), MULTICURVE).getAmount();
+        double pvExpected =
+            PRICER_LEG_S_EX.presentValue(resolvedCap.getCapFloorLeg(), MULTICURVE, RATIONAL_2F).getAmount() +
+                PRICER_SWAP_LEG.presentValue(resolvedCap.getPayLeg().get(), MULTICURVE).getAmount();
         assertEquals(pvComputed.getAmount(EUR).getAmount(), pvExpected, TOLERANCE_PV);
       }
     }

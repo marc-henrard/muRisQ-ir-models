@@ -23,10 +23,10 @@ import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
  * 
  * @author Marc Henrard
  */
-public class RationalCapFloorProductPricer {
+public class SingleCurrencyModelCapFloorProductPricer {
   
   /** The pricer for the {@link ResolvedIborCapFloorLeg}. */
-  private final RationalCapFloorLegPricer capFloorLegPricer;
+  private final SingleCurrencyModelCapFloorLegPricer capFloorLegPricer;
   /** The pricer for the {@link ResolvedSwapLeg}. */
   private final DiscountingSwapLegPricer vanillaLegPricer;
   
@@ -36,8 +36,8 @@ public class RationalCapFloorProductPricer {
    * @param capFloorLegPricer  the pricer for the {@link ResolvedIborCapFloorLeg}
    * @param vanillaLegPricer  the pricer for the {@link ResolvedSwapLeg
    */
-  public RationalCapFloorProductPricer(
-      RationalCapFloorLegPricer capFloorLegPricer,
+  public SingleCurrencyModelCapFloorProductPricer(
+      SingleCurrencyModelCapFloorLegPricer capFloorLegPricer,
       DiscountingSwapLegPricer vanillaLegPricer) {
     this.capFloorLegPricer = capFloorLegPricer;
     this.vanillaLegPricer = vanillaLegPricer;
