@@ -33,7 +33,7 @@ import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
  * 
  * @author Marc Henrard
  */
-public class RationalCapFloorLegPricer {
+public class SingleCurrencyModelCapFloorLegPricer {
   
   /** Pricer used to estimate the Bachelier implied volatility. */
   private static final NormalIborCapFloorLegPricer PRICER_LEG_BACHELIER =
@@ -49,7 +49,7 @@ public class RationalCapFloorLegPricer {
    * 
    * @param periodPricer  the pricer for {@link IborCapletFloorletPeriod}.
    */
-  public RationalCapFloorLegPricer(SingleCurrencyModelCapletFloorletPeriodPricer periodPricer) {
+  public SingleCurrencyModelCapFloorLegPricer(SingleCurrencyModelCapletFloorletPeriodPricer periodPricer) {
     this.periodPricer = ArgChecker.notNull(periodPricer, "periodPricer");
   }
   

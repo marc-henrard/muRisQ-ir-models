@@ -42,12 +42,12 @@ import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParame
 import marc.henrard.risq.pricer.dataset.MulticurveEur20151120DataSet;
 
 /**
- * Tests {@link RationalCapFloorLegPricer}.
+ * Tests {@link SingleCurrencyModelCapFloorLegPricer}.
  * 
  * @author Marc Henrard
  */
 @Test
-public class RationalCapFloorLegPricerTest {
+public class SingleCurrencyModelCapFloorLegPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   private static final LocalDate VALUATION_DATE = MulticurveEur20151120DataSet.VALUATION_DATE;
@@ -57,8 +57,8 @@ public class RationalCapFloorLegPricerTest {
 
   private static final RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer PRICER_CAPLET_S_EX =
       RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer.DEFAULT;
-  private static final RationalCapFloorLegPricer PRICER_LEG_S_EX =
-      new RationalCapFloorLegPricer(PRICER_CAPLET_S_EX);
+  private static final SingleCurrencyModelCapFloorLegPricer PRICER_LEG_S_EX =
+      new SingleCurrencyModelCapFloorLegPricer(PRICER_CAPLET_S_EX);
   private static final NormalIborCapFloorLegPricer PRICER_LEG_BACHELIER =
       NormalIborCapFloorLegPricer.DEFAULT;
   
