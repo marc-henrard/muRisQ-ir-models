@@ -15,12 +15,17 @@ Comments and suggestions for improvements are welcomed.
 
 ## Foundations
 
-The pricers proposed in this repository are based on OpenGamma Strata (version 1.5.0) library:
+The pricers proposed in this repository are based on OpenGamma Strata (version 1.7.0) library:
 http://strata.opengamma.io/
 
 ## Contributions
 
 If you are interested in collaborating in research on interest rate modeling and market infrastructure, I would be keen to hear about it. I would also happily published join work in this repository with full credit. 
+
+## Products
+
+### 1. Compounded overnight futures
+Description of the futures.
 
 ## Models
 
@@ -32,7 +37,10 @@ Explicit formula for implicit volatility.
 #### References
 * Le Floc'h, F. (2016). Fast and Accurate Analytic Basis Point Volatility. Working paper.
 
-### 2. Rational Multi-curve Model
+### 2. Hull-White one-factor
+* Convexity adjustment for futures. Implementation with flexible start and end date.
+
+### 3. Rational Multi-curve Model
 
 #### Description
 The model describes the evolution of the discount curve and the Libor process in an explicit way. The quantities are not presented through a SDE but directly as explicit quantities depending on simple random variables. This leads to explicit dynamic and in general (almost) explicit formulas for simple instruments and very easy Monte Carlo simulations.
