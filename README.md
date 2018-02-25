@@ -39,6 +39,7 @@ Explicit formula for implicit volatility.
 
 ### 2. Hull-White one-factor
 * Convexity adjustment for futures. Implementation with flexible start and end date.
+* Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation
 
 ### 3. Rational Multi-curve Model
 
