@@ -1,15 +1,13 @@
 /**
  * Copyright (C) 2015 - present by Marc Henrard.
  */
-package marc.henrard.risq.model.rationalmulticurve;
+package marc.henrard.risq.model.generic;
 
 import java.util.BitSet;
 import java.util.function.Function;
 
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.minimization.NonLinearParameterTransforms;
-
-import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
 
 /**
  * Template for rational model. 
@@ -18,7 +16,7 @@ import marc.henrard.risq.model.generic.SingleCurrencyModelParameters;
  * 
  * @author Marc Henrard
  */
-public interface RationalTemplate {
+public interface SingleCurrencyModelTemplate {
   
   /**
    * Returns the number of parameter expected by the template.

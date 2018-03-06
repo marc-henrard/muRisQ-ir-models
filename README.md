@@ -67,6 +67,7 @@ Recent *trainings* in interest rate modeling and risk management include:
 * New margin paradigm: changes in market infrastructure, previous course description at http://multi-curve-framework.blogspot.co.uk/2016/03/workshop-on-margin.html
 * Algorithmic Differentiation in Finance: course description at http://multi-curve-framework.blogspot.co.uk/2017/10/algorithmic-differentiation-training.html and code repository at https://github.com/marc-henrard/algorithmic-differentiation-book
 * Standard Initial Margin Model: a detailed description and implementation
+* Collateral, regulation and multi-curve. Belfius Financial Engineering Fund Workshop at KUL/Leuven University (Leuven, Belgium), December 2017.
 
 ### Advisory
 
@@ -77,7 +78,7 @@ Recent *trainings* in interest rate modeling and risk management include:
 	* Margin methodologies: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
 	* Simulation: Model implementation for efficient simulation, xVA underlying models
 * Risk management
-	* Hedging strategies
+	* Hedging strategies (design and back testing)
 	* Value-at-Risk
 	* Initial Margin models
 * Model validation
