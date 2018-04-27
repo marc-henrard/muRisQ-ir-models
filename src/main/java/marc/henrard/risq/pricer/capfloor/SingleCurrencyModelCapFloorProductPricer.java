@@ -42,6 +42,24 @@ public class SingleCurrencyModelCapFloorProductPricer {
     this.capFloorLegPricer = capFloorLegPricer;
     this.vanillaLegPricer = vanillaLegPricer;
   }
+  
+  /**
+   * Returns the underlying cap/floor leg pricer.
+   * 
+   * @return the pricer
+   */
+  public SingleCurrencyModelCapFloorLegPricer getCapFloorLegPricer() {
+    return capFloorLegPricer;
+  }
+  
+  /**
+   * Returns the underlying swap leg pricer.
+   * 
+   * @return the pricer
+   */
+  public DiscountingSwapLegPricer getSwapLegPricer() {
+    return vanillaLegPricer;
+  }
 
   /**
    * Calculates the present value of the Ibor cap/floor product.

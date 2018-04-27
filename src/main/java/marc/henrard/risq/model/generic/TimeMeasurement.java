@@ -14,7 +14,8 @@ import java.time.ZonedDateTime;
 public interface TimeMeasurement {
   
   /**
-   * Measure the time between two date/time.
+   * Measure the time between two date/time. The result is positive is the end is after the start and
+   * negative if the start is after the end.
    *  
    * @param dateTimeStart  the start date/time
    * @param dateTimeEnd  the end date/time

@@ -113,6 +113,16 @@ public class RationalTwoFactorHWShapePlusCstParameters
   /** The valuation zone.*/
   private final ZonedDateTime valuationDateTime;  // Not a property
   
+  /**
+   * Generate an instance of the parameters.
+   * 
+   * @param parameters  the parameters (a1, a2, correlation, b00, eta, kappa, c1, c2)
+   * @param timeMeasure
+   * @param discountFactors
+   * @param valuationTime
+   * @param valuationZone
+   * @return the instance
+   */
   public static RationalTwoFactorHWShapePlusCstParameters of(
       DoubleArray parameters,
       TimeMeasurement timeMeasure,
