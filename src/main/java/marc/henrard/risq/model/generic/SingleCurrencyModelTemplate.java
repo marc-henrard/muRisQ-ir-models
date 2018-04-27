@@ -3,6 +3,7 @@
  */
 package marc.henrard.risq.model.generic;
 
+import java.time.ZonedDateTime;
 import java.util.BitSet;
 import java.util.function.Function;
 
@@ -61,5 +62,12 @@ public interface SingleCurrencyModelTemplate {
    * @return the function
    */
   public abstract Function<DoubleArray, Boolean> getConstraints();
+  
+  /**
+   * Returns the valuation date and time.
+   * 
+   * @return  the date and time
+   */
+  public abstract ZonedDateTime getValuationDateTime();
 
 }

@@ -46,13 +46,13 @@ public abstract class SingleCurrencyModelSwaptionPhysicalProductPricer {
    * The result is expressed using the currency of the swaption.
    * 
    * @param swaption  the product to price
-   * @param rates  the rates provider
+   * @param multicurve  the rates provider
    * @param model  the rational model parameters
    * @return the present value of the swaption product
    */
   public abstract CurrencyAmount presentValue(
       ResolvedSwaption swaption,
-      RatesProvider rates,
+      RatesProvider multicurve,
       SingleCurrencyModelParameters model);
   
   /**

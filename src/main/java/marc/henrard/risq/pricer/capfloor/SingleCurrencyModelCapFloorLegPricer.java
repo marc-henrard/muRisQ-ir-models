@@ -40,6 +40,8 @@ public class SingleCurrencyModelCapFloorLegPricer {
       NormalIborCapFloorLegPricer.DEFAULT;
   /** Tolerance for the implied volatility. */
   private static final double TOLERANCE_ABS = 1.0E-8;
+  /** Very small present value. Use to return 0 implied volatility. */
+  private static final double VERY_SMALL_PV = 1.0E-12;
   
   /** Pricer for {@link IborCapletFloorletPeriod} in the rational model. */
   private final SingleCurrencyModelCapletFloorletPeriodPricer periodPricer;
@@ -118,7 +120,7 @@ public class SingleCurrencyModelCapFloorLegPricer {
     BracketRoot bracket = new BracketRoot();
     BrentSingleRootFinder rootFinder = new BrentSingleRootFinder(TOLERANCE_ABS);
     double notional = notional(capFloorLeg);
-    if (Math.abs(pv) < notional * 1.0E-8) {  // price is 0 for practical purposes
+    if (Math.abs(pv) < notional * VERY_SMALL_PV) {  // price is 0 for practical purposes 
       return 0.0d; // Return 0.0 implied volatility - possible as rates are bounded in the model
     }
     Function<Double, Double> error = x -> {

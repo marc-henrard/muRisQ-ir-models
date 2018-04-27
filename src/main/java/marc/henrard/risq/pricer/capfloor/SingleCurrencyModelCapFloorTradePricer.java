@@ -45,6 +45,24 @@ public class SingleCurrencyModelCapFloorTradePricer {
   }
   
   /**
+   * Returns the underlying product pricer.
+   * 
+   * @return the pricer
+   */
+  public SingleCurrencyModelCapFloorProductPricer getProductPricer() {
+    return capFloorProductPricer;
+  }
+  
+  /**
+   * Returns the underlying payment pricer.
+   * 
+   * @return the pricer
+   */
+  public DiscountingPaymentPricer getPaymentPricer() {
+    return paymentPricer;
+  }
+  
+  /**
    * Calculates the present value of the Ibor cap/floor trade.
    * <p>
    * The result is expressed using the currency of each leg and the premium.

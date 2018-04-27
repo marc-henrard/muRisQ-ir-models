@@ -39,7 +39,7 @@ public class BachelierFormula {
       756.3653755877336, 173.9755977685531, 6591.71234898389, 82796.56941455391, 396398.9698566103,
       739196.7396982114, 493626.035952601, 87510.31231623856 };
   
-  private static final double VERY_SMALL_VOL = 1.0E-12;
+  private static final double VERY_SMALL_VOL = 1.0E-16;
 
   /**
    * Approximated Bachelier implied volatility from the option price.
