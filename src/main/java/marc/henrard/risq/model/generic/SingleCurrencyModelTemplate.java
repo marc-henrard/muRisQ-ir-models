@@ -57,6 +57,22 @@ public interface SingleCurrencyModelTemplate {
   public abstract BitSet getFixed();
   
   /**
+   * Returns the number of variable parameters for the template., i.e. the total parameter count minus the
+   * number of fixed parameters indicated for getFixed().
+   * 
+   * @return the number
+   */
+  public default int parametersVariableCount() {
+    int count = 0;
+    for(int i=0; i<parametersCount(); i++) {
+      if (!getFixed().get(i)) {
+        count++;
+      }
+    }
+    return count;
+  }
+  
+  /**
    * Creates a function that returns true if the trial point is within the constraints of the model.
    * 
    * @return the function

@@ -1,11 +1,13 @@
 /**
- * Copyright (C) 2017 - present by Marc Henrard.
+ * Copyright (C) 2018 - present by Marc Henrard.
  */
 package marc.henrard.risq.model.calibration;
 
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.date.HolidayCalendarIds.EUTA;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -50,12 +52,12 @@ import marc.henrard.risq.pricer.capfloor.SingleCurrencyModelCapFloorProductPrice
 import marc.henrard.risq.pricer.capfloor.SingleCurrencyModelCapFloorTradePricer;
 
 /**
- * Tests {@link SingleCurrencyModelCapFloorLeastSquarePriceCalibrator} performance.
+ * Tests {@link SingleCurrencyModelCapFloorLeastSquarePriceCalibrator}.
  * 
  * @author Marc Henrard
  */
 @Test
-public class RationalCapFloorLeastSquareCalibratorPerformance {
+public class RationalCapFloorRootPriceCalibratorTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   private static final LocalDate VALUATION_DATE = LocalDate.of(2017, 9, 6);
@@ -84,26 +86,20 @@ public class RationalCapFloorLeastSquareCalibratorPerformance {
   
   /* Descriptions of cap/floor */
   private static final Period[] MATURITIES_PER = new Period[] {
-      Period.ofYears(1), Period.ofYears(2), Period.ofYears(3), Period.ofYears(4), Period.ofYears(5),
-      Period.ofYears(6), Period.ofYears(7), Period.ofYears(8), Period.ofYears(9), Period.ofYears(10)};
+      Period.ofYears(2), Period.ofYears(10)};
   private static final int NB_MATURITIES = MATURITIES_PER.length;
-  private static final double[] STRIKES = new double[] 
-      {-0.0025, 0.0000, 0.0050, 0.0100, 0.0150, 0.0200};
-  private static final int NB_STRIKES = STRIKES.length;
-  private static final double NOTIONAL = 100_000_000.0d;
+  private static final double STRIKE = 0.0050;
+  private static final double NOTIONAL = 1_000_000.0d;
   
-  private static final int NB_WARMUP = 2;
-  private static final int NB_REP = 4;
+  private static final double TOL_ROOT = 1.0E-5;
 
-  /* Calibration at best of parameters b_0(0) and eta with a smile. Recover a rational model smile. */
-  @Test(enabled = true)
-  public void two_factor_smile_rat() {
-    int maturityIndex = 4;
+  /* Calibration exact of eta and kappa to a term structure of 2 prices. */
+  public void two_factor_ts() {
     LocalDate spot = EUR_EURIBOR_6M.calculateEffectiveFromFixing(VALUATION_DATE, REF_DATA);
-    LocalDate maturity = spot.plus(MATURITIES_PER[maturityIndex]);
     List<ResolvedIborCapFloorTrade> trades = new ArrayList<>();
-    for (int k = 0; k < NB_STRIKES; k++) {
-      IborCapFloor cap = cap(spot, maturity, STRIKES[k]);
+    for (int i = 0; i < NB_MATURITIES; i++) {
+      LocalDate maturity = spot.plus(MATURITIES_PER[i]);
+      IborCapFloor cap = cap(spot, maturity, STRIKE);
       MultiCurrencyAmount pvLeg = PRICER_PRODUCT.presentValue(cap.resolve(REF_DATA), MULTICURVE, RATIONAL_2F);
       AdjustablePayment premium = AdjustablePayment.of(pvLeg.getAmount(EUR).multipliedBy(-1.0), VALUATION_DATE);
       IborCapFloorTrade capTrade = IborCapFloorTrade.builder()
@@ -116,78 +112,29 @@ public class RationalCapFloorLeastSquareCalibratorPerformance {
     fixed.set(0); // a1
     fixed.set(1); // a2
     fixed.set(2); // correlation
-    fixed.set(5); // kappa
-    fixed.set(6); // c1
-    fixed.set(7); // c2
-    System.out.println("Calibration performance on smile");
-    perf(trades, fixed, DoubleArray.of(0.75, 0.50, 0.00, 0.45, 0.012, 0.03, 0.00, 0.0020));
-  }
-  
-  /* Calibration at best of parameters XXX with a smile. Recover an external smile. */
-  public void one_factor_smile_ext() {
-  }
-
-  /* Calibration at best of parameters a1 and kappa with a term structure. Recover a rational model smile. */
-  @Test(enabled = true)
-  public void two_factor_ts() {
-    int strikeIndex = 3;
-    LocalDate spot = EUR_EURIBOR_6M.calculateEffectiveFromFixing(VALUATION_DATE, REF_DATA);
-    List<ResolvedIborCapFloorTrade> trades = new ArrayList<>();
-    for (int i = 0; i < NB_MATURITIES; i++) {
-      LocalDate maturity = spot.plus(MATURITIES_PER[i]);
-      IborCapFloor cap = cap(spot, maturity, STRIKES[strikeIndex]);
-      MultiCurrencyAmount pvLeg = PRICER_PRODUCT.presentValue(cap.resolve(REF_DATA), MULTICURVE, RATIONAL_2F);
-      AdjustablePayment premium = AdjustablePayment.of(pvLeg.getAmount(EUR).multipliedBy(-1.0), VALUATION_DATE);
-      IborCapFloorTrade capTrade = IborCapFloorTrade.builder()
-          .product(cap)
-          .premium(premium)
-          .info(TradeInfo.of(VALUATION_DATE)).build();
-      trades.add(capTrade.resolve(REF_DATA));
-    }
-    BitSet fixed = new BitSet(8);
-//    fixed.set(0); // a1
-    fixed.set(1); // a2
-    fixed.set(2); // correlation
     fixed.set(3); // b00
-    fixed.set(4); // eta
+//    fixed.set(4); // eta
 //    fixed.set(5); // kappa
     fixed.set(6); // c1
     fixed.set(7); // c2
-    System.out.println("Calibration performance on term-structure");
-    perf(trades, fixed, DoubleArray.of(0.80, 0.50, 0.00, 0.50, 0.01, 0.05, 0.00, 0.0020));
-  }
-  
-  private static void perf(
-      List<ResolvedIborCapFloorTrade> trades, 
-      BitSet fixed,
-      DoubleArray initialGuess) {
     RationalTwoFactorHWShapePlusCstTemplate template =
         RationalTwoFactorHWShapePlusCstTemplate
             .of(RATIONAL_2F.getTimeMeasure(), RATIONAL_2F.getDiscountFactors(),
                 RATIONAL_2F.getValuationTime(), RATIONAL_2F.getValuationZone(),
-                initialGuess, fixed);
-    double check = 0.0;
-    for (int loopw = 0; loopw < NB_WARMUP; loopw++) {
-      SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL =
-          SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
-      SingleCurrencyModelParameters calibrated = 
-          CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
-      check += calibrated.getParameter(0);
-    }
-    System.out.println("  |-> Warm-up finished");
-    long start, end;
-    start = System.currentTimeMillis();
-    for (int loopr = 0; loopr < NB_REP; loopr++) {
-      SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL =
-          SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
-      SingleCurrencyModelParameters calibrated = 
-          CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
-      check += calibrated.getParameter(0);
-    }
-    end = System.currentTimeMillis();
-    System.out.println("  |-> Calibration time for " + NB_REP + " rep: " + (end - start) + " ms - " + check);
+                DoubleArray.of(RATIONAL_2F.a1(), RATIONAL_2F.a2(), RATIONAL_2F.getCorrelation(),
+                    RATIONAL_2F.getB00(), RATIONAL_2F.getEta() + 0.0002, RATIONAL_2F.getKappa() + 0.0001,
+                    RATIONAL_2F.getC1(), RATIONAL_2F.getC2()),
+                fixed);
+    assertEquals(template.parametersCount(), RATIONAL_2F.getParameterCount());
+    assertEquals(template.parametersVariableCount(), 2);
+    SingleCurrencyModelCapFloorRootPriceCalibrator calibrator =
+        SingleCurrencyModelCapFloorRootPriceCalibrator.of(template);
+    SingleCurrencyModelParameters calibrated = 
+        calibrator.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
+    assertTrue(calibrated.getParameters().equalWithTolerance(RATIONAL_2F.getParameters(), TOL_ROOT));
+    System.out.println("Parameters: " + calibrated.getParameters());
   }
-
+  
   private static IborCapFloor cap(LocalDate spot, LocalDate maturity, double strike) {
     PeriodicSchedule paySchedule =
         PeriodicSchedule.of(spot, maturity, Frequency.P6M, BUSINESS_ADJ, StubConvention.NONE,
@@ -198,7 +145,7 @@ public class RationalCapFloorLeastSquareCalibratorPerformance {
         .capSchedule(ValueSchedule.of(strike))
         .notional(ValueSchedule.of(NOTIONAL))
         .paymentSchedule(paySchedule)
-        .payReceive(PayReceive.PAY).build();
+        .payReceive(PayReceive.RECEIVE).build();
     return IborCapFloor.of(leg);
   }
   
