@@ -127,7 +127,7 @@ public class RationalCapFloorLeastSquarePriceCalibratorTest {
             RATIONAL_2F.getValuationTime(), RATIONAL_2F.getValuationZone(), 
             DoubleArray.of(0.75, 0.50, 0.00, 0.45, 0.012, 0.03, 0.00, 0.0020), fixed);
     SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL = 
-            SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
+        SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
     SingleCurrencyModelParameters calibrated = 
         CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
     assertTrue(calibrated.getParameters().equalWithTolerance(RATIONAL_2F.getParameters(), TOL_LS));
@@ -165,7 +165,7 @@ public class RationalCapFloorLeastSquarePriceCalibratorTest {
             RATIONAL_2F.getValuationTime(), RATIONAL_2F.getValuationZone(), 
             DoubleArray.of(0.80, 0.50, 0.00, 0.50, 0.01, 0.05, 0.00, 0.0020), fixed);
     SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL = 
-            SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
+        SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
     SingleCurrencyModelParameters calibrated = 
         CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
     assertTrue(calibrated.getParameters().equalWithTolerance(RATIONAL_2F.getParameters(), TOL_LS));
@@ -204,7 +204,7 @@ public class RationalCapFloorLeastSquarePriceCalibratorTest {
             RATIONAL_2F.getValuationTime(), RATIONAL_2F.getValuationZone(), 
             DoubleArray.of(0.75, 0.50, 0.00, 0.50, 0.0099, 0.03, 0.00, 0.0020), fixed);
     SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL = 
-            SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
+        SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
     SingleCurrencyModelParameters calibrated = 
         CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
     checkLeastSquare(trades, calibrated, paramPerturbed);
@@ -246,7 +246,7 @@ public class RationalCapFloorLeastSquarePriceCalibratorTest {
             RATIONAL_2F.getValuationTime(), RATIONAL_2F.getValuationZone(), 
             DoubleArray.of(0.75, 0.50, 0.00, 0.55, 0.012, 0.031, 0.00, 0.002), fixed);
     SingleCurrencyModelCapFloorLeastSquarePriceCalibrator CALIBRATOR_RATIONAL = 
-            SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
+        SingleCurrencyModelCapFloorLeastSquarePriceCalibrator.of(template);
     SingleCurrencyModelParameters calibrated = 
         CALIBRATOR_RATIONAL.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
     checkLeastSquare(trades, calibrated, paramPerturbed);
