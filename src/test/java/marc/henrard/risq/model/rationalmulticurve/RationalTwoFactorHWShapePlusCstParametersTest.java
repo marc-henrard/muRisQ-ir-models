@@ -28,8 +28,9 @@ import com.opengamma.strata.market.param.LabelParameterMetadata;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.ZeroRateDiscountFactors;
 
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
+
 
 /**
  * Tests {@link RationalTwoFactorHWShapePlusCstParameters}.

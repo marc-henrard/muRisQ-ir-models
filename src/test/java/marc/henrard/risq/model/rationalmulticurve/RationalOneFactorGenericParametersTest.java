@@ -3,7 +3,6 @@
  */
 package marc.henrard.risq.model.rationalmulticurve;
 
-
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_3M;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
@@ -31,10 +30,10 @@ import com.opengamma.strata.market.curve.InterpolatedNodalCurve;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolators;
 import com.opengamma.strata.market.param.LabelParameterMetadata;
 
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.generic.GenericParameterDateCurve;
 import marc.henrard.risq.model.generic.ParameterDateCurve;
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Tests {@link RationalOneFactorGenericParameters}

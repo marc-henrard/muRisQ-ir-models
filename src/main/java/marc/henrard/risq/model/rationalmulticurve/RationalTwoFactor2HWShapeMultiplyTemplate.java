@@ -37,8 +37,8 @@ import com.opengamma.strata.math.impl.minimization.SingleRangeLimitTransform;
 import com.opengamma.strata.math.impl.minimization.UncoupledParameterTransforms;
 import com.opengamma.strata.pricer.DiscountFactors;
 
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.generic.SingleCurrencyModelTemplate;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Template for a rational two-factor model {@link RationalTwoFactor2HWShapeMultiplyParameters}.

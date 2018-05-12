@@ -35,8 +35,8 @@ import com.opengamma.strata.math.impl.minimization.SingleRangeLimitTransform;
 import com.opengamma.strata.math.impl.minimization.UncoupledParameterTransforms;
 import com.opengamma.strata.pricer.DiscountFactors;
 
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.generic.SingleCurrencyModelTemplate;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Template for a Rational one-factor model with b0 function in the Hull-White-like shape.
