@@ -30,10 +30,10 @@ import com.opengamma.strata.market.curve.InterpolatedNodalCurve;
 import com.opengamma.strata.market.curve.interpolator.CurveInterpolators;
 import com.opengamma.strata.market.param.LabelParameterMetadata;
 
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.generic.GenericParameterDateCurve;
 import marc.henrard.risq.model.generic.ParameterDateCurve;
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Tests {@link RationalTwoFactorGenericParameters}

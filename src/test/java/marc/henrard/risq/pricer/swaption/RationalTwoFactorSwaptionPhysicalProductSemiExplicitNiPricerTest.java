@@ -38,9 +38,9 @@ import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.dataset.RationalTwoFactorParameters20151120DataSet;
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorGenericParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 

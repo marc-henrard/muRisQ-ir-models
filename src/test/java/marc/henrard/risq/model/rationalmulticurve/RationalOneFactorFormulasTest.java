@@ -48,9 +48,8 @@ import com.opengamma.strata.product.swap.RatePaymentPeriod;
 import com.opengamma.strata.product.swap.ResolvedSwap;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
-import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 
 /**
  * Tests {@link RationalOneFactorFormulas}

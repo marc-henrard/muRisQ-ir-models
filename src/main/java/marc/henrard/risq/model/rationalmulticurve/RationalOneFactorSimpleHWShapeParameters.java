@@ -39,9 +39,9 @@ import com.opengamma.strata.market.param.ParameterMetadata;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 import com.opengamma.strata.pricer.DiscountFactors;
 
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.generic.GenericParameterDateCurve;
 import marc.henrard.risq.model.generic.ParameterDateCurve;
-import marc.henrard.risq.model.generic.TimeMeasurement;
 
 /**
  * Interest rate multi-curve rational model.
