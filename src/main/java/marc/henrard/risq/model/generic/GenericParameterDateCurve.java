@@ -24,6 +24,7 @@ import com.opengamma.strata.market.curve.Curve;
 import com.opengamma.strata.market.param.ParameterMetadata;
 import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 
 /**
  * Description of a generic parameter curve.

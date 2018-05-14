@@ -132,7 +132,6 @@ public class RationalCapFloorRootPriceCalibratorTest {
     SingleCurrencyModelParameters calibrated = 
         calibrator.calibrateConstraints(trades, MULTICURVE, PRICER_TRADE);
     assertTrue(calibrated.getParameters().equalWithTolerance(RATIONAL_2F.getParameters(), TOL_ROOT));
-    System.out.println("Parameters: " + calibrated.getParameters());
   }
   
   private static IborCapFloor cap(LocalDate spot, LocalDate maturity, double strike) {

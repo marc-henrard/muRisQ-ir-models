@@ -8,8 +8,8 @@ import java.time.ZoneId;
 
 import com.opengamma.strata.pricer.DiscountFactors;
 
-import marc.henrard.risq.model.generic.ScaledSecondTime;
-import marc.henrard.risq.model.generic.TimeMeasurement;
+import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.basics.time.TimeMeasurement;
 import marc.henrard.risq.model.rationalmulticurve.RationalOneFactorSimpleHWShapeParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactor2HWShapePlusCstParameters;
 import marc.henrard.risq.model.rationalmulticurve.RationalTwoFactorHWShapePlusCstParameters;
