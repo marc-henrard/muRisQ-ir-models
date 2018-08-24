@@ -4,6 +4,7 @@ You can find more information about me:
 * Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
 * Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
 * Blog: [Multi-curve framework](http://multi-curve-framework.blogspot.com)
+* [muRisQ Advisory](http://murisq.com/)
 
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
@@ -62,7 +63,7 @@ The model proposed here are only a small part of the code I developed or have ac
 
 ### Training
 
-Recent *trainings* in interest rate modeling and risk management include:
+Recent *trainings* in interest rate modelling and risk management include:
 * Multi-curve and collateral framework: previous course description at http://multi-curve-framework.blogspot.co.uk/2014/06/course-on-multi-curve-and-collateral.html
 * New margin paradigm: changes in market infrastructure, previous course description at http://multi-curve-framework.blogspot.co.uk/2016/03/workshop-on-margin.html
 * Algorithmic Differentiation in Finance: course description at http://multi-curve-framework.blogspot.co.uk/2017/10/algorithmic-differentiation-training.html and code repository at https://github.com/marc-henrard/algorithmic-differentiation-book
@@ -77,6 +78,7 @@ Recent *trainings* in interest rate modeling and risk management include:
 	* Exchange traded instruments: Design of exchanged traded instruments, detailed term sheet, risk management.
 	* Margin methodologies: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
 	* Simulation: Model implementation for efficient simulation, xVA underlying models
+    * LIBOR fallback analysis
 * Risk management
 	* Hedging strategies (design and back testing)
 	* Value-at-Risk
