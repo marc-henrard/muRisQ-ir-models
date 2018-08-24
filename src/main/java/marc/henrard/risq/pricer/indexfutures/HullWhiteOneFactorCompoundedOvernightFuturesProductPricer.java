@@ -51,7 +51,8 @@ public class HullWhiteOneFactorCompoundedOvernightFuturesProductPricer {
     Currency ccy = futures.getCurrency();
     List<LocalDate> onDates = futures.getOnDates();
     int nbOnDates = onDates.size();
-    double delta = futures.getAccrualFactor();
+    double delta = futures.getIndex().getDayCount()
+        .yearFraction(futures.getStartAccrualDate(), futures.getEndAccrualDate()); // index AF
     double PcTs = ratesProvider.discountFactor(ccy, futures.getStartAccrualDate());
     double PcTe = ratesProvider.discountFactor(ccy, futures.getEndAccrualDate());
     List<Double> ti = new ArrayList<>();
@@ -62,7 +63,7 @@ public class HullWhiteOneFactorCompoundedOvernightFuturesProductPricer {
     List<Double> gamma = new ArrayList<>();
     for (int i = 0; i < nbOnDates - 1; i++) {
       gamma.add(FORMULAS.futuresConvexityFactor(
-          hwProvider.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates - 1)));
+          hwProvider.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates)));
     }
     double productGamma = 1.0;
     for (int i = 0; i < onDates.size() - 1; i++) {
@@ -121,7 +122,7 @@ public class HullWhiteOneFactorCompoundedOvernightFuturesProductPricer {
     List<Double> gamma = new ArrayList<>();
     for (int i = 0; i < nbOnDates - 1; i++) {
       gamma.add(FORMULAS.futuresConvexityFactor(
-          hwProvider.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates - 1)));
+          hwProvider.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates)));
     }
     return gamma;
   }

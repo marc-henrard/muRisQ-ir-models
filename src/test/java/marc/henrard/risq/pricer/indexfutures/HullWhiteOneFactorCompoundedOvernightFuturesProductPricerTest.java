@@ -89,7 +89,7 @@ public class HullWhiteOneFactorCompoundedOvernightFuturesProductPricerTest {
     }
     for (int i = 0; i < nbOnDates - 1; i++) {
       double gammaExpected = FORMULAS.futuresConvexityFactor(
-          HW_PROVIDER.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates - 1));
+          HW_PROVIDER.getParameters(), ti.get(i), ti.get(i + 1), ti.get(i + 1), ti.get(nbOnDates));
       assertEquals(gammasComputed.get(i), gammaExpected, TOLERANCE_GAMMA);
     }
   }

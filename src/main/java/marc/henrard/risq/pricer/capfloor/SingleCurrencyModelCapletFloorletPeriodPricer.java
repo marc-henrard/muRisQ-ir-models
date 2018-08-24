@@ -70,7 +70,7 @@ public abstract class SingleCurrencyModelCapletFloorletPeriodPricer {
   }
 
   /**
-   * Computes the implied volatility in the Bachelier model.
+   * Computes the implied volatility in the Bachelier model from a model.
    * <p>
    * The caplet/floorlet price is computed in the rational model and the implied volatility for that price is computed.
    * The Bachelier formula inversion is done using {@link BachelierFormula#impliedVolatilityApproxLfk4}.
@@ -86,9 +86,29 @@ public abstract class SingleCurrencyModelCapletFloorletPeriodPricer {
       SingleCurrencyModelParameters model) {
     
     double price = presentValue(caplet, multicurve, model).getAmount();
+    double timeToEpiry = model.relativeTime(caplet.getFixingDateTime());
+    return impliedVolatilityBachelier(caplet, multicurve, price, timeToEpiry);
+  }
+
+  /**
+   * Computes the implied volatility in the Bachelier model from a price.
+   * <p>
+   * The Bachelier formula inversion is done using {@link BachelierFormula#impliedVolatilityApproxLfk4}.
+   * 
+   * @param caplet  the caplet/floorlet period to price
+   * @param multicurve  the rates provider
+   * @param price  the swaption price
+   * @param timeToEpiry  the time to expiry as computed by the model
+   * @return the implied volatility in the Bachelier model
+   */
+  public double impliedVolatilityBachelier(
+      IborCapletFloorletPeriod caplet, 
+      RatesProvider multicurve, 
+      double price,
+      double timeToEpiry) {
+    
     double forwardRate = 
         multicurve.iborIndexRates(caplet.getIndex()).rate(caplet.getIborRate().getObservation());
-    double timeToEpiry = model.relativeTime(caplet.getFixingDateTime());
     double strike = caplet.getStrike();
     double numeraire = multicurve.discountFactor(caplet.getCurrency(), caplet.getPaymentDate()) 
         * caplet.getYearFraction() * caplet.getNotional(); // DF * AF * notional
