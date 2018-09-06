@@ -67,4 +67,82 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
     return Math.exp(factor1 / numerator * factor2);
   }
 
+  /**
+   * Returns the short rate variance between two times.
+   * 
+   * @param data  the Hull-White model data
+   * @param startTime the start time
+   * @param endTime  the end time
+   * @return the short rate variance
+   */
+  public double shortRateVariance(
+      HullWhiteOneFactorPiecewiseConstantParameters data, 
+      double startTime, 
+      double endTime) {
+    
+    double factor1 = Math.exp(- 2 * data.getMeanReversion() * endTime);
+    double numerator = 2 * data.getMeanReversion();
+    int indexStart = 1; // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    while (startTime > data.getVolatilityTime().get(indexStart)) {
+      indexStart++;
+    }
+    int indexEnd = indexStart; // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    while (endTime > data.getVolatilityTime().get(indexEnd)) {
+      indexEnd++;
+    }
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startTime;
+    System.arraycopy(data.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endTime;
+    double factor2 = 0.0;
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      factor2 += data.getVolatility().get(loopperiod + indexStart - 1) *
+          data.getVolatility().get(loopperiod + indexStart - 1) *
+          (Math.exp(2 * data.getMeanReversion() * s[loopperiod + 1]) 
+              - Math.exp(2 * data.getMeanReversion() * s[loopperiod]));
+    }
+    return factor1 * factor2 / numerator;
+  }
+
+  /**
+   * Returns the model part of the short rate mean up to a given time.
+   * <p>
+   * This does not include the 
+   * instantaneous forward (which is market data curve dependent only).
+   * 
+   * @param data  the Hull-White model data
+   * @param endTime  the end time
+   * @return the short rate mean (model part)
+   */
+  public double shortRateMeanModelPart(
+      HullWhiteOneFactorPiecewiseConstantParameters data, 
+      double endTime) {
+    
+    double kappa = data.getMeanReversion();
+    double numerator = 2 * kappa * kappa;
+    int indexStart = 1; // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = indexStart; // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    while (endTime > data.getVolatilityTime().get(indexEnd)) {
+      indexEnd++;
+    }
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = 0.0d;
+    System.arraycopy(data.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endTime;
+    double factor = 0.0;
+    double[] exp2 = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
+      exp2[loopperiod] = 1.0 - Math.exp(-kappa * (endTime - s[loopperiod]));
+      exp2[loopperiod] *= exp2[loopperiod]; // Square
+    }
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      factor += data.getVolatility().get(loopperiod + indexStart - 1) *
+          data.getVolatility().get(loopperiod + indexStart - 1) *
+          (exp2[loopperiod] - exp2[loopperiod + 1]);
+    }
+    return factor / numerator;
+  }
+
 }
