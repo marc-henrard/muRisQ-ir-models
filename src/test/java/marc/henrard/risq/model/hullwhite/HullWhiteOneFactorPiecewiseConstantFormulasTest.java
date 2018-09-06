@@ -24,6 +24,10 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
   private static final DoubleArray VOLATILITY_TIME = DoubleArray.of(0.5, 1.0, 2.0, 4.0, 5.0);
   private static final HullWhiteOneFactorPiecewiseConstantParameters MODEL_PARAMETERS =
       HullWhiteOneFactorPiecewiseConstantParameters.of(MEAN_REVERSION, VOLATILITY, VOLATILITY_TIME);
+  private static final DoubleArray VOLATILITY_CST = DoubleArray.of(0.01);
+  private static final DoubleArray VOLATILITY_CST_TIME = DoubleArray.of();
+  private static final HullWhiteOneFactorPiecewiseConstantParameters MODEL_CST_PARAMETERS =
+      HullWhiteOneFactorPiecewiseConstantParameters.of(MEAN_REVERSION, VOLATILITY_CST, VOLATILITY_CST_TIME);
   
   private static final HullWhiteOneFactorPiecewiseConstantFormulas FORMULAS =
       HullWhiteOneFactorPiecewiseConstantFormulas.DEFAULT;
@@ -31,6 +35,7 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
       HullWhiteOneFactorPiecewiseConstantInterestRateModel.DEFAULT;
 
   private static final double TOLERANCE_CONVEXITY_FACTOR = 1E-8;
+  private static final double TOLERANCE_VARIANCE = 1E-8;
 
   /* Start in 0, end before first pillar. */
   public void futuresConvexityFactorSimpleStart() {
@@ -120,6 +125,64 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
     }
     double factorExpected2 = Math.exp(factor1 / numerator * factor2);
     assertEquals(factorComputed, factorExpected2, TOLERANCE_CONVEXITY_FACTOR);
+  }
+
+  /* Variance of the short rate for a constant volatility. */
+  public void shortRateVarianceConstantVol() {
+    double t = 5.50;
+    double sigma = VOLATILITY_CST.get(0);
+    double factor1 = Math.exp(-2 * MEAN_REVERSION * t);
+    double numerator = 2 * MEAN_REVERSION;
+    double factor2 = sigma * sigma * (Math.exp(2 * MEAN_REVERSION * t) - 1);
+    double varExpected = factor1 * factor2 / numerator;
+    double varComputed = FORMULAS.shortRateVariance(MODEL_CST_PARAMETERS, 0.0d, t);
+    assertEquals(varComputed, varExpected, TOLERANCE_VARIANCE);
+  }
+
+  /* Variance of the short rate for a piecewise-constant volatility. */
+  public void shortRateVariancePiecewiseConst() {
+    double startTime = 0.75;
+    double endTime = 4.5;
+    double[] ti = {startTime, 1.0, 2.0, 4.0, endTime};
+    double[] etai = {0.011, 0.012, 0.013, 0.014};
+    double factor1 = Math.exp(-2 * MEAN_REVERSION * endTime);
+    double numerator = 2 * MEAN_REVERSION;
+    double factor2 = 0;
+    for(int i=0; i<4; i++) {
+      factor2 += etai[i] * etai[i] * 
+          (Math.exp(2 * MEAN_REVERSION * ti[i+1]) - Math.exp(2 * MEAN_REVERSION * ti[i]));
+    }
+    double varExpected = factor1 * factor2 / numerator;
+    double varComputed = FORMULAS.shortRateVariance(MODEL_PARAMETERS, startTime, endTime);
+    assertEquals(varComputed, varExpected, TOLERANCE_VARIANCE);
+  }
+
+  /* Mean of the short rate (model dependent part) for a constant volatility. */
+  public void shortRateMeanModelPartConstantVol() {
+    double t = 5.50;
+    double sigma = VOLATILITY_CST.get(0);
+    double numerator = 2 * MEAN_REVERSION * MEAN_REVERSION;
+    double factor2 = sigma * sigma * Math.pow(1 - Math.exp(- MEAN_REVERSION * t), 2);
+    double varExpected = factor2 / numerator;
+    double varComputed = FORMULAS.shortRateMeanModelPart(MODEL_CST_PARAMETERS, t);
+    assertEquals(varComputed, varExpected, TOLERANCE_VARIANCE);
+  }
+
+  /* Mean of the short rate (model dependent part) for a piecewise-constant volatility. */
+  public void shortRateMeanModelPartPiecewiseConst() {
+    double endTime = 4.5;
+    double[] ti = {0.0, 0.5, 1.0, 2.0, 4.0, endTime};
+    double[] etai = {0.015, 0.011, 0.012, 0.013, 0.014};
+    double numerator = 2 * MEAN_REVERSION * MEAN_REVERSION;
+    double factor2 = 0;
+    for (int i = 0; i < 5; i++) {
+      factor2 += etai[i] * etai[i] *
+          (Math.pow(1 - Math.exp(-MEAN_REVERSION * (endTime - ti[i])), 2) -
+              Math.pow(1 - Math.exp(-MEAN_REVERSION * (endTime - ti[i + 1])), 2));
+    }
+    double varExpected = factor2 / numerator;
+    double varComputed = FORMULAS.shortRateMeanModelPart(MODEL_PARAMETERS, endTime);
+    assertEquals(varComputed, varExpected, TOLERANCE_VARIANCE);
   }
   
 }
