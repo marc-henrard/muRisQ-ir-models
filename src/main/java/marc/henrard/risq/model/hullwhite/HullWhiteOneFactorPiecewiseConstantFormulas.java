@@ -69,6 +69,9 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
 
   /**
    * Returns the short rate variance between two times.
+   * <p>
+   * This is the variance of x(endTime) as a function of x(startTime) with 
+   * r(t) = \Theta(t) + x(t).
    * 
    * @param data  the Hull-White model data
    * @param startTime the start time
