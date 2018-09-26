@@ -3,6 +3,8 @@
  */
 package marc.henrard.risq.model.hullwhite;
 
+import java.util.Arrays;
+
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 
@@ -17,6 +19,90 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
   
   // Private constructor
   private HullWhiteOneFactorPiecewiseConstantFormulas(){
+  }
+
+  /**
+   * Calculates the volatility of the (zero-coupon) bond scaled by the cash account
+   * numeraire, i.e. alpha, for a given period.
+   * 
+   * @param data  the Hull-White model data
+   * @param startExpiry the start time of the expiry period
+   * @param endExpiry  the end time of the expiry period
+   * @param bondMaturity the time to maturity for the bond
+   * @return the re-based bond volatility
+   */
+  public double alphaCashAccount(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double startExpiry,
+      double endExpiry,
+      double bondMaturity) {
+
+    double kappa = parameters.getMeanReversion();
+    double factor1_1 = Math.exp(-2 * kappa * bondMaturity) / (2 * kappa);
+    double factor2_1 = -2 * Math.exp(-kappa * bondMaturity) / kappa;
+    int indexStart = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), startExpiry) + 1);
+    // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), endExpiry) + 1);
+    // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startExpiry;
+    System.arraycopy(parameters.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endExpiry;
+    double[] expas = new double[sLen + 1];
+    double[] exp2as = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
+      expas[loopperiod] = Math.exp(kappa * s[loopperiod]);
+      exp2as[loopperiod] = expas[loopperiod] * expas[loopperiod];
+    }
+    double factor1_2 = 0d;
+    double factor2_2 = 0d;
+    double factor3_2 = 0d;
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      double eta2 = parameters.getVolatility().get(loopperiod + indexStart - 1) *
+          parameters.getVolatility().get(loopperiod + indexStart - 1);
+      factor1_2 += eta2 * (exp2as[loopperiod + 1] - exp2as[loopperiod]);
+      factor2_2 += eta2 * (expas[loopperiod + 1] - expas[loopperiod]);
+      factor3_2 += eta2 * (s[loopperiod + 1] - s[loopperiod]);
+    }
+    return Math.sqrt(factor1_1 * factor1_2 + factor2_1 * factor2_2 + factor3_2) / kappa;
+  }
+  
+  /**
+   * Correspond to \int_s^e g^2(s) ds = \int_s^e \eta^2(s) exp(2\kappa s) ds
+   * 
+   * @param data  the Hull-White model data
+   * @param startExpiry the start time of the expiry period
+   * @param endExpiry  the end time of the expiry period
+   * @return  the integral value
+   */
+  public double alpha2ForwardGPart(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double startExpiry,
+      double endExpiry) {
+    
+    double kappa = parameters.getMeanReversion();
+    int indexStart = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), startExpiry) + 1);
+    // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), endExpiry) + 1);
+    // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startExpiry;
+    System.arraycopy(parameters.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endExpiry;
+    double[] exp2as = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
+      double expas = Math.exp(kappa * s[loopperiod]);
+      exp2as[loopperiod] = expas * expas;
+    }
+    double alphaGPart = 0d;
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      double eta2 = parameters.getVolatility().get(loopperiod + indexStart - 1) *
+          parameters.getVolatility().get(loopperiod + indexStart - 1);
+      alphaGPart += eta2 * (exp2as[loopperiod + 1] - exp2as[loopperiod]);
+    }
+    return alphaGPart / (2 * kappa);
   }
 
   /**
