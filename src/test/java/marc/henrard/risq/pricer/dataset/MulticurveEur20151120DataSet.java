@@ -11,9 +11,9 @@ import com.opengamma.strata.collect.io.ResourceLocator;
 import com.opengamma.strata.data.MarketData;
 import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
-import com.opengamma.strata.market.curve.CurveGroupDefinition;
 import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.pricer.curve.CurveCalibrator;
+import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
+import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 
 /**
@@ -36,12 +36,12 @@ public class MulticurveEur20151120DataSet {
       ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
   private static final ResourceLocator NODES_RESOURCE =
       ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, CurveGroupDefinition> GROUPS_CONFIG =
+  private static final ImmutableMap<CurveGroupName, RatesCurveGroupDefinition> GROUPS_CONFIG =
       RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
   private static final MarketData MARKET_DATA = 
       MarketData.of(VALUATION_DATE, QuotesCsvLoader.load(VALUATION_DATE, ResourceLocator.of(FILE_QUOTES)));
 
-  private static final CurveCalibrator CALIBRATOR = CurveCalibrator.standard();
+  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
   private static final String GROUP_NAME = "EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS";
   public static final ImmutableRatesProvider MULTICURVE_EUR_20151120 = 
       CALIBRATOR.calibrate(GROUPS_CONFIG.get(CurveGroupName.of(GROUP_NAME)), MARKET_DATA, REF_DATA);

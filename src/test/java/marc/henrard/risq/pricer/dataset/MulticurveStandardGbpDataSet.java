@@ -11,9 +11,9 @@ import com.opengamma.strata.collect.io.ResourceLocator;
 import com.opengamma.strata.data.MarketData;
 import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
-import com.opengamma.strata.market.curve.CurveGroupDefinition;
 import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.pricer.curve.CurveCalibrator;
+import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
+import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 
 /**
@@ -34,10 +34,10 @@ public class MulticurveStandardGbpDataSet {
       PATH_CONFIG + CURVE_GROUP_STD_NAME_STR +"/" + CURVE_GROUP_STD_NAME_STR + "-settings-linear.csv");
   private static final ResourceLocator NODES_STD_FILE =ResourceLocator.of( 
       PATH_CONFIG + CURVE_GROUP_STD_NAME_STR +"/" + CURVE_GROUP_STD_NAME_STR + "-nodes-std.csv");
-  private static final CurveGroupDefinition GROUP_STD_DEFINITION = RatesCalibrationCsvLoader
+  private static final RatesCurveGroupDefinition GROUP_STD_DEFINITION = RatesCalibrationCsvLoader
       .load(GROUPS_STD_FILE, SETTINGS_STD_FILE, NODES_STD_FILE).get(CURVE_GROUP_STD_NAME);
 
-  private static final CurveCalibrator CALIBRATOR = CurveCalibrator.standard();
+  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
 
   public static ImmutableRatesProvider multicurve(LocalDate calibrationDate, ReferenceData refData) {
     String fileQuotes = PATH_QUOTES + "MARKET-QUOTES-STANDARD-" 

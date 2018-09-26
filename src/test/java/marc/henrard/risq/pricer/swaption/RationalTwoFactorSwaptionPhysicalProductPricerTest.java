@@ -26,12 +26,12 @@ import com.opengamma.strata.data.MarketData;
 import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
 import com.opengamma.strata.market.ValueType;
-import com.opengamma.strata.market.curve.CurveGroupDefinition;
 import com.opengamma.strata.market.curve.CurveGroupName;
+import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
 import com.opengamma.strata.market.observable.QuoteId;
 import com.opengamma.strata.market.surface.ConstantSurface;
 import com.opengamma.strata.market.surface.DefaultSurfaceMetadata;
-import com.opengamma.strata.pricer.curve.CurveCalibrator;
+import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.pricer.swaption.BlackSwaptionExpiryTenorVolatilities;
@@ -78,7 +78,7 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
       ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
   private static final ResourceLocator NODES_RESOURCE =
       ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, CurveGroupDefinition> GROUPS_CONFIG =
+  private static final ImmutableMap<CurveGroupName, RatesCurveGroupDefinition> GROUPS_CONFIG =
       RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
   private static final CurveGroupName GROUP_EUR = CurveGroupName.of("EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS");
   private static final MarketData MARKET_DATA;
@@ -91,7 +91,7 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
     ImmutableMap<QuoteId, Double> quotesPos = QuotesCsvLoader.load(VALUATION_DATE, quotesResourcePos);
     MARKET_DATA_POS = MarketData.of(VALUATION_DATE, quotesPos);
   }
-  private static final CurveCalibrator CALIBRATOR = CurveCalibrator.standard();
+  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
       CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA, REF_DATA);
   private static final ImmutableRatesProvider MULTICURVE_EUR_POS = 

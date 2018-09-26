@@ -32,27 +32,6 @@
       <groupId>marc.henrard</groupId>
       <artifactId>murisq-basics</artifactId>
       <version>${murisq-basics.version}</version>
-    </dependency> 
-    <!--  Strata -->
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-basics</artifactId>
-      <version>${og-strata.version}</version>
-    </dependency> 
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-loader</artifactId>
-      <version>${og-strata.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-product</artifactId>
-      <version>${og-strata.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.opengamma.strata</groupId>
-      <artifactId>strata-pricer</artifactId>
-      <version>${og-strata.version}</version>
     </dependency>
     <!--  Other -->
     <dependency>
@@ -114,11 +93,11 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>0.1.6-SNAPSHOT</murisq-basics.version>
-    <og-strata.version>1.7.0</og-strata.version>
+    <murisq-basics.version>0.2.0</murisq-basics.version>
+    <og-strata.version>2.0.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
-    <joda-convert.version>2.0</joda-convert.version>
-    <joda-beans.version>2.1</joda-beans.version>
+    <joda-convert.version>2.1.1</joda-convert.version>
+    <joda-beans.version>2.3</joda-beans.version>
     <joda.beans.indent>2</joda.beans.indent>
     <!-- Properties for maven-compiler-plugin -->
     <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
