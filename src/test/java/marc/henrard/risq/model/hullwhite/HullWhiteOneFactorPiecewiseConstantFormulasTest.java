@@ -37,6 +37,33 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
   private static final double TOLERANCE_CONVEXITY_FACTOR = 1E-8;
   private static final double TOLERANCE_VARIANCE = 1E-8;
 
+  
+  /* Check the G part of alpha^2 versus the full alpha forward. */
+  public void alpha2ForwardGPart_v_alphaTotal() {
+    double s = 1.10;
+    double t = 4.50;  // After last pillar
+    double u = 5.00;
+    double v = 5.25;
+    double alpha2GComputed = FORMULAS.alpha2ForwardGPart(MODEL_PARAMETERS, s, t);
+    double alphaComputed = MODEL_STD.alpha(MODEL_PARAMETERS, s, t, u, v);
+    double alphaExpected = (Math.exp(-MEAN_REVERSION * u) - Math.exp(-MEAN_REVERSION * v)) / MEAN_REVERSION *
+        Math.sqrt(alpha2GComputed);
+    assertEquals(alphaComputed, alphaExpected, TOLERANCE_VARIANCE);
+  }
+  
+  /* Start in 0, constant volatility. */
+  public void alphaCashAccountConstantVol() {
+    double s = 0.0;
+    double t = 4.00; // Before first pillar
+    double u = 6.00;
+    double alphaComputed = FORMULAS.alphaCashAccount(MODEL_CST_PARAMETERS, s, t, u);
+    double alphaExpected = t 
+        - 2.0/MEAN_REVERSION * Math.exp(-MEAN_REVERSION*u) * (Math.exp(MEAN_REVERSION * t) - 1.0)
+        + 1.0d / (2*MEAN_REVERSION) * Math.exp(-2*MEAN_REVERSION*u) * (Math.exp(2.0 * MEAN_REVERSION * t) - 1.0);
+    alphaExpected = VOLATILITY_CST.get(0) / MEAN_REVERSION * Math.sqrt(alphaExpected);
+    assertEquals(alphaComputed, alphaExpected, TOLERANCE_VARIANCE);
+  }
+
   /* Start in 0, end before first pillar. */
   public void futuresConvexityFactorSimpleStart() {
     double s = 0.0;
