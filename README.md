@@ -4,7 +4,7 @@ You can find more information about me:
 * Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
 * Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
 * Blog: [Multi-curve framework](http://multi-curve-framework.blogspot.com)
-* [muRisQ Advisory](http://murisq.com/)
+* Consulting: [muRisQ Advisory](http://murisq.com/)
 
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
@@ -27,6 +27,8 @@ If you are interested in collaborating in research on interest rate modeling and
 
 ### 1. Compounded overnight futures
 Description of the futures.
+### 2. OIS futures
+Description of the futures. Instrument description in: Henrard, M., Risk-Based Overnight-Linked Futures Design (August 22, 2018). Available at SSRN: (https://ssrn.com/abstract=3238640)
 
 ## Models
 

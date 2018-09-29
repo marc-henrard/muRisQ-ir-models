@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 - present by Marc Henrard.
  */
-package marc.henrard.risq.product.index;
+package marc.henrard.risq.product.futures;
 
 import java.io.Serializable;
 import java.time.LocalDate;

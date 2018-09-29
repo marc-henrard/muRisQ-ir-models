@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2018 - present by Marc Henrard.
  */
-package marc.henrard.risq.product.index;
+package marc.henrard.risq.product.futures;
 
 import static com.opengamma.strata.basics.currency.Currency.GBP;
 import static com.opengamma.strata.basics.index.OvernightIndices.GBP_SONIA;
@@ -18,6 +18,9 @@ import com.opengamma.strata.basics.StandardId;
 import com.opengamma.strata.basics.date.HolidayCalendar;
 import com.opengamma.strata.basics.index.OvernightIndex;
 import com.opengamma.strata.product.SecurityId;
+
+import marc.henrard.risq.product.futures.CompoundedOvernightFutures;
+import marc.henrard.risq.product.futures.CompoundedOvernightFuturesResolved;
 
 /**
  * Tests {@link CompoundedOvernightFutures}.
