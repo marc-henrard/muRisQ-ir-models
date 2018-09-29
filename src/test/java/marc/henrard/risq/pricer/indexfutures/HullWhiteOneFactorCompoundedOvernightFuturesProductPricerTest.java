@@ -28,8 +28,8 @@ import com.opengamma.strata.product.SecurityId;
 
 import marc.henrard.risq.model.hullwhite.HullWhiteOneFactorPiecewiseConstantFormulas;
 import marc.henrard.risq.pricer.dataset.MulticurveStandardGbpDataSet;
-import marc.henrard.risq.product.index.CompoundedOvernightFutures;
-import marc.henrard.risq.product.index.CompoundedOvernightFuturesResolved;
+import marc.henrard.risq.product.futures.CompoundedOvernightFutures;
+import marc.henrard.risq.product.futures.CompoundedOvernightFuturesResolved;
 
 /**
  * Tests {@link HullWhiteOneFactorCompoundedOvernightFuturesProductPricer}

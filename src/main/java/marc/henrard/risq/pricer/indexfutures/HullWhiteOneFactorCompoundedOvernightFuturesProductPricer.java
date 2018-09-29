@@ -12,7 +12,7 @@ import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantPara
 import com.opengamma.strata.pricer.rate.RatesProvider;
 
 import marc.henrard.risq.model.hullwhite.HullWhiteOneFactorPiecewiseConstantFormulas;
-import marc.henrard.risq.product.index.CompoundedOvernightFuturesResolved;
+import marc.henrard.risq.product.futures.CompoundedOvernightFuturesResolved;
 
 /**
  * Pricer of overnight futures in the Hull-White one-factor model.
