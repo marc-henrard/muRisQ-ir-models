@@ -4,7 +4,7 @@
   <artifactId>murisq-ir-models</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <name>muRisQ IR Models</name>
-  <description>muRisQ libraries - Interest rate derivatives pricing implementations</description>
+  <description>muRisQ Advisory libraries - Interest rate derivatives pricing implementations</description>
   
   <build>
     <pluginManagement>
