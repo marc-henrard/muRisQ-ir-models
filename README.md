@@ -1,4 +1,4 @@
-# RisQ-ir-models by Marc Henrard
+# muRisQ-ir-models by Marc Henrard
 
 You can find more information about me:
 * Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
@@ -10,7 +10,7 @@ This repository proposes code for pricing and risk management of interest rate d
 
 The models implemented are based on personal research and academic literature as described in each pricer.
 
-RisQ stands for Risk management by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
+muRisQ stands for Risk management by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
 
 Comments and suggestions for improvements are welcomed.
 
@@ -29,6 +29,13 @@ If you are interested in collaborating in research on interest rate modeling and
 Description of the futures.
 ### 2. OIS futures
 Description of the futures. Instrument description in: Henrard, M., Risk-Based Overnight-Linked Futures Design (August 22, 2018). Available at SSRN: (https://ssrn.com/abstract=3238640)
+
+### 2. LIBOR Fallback analysis
+LIBOR fallback options analysis. Valuation and risk.
+
+#### References
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). A Quant Perspective on IBOR Fallback Proposals. Market infrastructure analysis, muRisQ Advisory, July 2018.
+Available at (https://ssrn.com/abstract=3226183).
 
 ## Models
 
@@ -58,7 +65,6 @@ The model describes the evolution of the discount curve and the Libor process in
 * Vanilla swaptions with several versions of the model and several numerical approaches (explicit formulas, numerical integration, Monte Carlo). Present value.
 * Cap/floor with several versions of the model and several numerical approaches. Present value and implied volatility.
 
-
 ## Professional services
 
 The model proposed here are only a small part of the code I developed or have access to for research and advisory services purposes. Don’t hesitate to contact me if you are interested by other models, require advisory services or are looking for a training around similar model.
@@ -71,15 +77,16 @@ Recent *trainings* in interest rate modelling and risk management include:
 * Algorithmic Differentiation in Finance: course description at http://multi-curve-framework.blogspot.co.uk/2017/10/algorithmic-differentiation-training.html and code repository at https://github.com/marc-henrard/algorithmic-differentiation-book
 * Standard Initial Margin Model: a detailed description and implementation
 * Collateral, regulation and multi-curve. Belfius Financial Engineering Fund Workshop at KUL/Leuven University (Leuven, Belgium), December 2017.
+* Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), September 2018.
 
 ### Advisory
 
 * Developments
-	* Multi-curve and collateral framework.
-	* Interest rate models: Term structure models, smile, negative rates, stochastic spreads.
-	* Exchange traded instruments: Design of exchanged traded instruments, detailed term sheet, risk management.
-	* Margin methodologies: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
-	* Simulation: Model implementation for efficient simulation, xVA underlying models
+    * Multi-curve and collateral framework.
+    * Interest rate models: Term structure models, smile, negative rates, stochastic spreads.
+    * Exchange traded instruments: Design of exchanged traded instruments, detailed term sheet, risk management.
+    * Margin methodologies: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
+    * Simulation: Model implementation for efficient simulation, xVA underlying models
     * LIBOR fallback analysis
 * Risk management
 	* Hedging strategies (design and back testing)
