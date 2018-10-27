@@ -104,6 +104,37 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
     }
     return alphaGPart / (2 * kappa);
   }
+  
+  /**
+   * Calculates the adjustment factor to be used for timing adjustment.
+   * <p>
+   * This is the factor for the payment of the rate for the period [s,t] paid in v.
+   * <p>
+   * The factor is called gamma in the reference: 
+   * Henrard, M. "A quant perspective on IBOR fallback proposals", 
+   *   Market Infrastructure Analysis, muRisQ Advisory, September 2018
+   * The factor is defined as 
+   *   gamma(s,t,v) = 1/\kappa^2 (\exp(-\kappa s)-\exp(-\kappa t)) (\exp(-\kappa v)-\exp(-\kappa t)) \int_x^{s} g^2(u)du
+   * 
+   * @param parameters  the Hull-White model parameters
+   * @param s  the start time of the period on which the rate is measured
+   * @param t  the end time of the period on which the rate is measured
+   * @param v  the time when the rate is paid
+   * @return the factor
+   */
+  public double timingAdjustmentFactor(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double s,
+      double t,
+      double v) {
+    
+    double kappa = parameters.getMeanReversion();
+    double gamma = (Math.exp(-kappa * s) - Math.exp(-kappa * t)) 
+        * (Math.exp(-kappa * v) - Math.exp(-kappa * t)) 
+        / (kappa * kappa) 
+        * alpha2ForwardGPart(parameters, 0, s);
+    return Math.exp(gamma);
+  }
 
   /**
    * Calculates the future convexity factor used in future pricing.

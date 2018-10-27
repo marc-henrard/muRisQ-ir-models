@@ -37,6 +37,18 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
   private static final double TOLERANCE_CONVEXITY_FACTOR = 1E-8;
   private static final double TOLERANCE_VARIANCE = 1E-8;
 
+  /* Tests the timing adjustment factor. */
+  public void timing_adjustment_factor() {
+    double s = 4.40;
+    double t = 4.50;
+    double v = 5.25;
+    double adjustmentComputed = FORMULAS.timingAdjustmentFactor(MODEL_PARAMETERS, s, t, v);
+    double gamma = 1.0d / (MEAN_REVERSION * MEAN_REVERSION)
+        * (Math.exp(-MEAN_REVERSION * s) - Math.exp(-MEAN_REVERSION * t))
+        * (Math.exp(-MEAN_REVERSION * v) - Math.exp(-MEAN_REVERSION * t))
+        * FORMULAS.alpha2ForwardGPart(MODEL_PARAMETERS, 0, s);
+    assertEquals(adjustmentComputed, Math.exp(gamma), TOLERANCE_VARIANCE);
+  }
   
   /* Check the G part of alpha^2 versus the full alpha forward. */
   public void alpha2ForwardGPart_v_alphaTotal() {

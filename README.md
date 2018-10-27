@@ -10,13 +10,13 @@ This repository proposes code for pricing and risk management of interest rate d
 
 The models implemented are based on personal research and academic literature as described in each pricer.
 
-muRisQ stands for Risk management by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
+muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
 
 Comments and suggestions for improvements are welcomed.
 
 ## Foundations
 
-The pricers proposed in this repository are based on OpenGamma Strata (version 1.7.0) library:
+The pricers proposed in this repository are based on OpenGamma Strata (version 2.0.0) library:
 http://strata.opengamma.io/
 
 ## Contributions
@@ -67,7 +67,7 @@ The model describes the evolution of the discount curve and the Libor process in
 
 ## Professional services
 
-The model proposed here are only a small part of the code I developed or have access to for research and advisory services purposes. Don’t hesitate to contact me if you are interested by other models, require advisory services or are looking for a training around similar model.
+The models proposed here are only a small part of the code I developed or have access to for research and advisory services purposes. Don’t hesitate to contact me if you are interested by other models, require advisory services or are looking for a training around similar models.
 
 ### Training
 
