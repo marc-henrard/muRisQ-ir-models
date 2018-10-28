@@ -156,7 +156,7 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
     assertEquals(pvComputed, pvExpected, TOLERANCE_PV_0);
   }
 
-  /* PV adjusted with 0 volatility v PV discounting*/
+  /* PV adjusted with 0 volatility v PV discounting */
   public void pv_0_vol() {
     double pvComputed = PRICER_PERIOD_ADJ_0.presentValue(PERIOD, MULTICURVE);
     double pvDiscounting = PRICER_PERIOD_DISCOUNTING.presentValue(PERIOD, MULTICURVE);
@@ -173,7 +173,7 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
     assertTrue(ps.equalWithTolerance(psFd, TOLERANCE_DELTA));
   }
 
-  /* forecast sensitivity by finite difference  */
+  /* forecast sensitivity by finite difference */
   public void forecast_value_sensitivity() {
     PointSensitivityBuilder ptsComputed = PRICER_PERIOD_ADJ.forecastValueSensitivity(PERIOD, MULTICURVE);
     CurrencyParameterSensitivities ps = MULTICURVE.parameterSensitivity(ptsComputed.build());
@@ -181,6 +181,13 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
         (p) -> CurrencyAmount.of(EUR, PRICER_PERIOD_ADJ.forecastValue(PERIOD, p));
     CurrencyParameterSensitivities psFd = FD.sensitivity(MULTICURVE, valueFn);
     assertTrue(ps.equalWithTolerance(psFd, TOLERANCE_DELTA));
+  }
+
+  /* PVBP same as for discounting */
+  public void pvbp() {
+    double pvbpComputed = PRICER_PERIOD_ADJ_0.pvbp(PERIOD, MULTICURVE);
+    double pvbpDiscounting = PRICER_PERIOD_DISCOUNTING.pvbp(PERIOD, MULTICURVE);
+    assertEquals(pvbpComputed, pvbpDiscounting, TOLERANCE_PV_0);
   }
   
 }

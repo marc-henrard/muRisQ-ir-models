@@ -152,12 +152,12 @@ public class AdjustedDiscountingRatePaymentPeriodPricer
 
   @Override
   public double pvbp(RatePaymentPeriod period, RatesProvider provider) {
-    throw new UnsupportedOperationException("PVBP not supported for adjusted pricer.");
+    return DISCOUNTING.pvbp(period, provider); // PVBP depends on spread and is not impacted by adjustment
   }
 
   @Override
   public PointSensitivityBuilder pvbpSensitivity(RatePaymentPeriod period, RatesProvider provider) {
-    throw new UnsupportedOperationException("PVBP not supported for adjusted pricer.");
+    return DISCOUNTING.pvbpSensitivity(period, provider); // PVBP depends on spread and is not impacted by adjustment
   }
 
   @Override
