@@ -5,10 +5,17 @@ package marc.henrard.risq.model.dataset;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.collect.io.ResourceLocator;
+import com.opengamma.strata.collect.timeseries.LocalDateDoubleTimeSeries;
+import com.opengamma.strata.data.ImmutableMarketData;
 import com.opengamma.strata.data.MarketData;
+import com.opengamma.strata.data.ObservableId;
+import com.opengamma.strata.loader.csv.FixingSeriesCsvLoader;
 import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
 import com.opengamma.strata.market.curve.CurveGroupName;
@@ -44,6 +51,19 @@ public class MulticurveStandardEurDataSet {
         + calibrationDate.format(DateTimeFormatter.BASIC_ISO_DATE) + ".csv";
     MarketData marketData = MarketData
         .of(calibrationDate, QuotesCsvLoader.load(calibrationDate, ResourceLocator.of(fileQuotes)));
+    return CALIBRATOR.calibrate(GROUP_STD_DEFINITION, marketData, refData);
+  }
+
+  public static ImmutableRatesProvider multicurveWithFixing(LocalDate calibrationDate, ReferenceData refData) {
+    String fileQuotes = PATH_QUOTES + "MARKET-QUOTES-EUR-Standard-" 
+        + calibrationDate.format(DateTimeFormatter.BASIC_ISO_DATE) + ".csv";
+    List<ResourceLocator> fixingResourcesEur = ImmutableList.of(
+        ResourceLocator.of("src/test/resources/fixing/EUR-EONIA.csv"));
+    Map<ObservableId, LocalDateDoubleTimeSeries> timeSeries =
+        FixingSeriesCsvLoader.load(fixingResourcesEur);
+    MarketData marketData = MarketData
+        .of(calibrationDate, QuotesCsvLoader.load(calibrationDate, ResourceLocator.of(fileQuotes)))
+        .combinedWith(ImmutableMarketData.builder(calibrationDate).addTimeSeriesMap(timeSeries).build());
     return CALIBRATOR.calibrate(GROUP_STD_DEFINITION, marketData, refData);
   }
 
