@@ -63,16 +63,20 @@ public class AdjustedDiscountingRatePaymentPeriodPricer
 
   @Override
   public double forecastValue(RatePaymentPeriod period, RatesProvider provider) {
-    if(isOnTiming(period)) {
+    if (isOnTiming(period)) {
       RateAccrualPeriod accrual = period.getAccrualPeriods().get(0);
-      OvernightCompoundedRateComputation onComputation = 
+      OvernightCompoundedRateComputation onComputation =
           (OvernightCompoundedRateComputation) accrual.getRateComputation();
       LocalDate startDate = onComputation.getStartDate();
+      if (startDate.isBefore(provider.getValuationDate())) { // Fixing already started: no adjustment needed
+        return DISCOUNTING.forecastValue(period, provider);
+        // This is a small approximation, we should sill have an adjustment if fixing has started but not finished
+      }
       LocalDate endDate = onComputation.getEndDate();
-      double deltaOnComputation = onComputation.getIndex().getDayCount()
-          .relativeYearFraction(startDate, endDate);
       double onFwd = provider.overnightIndexRates(onComputation.getIndex())
           .periodRate(onComputation.observeOn(startDate), endDate);
+      double deltaOnComputation = onComputation.getIndex().getDayCount()
+          .relativeYearFraction(startDate, endDate);
       double v = parameters.relativeTime(period.getPaymentDate());
       double s = parameters.relativeTime(startDate);
       double p0s = provider.discountFactor(period.getCurrency(), startDate);
@@ -107,32 +111,36 @@ public class AdjustedDiscountingRatePaymentPeriodPricer
       OvernightCompoundedRateComputation onComputation = 
           (OvernightCompoundedRateComputation) accrual.getRateComputation();
       LocalDate startDate = onComputation.getStartDate();
-      LocalDate endDate = onComputation.getEndDate();
-      double deltaOnComputation = onComputation.getIndex().getDayCount()
-          .relativeYearFraction(startDate, endDate);
-      double v = parameters.relativeTime(period.getPaymentDate());
-      double t0 = parameters.relativeTime(startDate);
-      double p0t0 = provider.discountFactor(period.getCurrency(), startDate);
-      double t1 = parameters.relativeTime(endDate);
-      double p0t1 = provider.discountFactor(period.getCurrency(), endDate);
-      double expGamma = HW_FORMULAS.timingAdjustmentFactor(parameters.getParameters(), t0, t1, v);
-      double valueBar = 1.0d;
-      double treatedRateBar = valueBar * accrual.getYearFraction() * period.getNotional();
-      double fwdAdjBar = accrual.getGearing() * treatedRateBar;
-      double p0t1Bar = -p0t0 / (p0t1 * p0t1) * (expGamma - 1.0d) / deltaOnComputation * fwdAdjBar;
-      double p0t0Bar = 1.0d / p0t1 * (expGamma - 1.0d) / deltaOnComputation * fwdAdjBar;
-      double onFwdBar = fwdAdjBar;
-      PointSensitivityBuilder sensi =
-          provider.discountFactors(period.getCurrency()).zeroRatePointSensitivity(startDate)
-              .multipliedBy(p0t0Bar)
-              .combinedWith(
-                  provider.discountFactors(period.getCurrency()).zeroRatePointSensitivity(endDate)
-                      .multipliedBy(p0t1Bar));
-      sensi = sensi.combinedWith(
-          provider.overnightIndexRates(onComputation.getIndex())
-              .periodRatePointSensitivity(onComputation.observeOn(startDate), endDate)
-              .multipliedBy(onFwdBar));
-      return sensi;
+      if (startDate.isBefore(provider.getValuationDate())) { // Fixing already known
+        return DISCOUNTING.forecastValueSensitivity(period, provider);
+      } else {
+        LocalDate endDate = onComputation.getEndDate();
+        double deltaOnComputation = onComputation.getIndex().getDayCount()
+            .relativeYearFraction(startDate, endDate);
+        double v = parameters.relativeTime(period.getPaymentDate());
+        double t0 = parameters.relativeTime(startDate);
+        double p0t0 = provider.discountFactor(period.getCurrency(), startDate);
+        double t1 = parameters.relativeTime(endDate);
+        double p0t1 = provider.discountFactor(period.getCurrency(), endDate);
+        double expGamma = HW_FORMULAS.timingAdjustmentFactor(parameters.getParameters(), t0, t1, v);
+        double valueBar = 1.0d;
+        double treatedRateBar = valueBar * accrual.getYearFraction() * period.getNotional();
+        double fwdAdjBar = accrual.getGearing() * treatedRateBar;
+        double p0t1Bar = -p0t0 / (p0t1 * p0t1) * (expGamma - 1.0d) / deltaOnComputation * fwdAdjBar;
+        double p0t0Bar = 1.0d / p0t1 * (expGamma - 1.0d) / deltaOnComputation * fwdAdjBar;
+        double onFwdBar = fwdAdjBar;
+        PointSensitivityBuilder sensi =
+            provider.discountFactors(period.getCurrency()).zeroRatePointSensitivity(startDate)
+                .multipliedBy(p0t0Bar)
+                .combinedWith(
+                    provider.discountFactors(period.getCurrency()).zeroRatePointSensitivity(endDate)
+                        .multipliedBy(p0t1Bar));
+        sensi = sensi.combinedWith(
+            provider.overnightIndexRates(onComputation.getIndex())
+                .periodRatePointSensitivity(onComputation.observeOn(startDate), endDate)
+                .multipliedBy(onFwdBar));
+        return sensi;
+      }
     }
     return DISCOUNTING.forecastValueSensitivity(period, provider);
   }

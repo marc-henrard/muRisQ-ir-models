@@ -50,6 +50,8 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
 
   public static final ImmutableRatesProvider MULTICURVE =
       MulticurveStandardEurDataSet.multicurve(VALUATION_DATE, REF_DATA);
+  public static final ImmutableRatesProvider MULTICURVE_TS =
+      MulticurveStandardEurDataSet.multicurveWithFixing(VALUATION_DATE, REF_DATA);
   
   private static final double MEAN_REVERSION = 0.03;
   private static final DoubleArray VOLATILITY = DoubleArray.of(0.0065);
@@ -110,8 +112,26 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
       .notional(NOTIONAL)
       .currency(INDEX.getCurrency()).build();
   
+  private static final LocalDate START_DATE_ON_FIXED = LocalDate.of(2017, 8, 18);
+  private static final LocalDate END_DATE_ON_FIXED = LocalDate.of(2017, 8, 21);
+  private static final LocalDate START_DATE_ACCRUAL_FIXED = LocalDate.of(2017, 8, 21);
+  private static final LocalDate PAYMENT_DATE_FIXED = LocalDate.of(2017, 11, 22);
+  private static final OvernightCompoundedRateComputation ON_COMPUTATION_FIXED = OvernightCompoundedRateComputation
+      .of(INDEX, START_DATE_ON_FIXED, END_DATE_ON_FIXED, REF_DATA);
+  private static final RateAccrualPeriod ACCRUAL_FIXED = RateAccrualPeriod.builder()
+      .startDate(START_DATE_ACCRUAL_FIXED)
+      .endDate(PAYMENT_DATE_FIXED)
+      .yearFraction(INDEX.getDayCount().relativeYearFraction(START_DATE_ACCRUAL_FIXED, PAYMENT_DATE_FIXED))
+      .rateComputation(ON_COMPUTATION_FIXED).build();
+  private static final RatePaymentPeriod PERIOD_FIXED = RatePaymentPeriod.builder()
+      .paymentDate(PAYMENT_DATE_FIXED)
+      .accrualPeriods(ACCRUAL_FIXED)
+      .dayCount(INDEX.getDayCount())
+      .notional(NOTIONAL)
+      .currency(INDEX.getCurrency()).build();
+  
   /* Test */
-  private static final double TOLERANCE_PV_0 = 1.0E-8;
+  private static final double TOLERANCE_PV_0 = 1.0E-6;
   private static final double TOLERANCE_DELTA = 1.0E+4; // 1 EUR/bps
 
   /* The forecast value v a local implementation */
@@ -128,6 +148,15 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
     double delta = INDEX.getDayCount().relativeYearFraction(START_DATE, END_DATE);
     double fwdAdjusted = onFwd + p0t0 / p0t1 * (expGamma - 1.0d) / delta;
     double forecastValue = fwdAdjusted * ACCRUAL.getYearFraction() * NOTIONAL;
+    assertEquals(forecastComputed, forecastValue, TOLERANCE_PV_0);
+  }
+
+  /* The forecast value v a local implementation. Value fixed but not paid yet. */
+  public void forecast_value_fixed() {
+    double forecastComputed = PRICER_PERIOD_ADJ.forecastValue(PERIOD_FIXED, MULTICURVE_TS);
+    double onFwd = MULTICURVE_TS.overnightIndexRates(INDEX)
+        .rate(OvernightIndexObservation.of(INDEX, START_DATE_ON_FIXED, REF_DATA));
+    double forecastValue = onFwd * ACCRUAL_FIXED.getYearFraction() * NOTIONAL;
     assertEquals(forecastComputed, forecastValue, TOLERANCE_PV_0);
   }
 

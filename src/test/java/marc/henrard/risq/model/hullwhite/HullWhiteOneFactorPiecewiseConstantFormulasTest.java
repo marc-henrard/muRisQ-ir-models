@@ -53,9 +53,22 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
   /* Check the G part of alpha^2 versus the full alpha forward. */
   public void alpha2ForwardGPart_v_alphaTotal() {
     double s = 1.10;
-    double t = 4.50;  // After last pillar
+    double t = 4.50;
     double u = 5.00;
     double v = 5.25;
+    double alpha2GComputed = FORMULAS.alpha2ForwardGPart(MODEL_PARAMETERS, s, t);
+    double alphaComputed = MODEL_STD.alpha(MODEL_PARAMETERS, s, t, u, v);
+    double alphaExpected = (Math.exp(-MEAN_REVERSION * u) - Math.exp(-MEAN_REVERSION * v)) / MEAN_REVERSION *
+        Math.sqrt(alpha2GComputed);
+    assertEquals(alphaComputed, alphaExpected, TOLERANCE_VARIANCE);
+  }
+  
+  /* Check the G part of alpha^2 versus the full alpha forward. Date after last pillar. */
+  public void alpha2ForwardGPart_v_alphaTotal_long() {
+    double s = 8.10;
+    double t = 8.50;
+    double u = 9.00;
+    double v = 9.25;
     double alpha2GComputed = FORMULAS.alpha2ForwardGPart(MODEL_PARAMETERS, s, t);
     double alphaComputed = MODEL_STD.alpha(MODEL_PARAMETERS, s, t, u, v);
     double alphaExpected = (Math.exp(-MEAN_REVERSION * u) - Math.exp(-MEAN_REVERSION * v)) / MEAN_REVERSION *
