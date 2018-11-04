@@ -4,13 +4,13 @@ You can find more information about me:
 * Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
 * Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
 * Blog: [Multi-curve framework](http://multi-curve-framework.blogspot.com)
-* Consulting: [muRisQ Advisory](http://murisq.com/)
+* Consulting: [muRisQ Advisory](http://murisq.com/) -- Email: [info@murisq.com](mailto:info@murisq.com)
+
+muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
 
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
 The models implemented are based on personal research and academic literature as described in each pricer.
-
-muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
 
 Comments and suggestions for improvements are welcomed.
 
@@ -28,10 +28,12 @@ If you are interested in collaborating in research on interest rate modeling and
 ### 1. Compounded overnight futures
 Description of the futures.
 ### 2. OIS futures
-Description of the futures. Instrument description in: Henrard, M., Risk-Based Overnight-Linked Futures Design (August 22, 2018). Available at SSRN: (https://ssrn.com/abstract=3238640)
+Description of an innovative futures design. 
+#### References
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). Risk-Based Overnight-Linked Futures Design. Market infrastructure analysis, muRisQ Advisory, August 2018. Available at SSRN: (https://ssrn.com/abstract=3238640)
 
 ### 2. LIBOR Fallback analysis
-LIBOR fallback options analysis. Valuation and risk.
+LIBOR fallback options analysis. Value transfer, convexity adjustments and risk management.
 
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). A Quant Perspective on IBOR Fallback Proposals. Market infrastructure analysis, muRisQ Advisory, July 2018.
@@ -49,7 +51,7 @@ Explicit formula for implicit volatility.
 
 ### 2. Hull-White one-factor
 * Convexity adjustment for futures. Implementation with flexible start and end date.
-* Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation
+* Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation. Available at (https://ssrn.com/abstract=3134346).
 
 ### 3. Rational Multi-curve Model
 
@@ -87,7 +89,8 @@ Recent *trainings* in interest rate modelling and risk management include:
     * Exchange traded instruments: Design of exchanged traded instruments, detailed term sheet, risk management.
     * Margin methodologies: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
     * Simulation: Model implementation for efficient simulation, xVA underlying models
-    * LIBOR fallback analysis
+    * LIBOR fallback analysis and solutions
+    * Overnight benchmarks (RFR) transition
 * Risk management
 	* Hedging strategies (design and back testing)
 	* Value-at-Risk

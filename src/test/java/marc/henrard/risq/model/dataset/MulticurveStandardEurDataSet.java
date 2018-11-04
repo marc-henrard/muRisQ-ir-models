@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 - Marc Henrard.
+ * Copyright (C) 2017 - present by Marc Henrard.
  */
 package marc.henrard.risq.model.dataset;
 
