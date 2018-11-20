@@ -1,0 +1,3 @@
+Curve Name,Value Type,Day Count,Interpolator,Left Extrapolator,Right Extrapolator
+USD-DSCON-OIS,df,Act/365F,LogNaturalSplineMonotoneCubic,Exponential,Exponential
+USD-LIBOR3M-IRS,df,Act/365F,LogNaturalSplineMonotoneCubic,Exponential,Exponential
