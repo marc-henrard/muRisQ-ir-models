@@ -64,8 +64,11 @@ public class FallbackUtils {
       OvernightIndex index) {
 
     OptionalDouble fixedRate = timeSeries.get(fixingDate);
-    return fixedRate.orElseThrow(() -> new PricingException(
-        "Could not get fixing value of index " + index.getName() + " for date " + fixingDate));
+    if (fixedRate.isPresent()) {
+      return fixedRate.getAsDouble();
+    }
+    throw new PricingException(
+        "Could not get fixing value of index " + index.getName() + " for date " + fixingDate);
   }
 
 }

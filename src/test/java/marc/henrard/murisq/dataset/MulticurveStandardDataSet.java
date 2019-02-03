@@ -17,6 +17,7 @@ import com.opengamma.strata.loader.csv.QuotesCsvLoader;
 import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
 import com.opengamma.strata.market.curve.CurveGroupName;
 import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
+import com.opengamma.strata.market.observable.QuoteId;
 import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.curve.SyntheticRatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
@@ -54,8 +55,8 @@ public class MulticurveStandardDataSet {
 
     RatesCurveGroupDefinition groupDefinition = RatesCalibrationCsvLoader
         .load(groupFile, settingsFile, nodesFile).get(curveGroupName);
-    MarketData marketData = MarketData
-        .of(calibrationDate, QuotesCsvLoader.load(calibrationDate, ResourceLocator.of(fileQuotes)));
+    Map<QuoteId, Double> quotes = QuotesCsvLoader.load(calibrationDate, ResourceLocator.of(fileQuotes));
+    MarketData marketData = MarketData.of(calibrationDate, quotes);
     return CALIBRATOR.calibrate(groupDefinition, marketData, refData);
   }
 
