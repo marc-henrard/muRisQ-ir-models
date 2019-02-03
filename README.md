@@ -16,7 +16,7 @@ Comments and suggestions for improvements are welcomed.
 
 ## Foundations
 
-The pricers proposed in this repository are based on OpenGamma Strata (version 2.0.0) library:
+The pricers proposed in this repository are based on OpenGamma Strata (version 2.2.0) library:
 http://strata.opengamma.io/
 
 ## Contributions
@@ -36,8 +36,8 @@ Description of an innovative futures design.
 LIBOR fallback options analysis. Value transfer, convexity adjustments and risk management. Compounding setting in arrears fixing computation.
 
 #### References
-* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). A Quant Perspective on IBOR Fallback Proposals. Market infrastructure analysis, muRisQ Advisory, July 2018.
-Available at (https://ssrn.com/abstract=3226183).
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
+Available at (https://ssrn.com/abstract=3308766).
 
 ## Models
 
@@ -67,30 +67,47 @@ The model describes the evolution of the discount curve and the Libor process in
 * Vanilla swaptions with several versions of the model and several numerical approaches (explicit formulas, numerical integration, Monte Carlo). Present value.
 * Cap/floor with several versions of the model and several numerical approaches. Present value and implied volatility.
 
+
 ## Professional services
 
 The models proposed here are only a small part of the code I developed or have access to for research and advisory services purposes. Don’t hesitate to contact me if you are interested by other models, require advisory services or are looking for a training around similar models.
 
 ### Training
 
-Recent *trainings* in interest rate modelling and risk management include:
-* Multi-curve and collateral framework: previous course description at http://multi-curve-framework.blogspot.co.uk/2014/06/course-on-multi-curve-and-collateral.html
-* New margin paradigm: changes in market infrastructure, previous course description at http://multi-curve-framework.blogspot.co.uk/2016/03/workshop-on-margin.html
-* Algorithmic Differentiation in Finance: course description at http://multi-curve-framework.blogspot.co.uk/2017/10/algorithmic-differentiation-training.html and code repository at https://github.com/marc-henrard/algorithmic-differentiation-book
-* Standard Initial Margin Model: a detailed description and implementation
+We propose in-house training and workshops on subjects related to quantitative finance and risk management.
+
+We offer extensive flexibility on the training organization.
+
+A in-house tailor-made course with our experts presented to your full team often cost less than sending two people to a standard course organized by a large training firm.
+
+*Agenda tailored to your needs. Detailed lecture notes.*
+*Associated to open source code for practical implementation.*
+*Training in English or French*
+
+Some of the popular courses are (course description and typical agendas available through the links):
+* Multi-curve and collateral framework: foundations, evolution and implementation. <https://murisq.blogspot.com/p/training.html#multicurve>
+* The future of LIBOR: Quantitative perspective on benchmarks, overnight, fallback and regulation. <https://murisq.blogspot.com/p/training.html#libor-future>
+* Algorithmic Differentiation in Finance. <https://murisq.blogspot.com/p/training.html#ad>
+* Central clearing and bilateral margin. <https://murisq.blogspot.com/p/training.html#margin>
+
+Some recent public courses:
+* Workshop Multi-curve and collateral framework. One day workshop at The 10th Fixed Income Conference (Barcelona, Spain), September 2014.
 * Collateral, regulation and multi-curve. Belfius Financial Engineering Fund Workshop at KUL/Leuven University (Leuven, Belgium), December 2017.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), September 2018.
+* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, overnight, fallback and regulation*. Finans Foreningen workshop (Copenhagen, Denmark), 24 January 2019.
+* Planned: *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (New York, USA), 25-26 March 2019.
+* Planned: *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 3-4 April 2019.
 
 ### Advisory
 
 * Developments
-  * *Multi-curve and collateral framework*. Collateral discounting, impact of CSA, multi-curve calibration, new benchmarks, cheapest-to-deliver
-  * *Interest rate models*: Term structure models, smile, negative rates, stochastic spreads.
-  * *Exchange traded instruments*: Development of exchanged traded instruments, detailed term sheet, regulatory approval, CCP's risk management procedures.
-  * *Margin methodologies*: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
-  * *Simulation*: Model implementation for efficient simulation, xVA underlying models 
-  * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, valuation impacts, risk management, ALM
-  * *Code*: Large quant libraries available to price and risk manage interest rate books
+    * *Multi-curve and collateral framework*. Collateral discounting, impact of CSA, multi-curve calibration, new benchmarks, cheapest-to-deliver
+    * *Interest rate models*: Term structure models, smile, negative rates, stochastic spreads.
+    * *Exchange traded instruments*: Development of exchanged traded instruments, detailed term sheet, regulatory approval, CCP's risk management procedures.
+    * *Margin methodologies*: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
+    * *Simulation*: Model implementation for efficient simulation, xVA underlying models 
+    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, valuation impacts, risk management, ALM
+    * *Code*: Large quant libraries available to price and risk manage interest rate books
 * Risk management
 	* Hedging strategies (design and back testing)
 	* Value-at-Risk
