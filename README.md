@@ -1,12 +1,17 @@
-# muRisQ-ir-models by Marc Henrard
+# muRisQ Advisory: Interest rate models developments
 
-You can find more information about me:
-* Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
+muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood in a large sense which includes risk strategies, ALM, quantitative impacts of regulation, and trading strategies.
+
+You can find more details about our consulting and advisory services on our website [muRisQ Advisory](http://murisq.com/) - Email: [info@murisq.com](mailto:info@murisq.com)
+
+muRisQ Advisory is manage by Marc Henrard. You can find more about his contribution to quantitative finance through his papers and his blog:
 * Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
 * Blog: [Multi-curve framework](http://multi-curve-framework.blogspot.com)
-* Consulting: [muRisQ Advisory](http://murisq.com/) -- Email: [info@murisq.com](mailto:info@murisq.com)
+* Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
 
-muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood as the actual management of risk, which goes beyond its measurement.
+---
+
+# Repository content
 
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
@@ -18,10 +23,6 @@ Comments and suggestions for improvements are welcomed.
 
 The pricers proposed in this repository are based on OpenGamma Strata (version 2.2.0) library:
 http://strata.opengamma.io/
-
-## Contributions
-
-If you are interested in collaborating in research on interest rate modeling and market infrastructure, I would be keen to hear about it. I would also happily published join work in this repository with full credit. 
 
 ## Products
 
@@ -67,12 +68,13 @@ The model describes the evolution of the discount curve and the Libor process in
 * Vanilla swaptions with several versions of the model and several numerical approaches (explicit formulas, numerical integration, Monte Carlo). Present value.
 * Cap/floor with several versions of the model and several numerical approaches. Present value and implied volatility.
 
+---
 
-## Professional services
+# Professional services
 
-The models proposed here are only a small part of the code I developed or have access to for research and advisory services purposes. Don’t hesitate to contact me if you are interested by other models, require advisory services or are looking for a training around similar models.
+The models proposed here are only a small part of the code we have developed or have access to for research and advisory services purposes. Don’t hesitate to contact us if you are interested by other models, require advisory services or are looking for a training around similar models.
 
-### Training
+## Trainings and workshops
 
 We propose in-house training and workshops on subjects related to quantitative finance and risk management.
 
@@ -98,7 +100,7 @@ Some recent public courses:
 * Planned: *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (New York, USA), 25-26 March 2019.
 * Planned: *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 3-4 April 2019.
 
-### Advisory
+## Advisory
 
 * Developments
     * *Multi-curve and collateral framework*. Collateral discounting, impact of CSA, multi-curve calibration, new benchmarks, cheapest-to-deliver
