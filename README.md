@@ -129,3 +129,5 @@ Some recent public courses:
     * *Regulatory consultative documents*: Comments on consultative documents.
     * *Negotiation*: Negotiations for efficient access to markets
     
+![alt text](https://1.bp.blogspot.com/-7ssBHcvQwXM/W9cqfO3f2UI/AAAAAAAAAGQ/nC0ajGEDfE4txCZdW2Rifx_91XfSZJvtACK4BGAYYCw/s1600/murisq-bookmark-1175.png "muRisQ Advisory banner")
+
