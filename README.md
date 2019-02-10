@@ -1,4 +1,4 @@
-# muRisQ Advisory: Interest rate models developments
+# muRisQ Advisory: Interest Rate Models
 
 muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood in a large sense which includes risk strategies, ALM, quantitative impacts of regulation, and trading strategies.
 
