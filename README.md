@@ -4,10 +4,10 @@ muRisQ stands for Management of Risk by Quantitative methods. The term risk mana
 
 You can find more details about our consulting and advisory services on our website [muRisQ Advisory](http://murisq.com/) - Email: [info@murisq.com](mailto:info@murisq.com)
 
-muRisQ Advisory is manage by Marc Henrard. You can find more about his contribution to quantitative finance through his papers and his blog:
-* Papers in finance: [Marc Henrard | SSRN](http://ssrn.com/author=352726)
+muRisQ Advisory is managed by Marc Henrard. You can find more about his contribution to quantitative finance through his papers and his blog:
+* Papers in finance: [Marc Henrard - SSRN](http://ssrn.com/author=352726)
 * Blog: [Multi-curve framework](http://multi-curve-framework.blogspot.com)
-* Profile: [Marc Henrard | LinkedIn](https://www.linkedin.com/in/marchenrard/)
+* Profile: [Marc Henrard - LinkedIn](https://www.linkedin.com/in/marchenrard/)
 
 ---
 
@@ -15,7 +15,7 @@ muRisQ Advisory is manage by Marc Henrard. You can find more about his contribut
 
 This repository proposes code for pricing and risk management of interest rate derivatives.
 
-The models implemented are based on personal research and academic literature as described in each pricer.
+The models implemented are based on proprietary research and academic literature as described in each implementation.
 
 Comments and suggestions for improvements are welcomed.
 
