@@ -93,8 +93,8 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>0.2.0</murisq-basics.version>
-    <og-strata.version>2.2.0</og-strata.version>
+    <murisq-basics.version>0.2.1</murisq-basics.version>
+    <og-strata.version>2.3.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>2.1.1</joda-convert.version>
     <joda-beans.version>2.3</joda-beans.version>
