@@ -40,8 +40,8 @@ LIBOR fallback options analysis. Value transfer, convexity adjustments and risk 
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).
 
-### 4. Overnight-Overnight conventions
-Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition.
+### 4. Overnight-Overnight conventions and nodes
+Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition. Associated template and nodes to calibrate curves.
 
 ## Models
 
