@@ -104,6 +104,7 @@ Some recent public courses:
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 3-4 April 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), April 2019.
 * Planned: *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
+* Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
 
 
 ## Advisory
