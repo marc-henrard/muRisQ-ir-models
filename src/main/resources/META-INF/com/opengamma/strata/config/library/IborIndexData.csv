@@ -1,8 +1,8 @@
 Name,Currency,Active,Day Count,Fixing Calendar,Offset Days,Offset Calendar,Effective Date Calendar,Tenor,Tenor Convention,FixingTime,FixingZone,Fixed Leg Day Count
 ,,,,,,,,,,,,
-EUR-ESTERCMP-1M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,1M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
-EUR-ESTERCMP-3M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,3M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
-EUR-ESTERCMP-6M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,6M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+EUR-ESTRCMP-1M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,1M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+EUR-ESTRCMP-3M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,3M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+EUR-ESTRCMP-6M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,6M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
 ,,,,,,,,,,,,
 GBP-SONIACMP-1M,GBP,TRUE,Act/365F,GBLO,0,GBLO,GBLO,1M,LastBusinessDay,11:00,Europe/London,Act/365F
 GBP-SONIACMP-3M,GBP,TRUE,Act/365F,GBLO,0,GBLO,GBLO,3M,LastBusinessDay,11:00,Europe/London,Act/365F
@@ -15,3 +15,15 @@ USD-SOFRCMP-6M,USD,TRUE,Act/360,USGS,2,USGS,USGS,6M,LastBusinessDay,11:00,Americ
 USD-FED-FUNDCMP-1M,USD,TRUE,Act/360,USNY,2,USNY,USNY,1M,LastBusinessDay,11:00,America/New_York,ACT/360
 USD-FED-FUNDCMP-3M,USD,TRUE,Act/360,USNY,2,USNY,USNY,3M,LastBusinessDay,11:00,America/New_York,ACT/360
 USD-FED-FUNDCMP-6M,USD,TRUE,Act/360,USNY,2,USNY,USNY,6M,LastBusinessDay,11:00,America/New_York,ACT/360
+,,,,,,,,,,,,
+EUR-ESTROIS-1M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,1M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+EUR-ESTROIS-3M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,3M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+EUR-ESTROIS-6M,EUR,TRUE,Act/360,EUTA,2,EUTA,EUTA,6M,LastBusinessDay,11:00,Europe/Brussels,ACT/360
+,,,,,,,,,,,,
+GBP-SONIAOIS-1M,GBP,TRUE,Act/365F,GBLO,0,GBLO,GBLO,1M,LastBusinessDay,11:00,Europe/London,Act/365F
+GBP-SONIAOIS-3M,GBP,TRUE,Act/365F,GBLO,0,GBLO,GBLO,3M,LastBusinessDay,11:00,Europe/London,Act/365F
+GBP-SONIAOIS-6M,GBP,TRUE,Act/365F,GBLO,0,GBLO,GBLO,6M,LastBusinessDay,11:00,Europe/London,Act/365F
+,,,,,,,,,,,,
+USD-SOFROIS-1M,USD,TRUE,Act/360,USGS,2,USGS,USGS,1M,LastBusinessDay,11:00,America/New_York,ACT/360
+USD-SOFROIS-3M,USD,TRUE,Act/360,USGS,2,USGS,USGS,3M,LastBusinessDay,11:00,America/New_York,ACT/360
+USD-SOFROIS-6M,USD,TRUE,Act/360,USGS,2,USGS,USGS,6M,LastBusinessDay,11:00,America/New_York,ACT/360
