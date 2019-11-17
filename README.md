@@ -102,9 +102,11 @@ Some recent public courses:
 * Workshop *The future of LIBOR: Quantitative perspective on benchmarks, overnight, fallback and regulation*. Finans Foreningen workshop (Copenhagen, Denmark), 24 January 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (New York, USA), 25-26 March 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 3-4 April 2019.
-* Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), April 2019.
-* Planned: *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
+* Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), 23-24 September 2019.
+* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
+* Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 4-5 November 2019.
 * Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
+* Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
 
 
 ## Advisory
