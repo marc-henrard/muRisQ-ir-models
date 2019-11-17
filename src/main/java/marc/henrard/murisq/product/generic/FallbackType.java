@@ -19,9 +19,9 @@ public enum FallbackType implements NamedEnum {
    */
   SPOT_OVERNIGHT,
   /**
-   * The Compounded Setting in Arrears Rate option.
+   * The Compounded Setting in Arrears Rate option, based on calculation period.
    */
-  COMPOUNDED_IN_ARREARS,
+  COMPOUNDED_IN_ARREARS_CALCPERIOD,
   /**
    * The Compounded Setting in Advance Rate option.
    */
@@ -29,7 +29,15 @@ public enum FallbackType implements NamedEnum {
   /**
    * The OIS Benchmark options.
    */
-  OIS_BENCHMARK;
+  OIS_BENCHMARK,
+  /**
+   * The Compounded Setting in Arrears Rate, shifted by 2 business days, based on IBOR period.
+   */
+  COMPOUNDED_IN_ARREARS_2DAYS_IBORPERIOD,
+  /**
+   * The Compounded Setting in Arrears Rate, shifted by 2 business days, based on calculation period.
+   */
+  COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD;
 
   private static final EnumNames<FallbackType> NAMES = EnumNames.of(FallbackType.class);
 
