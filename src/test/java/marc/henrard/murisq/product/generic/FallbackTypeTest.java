@@ -9,8 +9,6 @@ import static org.testng.Assert.assertEquals;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import marc.henrard.murisq.product.generic.FallbackType;
-
 /**
  * Tests {@link FallbackType}.
  * 
@@ -23,9 +21,11 @@ public class FallbackTypeTest {
   public static Object[][] data_name() {
     return new Object[][] {
         {FallbackType.SPOT_OVERNIGHT, "SpotOvernight"},
-        {FallbackType.COMPOUNDED_IN_ARREARS, "CompoundedInArrears"},
+        {FallbackType.COMPOUNDED_IN_ARREARS_CALCPERIOD, "CompoundedInArrearsCalcperiod"},
         {FallbackType.COMPOUNDED_IN_ADVANCE, "CompoundedInAdvance"},
         {FallbackType.OIS_BENCHMARK, "OisBenchmark"},
+        {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD, "CompoundedInArrears2daysCalcperiod"},
+        {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_IBORPERIOD, "CompoundedInArrears2daysIborperiod"},
     };
   }
 
