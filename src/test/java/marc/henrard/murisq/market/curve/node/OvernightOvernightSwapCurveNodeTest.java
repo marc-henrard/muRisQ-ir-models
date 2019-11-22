@@ -5,11 +5,12 @@ package marc.henrard.murisq.market.curve.node;
 
 import static com.opengamma.strata.basics.date.Tenor.TENOR_10Y;
 import static com.opengamma.strata.collect.TestHelper.assertSerialization;
-import static com.opengamma.strata.collect.TestHelper.assertThrows;
 import static com.opengamma.strata.collect.TestHelper.coverBeanEquals;
 import static com.opengamma.strata.collect.TestHelper.coverImmutableBean;
 import static com.opengamma.strata.collect.TestHelper.date;
 import static com.opengamma.strata.product.common.BuySell.BUY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 
@@ -18,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.StandardId;
@@ -43,7 +44,6 @@ import marc.henrard.murisq.product.swap.type.OvernightOvernightSwapTemplate;
  * 
  * @author Marc Henrard
  */
-@Test
 public class OvernightOvernightSwapCurveNodeTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
@@ -51,7 +51,7 @@ public class OvernightOvernightSwapCurveNodeTest {
 
   private static final OvernightOvernightSwapTemplate TEMPLATE =
       OvernightOvernightSwapTemplate
-      .of(TENOR_10Y, OvernightOvernightSwapConventions.USD_SOFR_3M_FED_FUND_3M);
+          .of(TENOR_10Y, OvernightOvernightSwapConventions.USD_SOFR_3M_FED_FUND_3M);
   private static final QuoteId QUOTE_ID = QuoteId.of(StandardId.of("OG-Ticker", "OnOnSwap1"));
   private static final double SPREAD = 0.0015;
   private static final String LABEL = "Label";
@@ -59,6 +59,7 @@ public class OvernightOvernightSwapCurveNodeTest {
 
   private static final double TOLERANCE_DF = 1.0E-10;
 
+  @Test
   public void builder() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.builder()
         .label(LABEL)
@@ -66,37 +67,41 @@ public class OvernightOvernightSwapCurveNodeTest {
         .rateId(QUOTE_ID)
         .additionalSpread(SPREAD)
         .build();
-    assertEquals(test.getLabel(), LABEL);
-    assertEquals(test.getRateId(), QUOTE_ID);
-    assertEquals(test.getAdditionalSpread(), SPREAD);
-    assertEquals(test.getTemplate(), TEMPLATE);
-    assertEquals(test.getDate(), CurveNodeDate.END);
+    assertThat(test.getLabel()).isEqualTo(LABEL);
+    assertThat(test.getRateId()).isEqualTo(QUOTE_ID);
+    assertThat(test.getAdditionalSpread()).isEqualTo(SPREAD);
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE);
+    assertThat(test.getDate()).isEqualTo(CurveNodeDate.END);
   }
 
+  @Test
   public void of_noSpread() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID);
-    assertEquals(test.getLabel(), LABEL_AUTO);
-    assertEquals(test.getRateId(), QUOTE_ID);
-    assertEquals(test.getAdditionalSpread(), 0.0d);
-    assertEquals(test.getTemplate(), TEMPLATE);
+    assertThat(test.getLabel()).isEqualTo(LABEL_AUTO);
+    assertThat(test.getRateId()).isEqualTo(QUOTE_ID);
+    assertThat(test.getAdditionalSpread()).isEqualTo(0.0d);
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE);
   }
 
+  @Test
   public void of_withSpread() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
-    assertEquals(test.getLabel(), LABEL_AUTO);
-    assertEquals(test.getRateId(), QUOTE_ID);
-    assertEquals(test.getAdditionalSpread(), SPREAD);
-    assertEquals(test.getTemplate(), TEMPLATE);
+    assertThat(test.getLabel()).isEqualTo(LABEL_AUTO);
+    assertThat(test.getRateId()).isEqualTo(QUOTE_ID);
+    assertThat(test.getAdditionalSpread()).isEqualTo(SPREAD);
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE);
   }
 
+  @Test
   public void of_withSpreadAndLabel() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD, LABEL);
-    assertEquals(test.getLabel(), LABEL);
-    assertEquals(test.getRateId(), QUOTE_ID);
-    assertEquals(test.getAdditionalSpread(), SPREAD);
-    assertEquals(test.getTemplate(), TEMPLATE);
+    assertThat(test.getLabel()).isEqualTo(LABEL);
+    assertThat(test.getRateId()).isEqualTo(QUOTE_ID);
+    assertThat(test.getAdditionalSpread()).isEqualTo(SPREAD);
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE);
   }
 
+  @Test
   public void requirements() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     Set<ObservableId> set = test.requirements();
@@ -105,6 +110,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertFalse(itr.hasNext());
   }
 
+  @Test
   public void nodeToTrade() {
     OvernightOvernightSwapCurveNode node = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     LocalDate tradeDate = LocalDate.of(2015, 1, 22);
@@ -116,13 +122,16 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertEquals(trade, expected);
   }
 
+  @Test
   public void trade_noMarketData() {
     OvernightOvernightSwapCurveNode node = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     LocalDate valuationDate = LocalDate.of(2015, 1, 22);
     MarketData marketData = MarketData.empty(valuationDate);
-    assertThrows(() -> node.trade(1d, marketData, REF_DATA), MarketDataNotFoundException.class);
+    assertThatExceptionOfType(MarketDataNotFoundException.class)
+        .isThrownBy(() -> node.trade(1d, marketData, REF_DATA));
   }
 
+  @Test
   public void initialGuess() {
     OvernightOvernightSwapCurveNode node = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     LocalDate valuationDate = LocalDate.of(2015, 1, 22);
@@ -135,6 +144,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertEquals(node.initialGuess(marketData, ValueType.PRICE_INDEX), 0d);
   }
 
+  @Test
   public void metadata_end() {
     OvernightOvernightSwapCurveNode node = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     LocalDate valuationDate = LocalDate.of(2015, 1, 22);
@@ -144,6 +154,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertEquals(((TenorDateParameterMetadata) metadata).getTenor(), Tenor.TENOR_10Y);
   }
 
+  @Test
   public void metadata_fixed() {
     OvernightOvernightSwapCurveNode node =
         OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD, LABEL).withDate(CurveNodeDate.of(VAL_DATE));
@@ -153,6 +164,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertEquals(metadata.getLabel(), node.getLabel());
   }
 
+  @Test
   public void metadata_last_fixing() {
     OvernightOvernightSwapCurveNode node =
         OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD, LABEL).withDate(CurveNodeDate.LAST_FIXING);
@@ -163,6 +175,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     assertEquals(metadata.getLabel(), node.getLabel());
   }
 
+  @Test
   public void coverage() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     coverImmutableBean(test);
@@ -172,6 +185,7 @@ public class OvernightOvernightSwapCurveNodeTest {
     coverBeanEquals(test, test2);
   }
 
+  @Test
   public void serialization() {
     OvernightOvernightSwapCurveNode test = OvernightOvernightSwapCurveNode.of(TEMPLATE, QUOTE_ID, SPREAD);
     assertSerialization(test);

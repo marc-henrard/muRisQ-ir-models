@@ -46,6 +46,18 @@
     </dependency>
     <!--  Used in tests -->
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit5.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
       <version>6.9.10</version>
@@ -93,12 +105,14 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>0.2.1</murisq-basics.version>
-    <og-strata.version>2.3.0</og-strata.version>
+    <murisq-basics.version>2019.11.0</murisq-basics.version>
+    <og-strata.version>2.6.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>2.1.1</joda-convert.version>
     <joda-beans.version>2.3</joda-beans.version>
     <joda.beans.indent>2</joda.beans.indent>
+    <assertj.version>3.14.0</assertj.version>
+    <junit5.version>5.5.2</junit5.version>
     <!-- Properties for maven-compiler-plugin -->
     <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
     <maven.compiler.source>1.8</maven.compiler.source>
