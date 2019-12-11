@@ -1,4 +1,6 @@
-# muRisQ Advisory: Interest Rate Models
+# muRisQ-ir-models by Marc Henrard
+
+muRisQ Advisory open source code for Interest Rate Models.
 
 muRisQ stands for Management of Risk by Quantitative methods. The term risk management has to be understood in a large sense which includes risk strategies, ALM, quantitative impacts of regulation, and trading strategies.
 
@@ -17,12 +19,11 @@ This repository proposes code for pricing and risk management of interest rate d
 
 The models implemented are based on proprietary research and academic literature as described in each implementation.
 
-Comments and suggestions for improvements are welcomed.
+Comments and suggestions for improvements are welcome.
 
 ## Foundations
 
-The pricers proposed in this repository are based on OpenGamma Strata (version 2.3.0) library:
-http://strata.opengamma.io/
+Some code proposed in this repository is based on OpenGamma Strata (version 2.6.0) library: http://strata.opengamma.io/
 
 ## Products
 
@@ -40,8 +41,13 @@ LIBOR fallback options analysis. Value transfer, convexity adjustments and risk 
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).
 
-### 4. Overnight-Overnight conventions and nodes
+## Curves
+
+### 1. Overnight-Overnight conventions and nodes
 Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition. Associated template and nodes to calibrate curves.
+
+### 2. Multiply curve
+Curve description as the multiplication of two underlying curves. Used for intra-month seasonal adjustment in overnight-curves.
 
 ## Models
 
@@ -91,7 +97,7 @@ A in-house tailor-made course with our experts presented to your full team often
 
 Some of the popular courses are (course description and typical agendas available through the links):
 * Multi-curve and collateral framework: foundations, evolution and implementation. <https://murisq.blogspot.com/p/training.html#multicurve>
-* The future of LIBOR: Quantitative perspective on benchmarks, overnight, fallback and regulation. <https://murisq.blogspot.com/p/training.html#libor-future>
+* Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation. <https://murisq.blogspot.com/p/training.html#libor-future>
 * Algorithmic Differentiation in Finance. <https://murisq.blogspot.com/p/training.html#ad>
 * Central clearing and bilateral margin. <https://murisq.blogspot.com/p/training.html#margin>
 
@@ -106,7 +112,9 @@ Some recent public courses:
 * Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 4-5 November 2019.
 * Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
-* Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
+* Planned: Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
+* Planned: Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (Frankfurt, Germany), 1 April 2020.
+* Planned: Workshop *Rate transition: Quantitative perspective on benchmarks, transition, fallback and regulation*. QuantMinds International -- KNect365 (Hamburg, Germany), 12-14 May 2020. 
 
 
 ## Advisory
@@ -117,7 +125,7 @@ Some recent public courses:
     * *Exchange traded instruments*: Development of exchanged traded instruments, detailed term sheet, regulatory approval, CCP's risk management procedures.
     * *Margin methodologies*: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
     * *Simulation*: Model implementation for efficient simulation, xVA underlying models 
-    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, valuation impacts, risk management, ALM
+    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks transition and discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, CCP discounting switch, valuation impacts, risk management, ALM, cost of protocol
     * *Code*: Large quant libraries available to price and risk manage interest rate books
 * Risk management
 	* Hedging strategies (design and back testing)
