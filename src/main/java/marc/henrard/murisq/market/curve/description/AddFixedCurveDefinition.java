@@ -38,8 +38,8 @@ import org.joda.beans.impl.direct.DirectMetaPropertyMap;
  * 
  * @author Marc Henrard
  */
-@BeanDefinition
-public class AddFixedCurveDefinition
+@BeanDefinition(factoryName = "of")
+public final class AddFixedCurveDefinition
     implements CurveDefinition, ImmutableBean, Serializable {
 
   /**
@@ -113,6 +113,20 @@ public class AddFixedCurveDefinition
   private static final long serialVersionUID = 1L;
 
   /**
+   * Obtains an instance.
+   * @param fixedCurve  the value of the property, not null
+   * @param spreadCurveDefinition  the value of the property, not null
+   * @return the instance
+   */
+  public static AddFixedCurveDefinition of(
+      Curve fixedCurve,
+      CurveDefinition spreadCurveDefinition) {
+    return new AddFixedCurveDefinition(
+      fixedCurve,
+      spreadCurveDefinition);
+  }
+
+  /**
    * Returns a builder used to create an instance of the bean.
    * @return the builder, not null
    */
@@ -120,15 +134,13 @@ public class AddFixedCurveDefinition
     return new AddFixedCurveDefinition.Builder();
   }
 
-  /**
-   * Restricted constructor.
-   * @param builder  the builder to copy from, not null
-   */
-  protected AddFixedCurveDefinition(AddFixedCurveDefinition.Builder builder) {
-    JodaBeanUtils.notNull(builder.fixedCurve, "fixedCurve");
-    JodaBeanUtils.notNull(builder.spreadCurveDefinition, "spreadCurveDefinition");
-    this.fixedCurve = builder.fixedCurve;
-    this.spreadCurveDefinition = builder.spreadCurveDefinition;
+  private AddFixedCurveDefinition(
+      Curve fixedCurve,
+      CurveDefinition spreadCurveDefinition) {
+    JodaBeanUtils.notNull(fixedCurve, "fixedCurve");
+    JodaBeanUtils.notNull(spreadCurveDefinition, "spreadCurveDefinition");
+    this.fixedCurve = fixedCurve;
+    this.spreadCurveDefinition = spreadCurveDefinition;
   }
 
   @Override
@@ -188,25 +200,17 @@ public class AddFixedCurveDefinition
   public String toString() {
     StringBuilder buf = new StringBuilder(96);
     buf.append("AddFixedCurveDefinition{");
-    int len = buf.length();
-    toString(buf);
-    if (buf.length() > len) {
-      buf.setLength(buf.length() - 2);
-    }
+    buf.append("fixedCurve").append('=').append(fixedCurve).append(',').append(' ');
+    buf.append("spreadCurveDefinition").append('=').append(JodaBeanUtils.toString(spreadCurveDefinition));
     buf.append('}');
     return buf.toString();
-  }
-
-  protected void toString(StringBuilder buf) {
-    buf.append("fixedCurve").append('=').append(JodaBeanUtils.toString(fixedCurve)).append(',').append(' ');
-    buf.append("spreadCurveDefinition").append('=').append(JodaBeanUtils.toString(spreadCurveDefinition)).append(',').append(' ');
   }
 
   //-----------------------------------------------------------------------
   /**
    * The meta-bean for {@code AddFixedCurveDefinition}.
    */
-  public static class Meta extends DirectMetaBean {
+  public static final class Meta extends DirectMetaBean {
     /**
      * The singleton instance of the meta-bean.
      */
@@ -233,7 +237,7 @@ public class AddFixedCurveDefinition
     /**
      * Restricted constructor.
      */
-    protected Meta() {
+    private Meta() {
     }
 
     @Override
@@ -267,7 +271,7 @@ public class AddFixedCurveDefinition
      * The meta-property for the {@code fixedCurve} property.
      * @return the meta-property, not null
      */
-    public final MetaProperty<Curve> fixedCurve() {
+    public MetaProperty<Curve> fixedCurve() {
       return fixedCurve;
     }
 
@@ -275,7 +279,7 @@ public class AddFixedCurveDefinition
      * The meta-property for the {@code spreadCurveDefinition} property.
      * @return the meta-property, not null
      */
-    public final MetaProperty<CurveDefinition> spreadCurveDefinition() {
+    public MetaProperty<CurveDefinition> spreadCurveDefinition() {
       return spreadCurveDefinition;
     }
 
@@ -306,7 +310,7 @@ public class AddFixedCurveDefinition
   /**
    * The bean-builder for {@code AddFixedCurveDefinition}.
    */
-  public static class Builder extends DirectFieldsBeanBuilder<AddFixedCurveDefinition> {
+  public static final class Builder extends DirectFieldsBeanBuilder<AddFixedCurveDefinition> {
 
     private Curve fixedCurve;
     private CurveDefinition spreadCurveDefinition;
@@ -314,14 +318,14 @@ public class AddFixedCurveDefinition
     /**
      * Restricted constructor.
      */
-    protected Builder() {
+    private Builder() {
     }
 
     /**
      * Restricted copy constructor.
      * @param beanToCopy  the bean to copy from, not null
      */
-    protected Builder(AddFixedCurveDefinition beanToCopy) {
+    private Builder(AddFixedCurveDefinition beanToCopy) {
       this.fixedCurve = beanToCopy.getFixedCurve();
       this.spreadCurveDefinition = beanToCopy.getSpreadCurveDefinition();
     }
@@ -362,7 +366,9 @@ public class AddFixedCurveDefinition
 
     @Override
     public AddFixedCurveDefinition build() {
-      return new AddFixedCurveDefinition(this);
+      return new AddFixedCurveDefinition(
+          fixedCurve,
+          spreadCurveDefinition);
     }
 
     //-----------------------------------------------------------------------
@@ -393,18 +399,10 @@ public class AddFixedCurveDefinition
     public String toString() {
       StringBuilder buf = new StringBuilder(96);
       buf.append("AddFixedCurveDefinition.Builder{");
-      int len = buf.length();
-      toString(buf);
-      if (buf.length() > len) {
-        buf.setLength(buf.length() - 2);
-      }
+      buf.append("fixedCurve").append('=').append(JodaBeanUtils.toString(fixedCurve)).append(',').append(' ');
+      buf.append("spreadCurveDefinition").append('=').append(JodaBeanUtils.toString(spreadCurveDefinition));
       buf.append('}');
       return buf.toString();
-    }
-
-    protected void toString(StringBuilder buf) {
-      buf.append("fixedCurve").append('=').append(JodaBeanUtils.toString(fixedCurve)).append(',').append(' ');
-      buf.append("spreadCurveDefinition").append('=').append(JodaBeanUtils.toString(spreadCurveDefinition)).append(',').append(' ');
     }
 
   }
