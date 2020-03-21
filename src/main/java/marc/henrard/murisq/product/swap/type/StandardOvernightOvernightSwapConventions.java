@@ -5,7 +5,7 @@ package marc.henrard.murisq.product.swap.type;
 
 import static com.opengamma.strata.basics.date.HolidayCalendarIds.EUTA;
 import static com.opengamma.strata.basics.index.OvernightIndices.EUR_EONIA;
-import static com.opengamma.strata.basics.index.OvernightIndices.EUR_ESTER;
+import static com.opengamma.strata.basics.index.OvernightIndices.EUR_ESTR;
 import static com.opengamma.strata.basics.index.OvernightIndices.USD_FED_FUND;
 import static com.opengamma.strata.basics.index.OvernightIndices.USD_SOFR;
 import static com.opengamma.strata.product.swap.OvernightAccrualMethod.COMPOUNDED;
@@ -79,7 +79,7 @@ public final class StandardOvernightOvernightSwapConventions {
           .build();
   private static final OvernightRateSwapLegConvention ESTER_LEG =
       OvernightRateSwapLegConvention.builder()
-          .index(EUR_ESTER)
+          .index(EUR_ESTR)
           .accrualMethod(COMPOUNDED)
           .accrualFrequency(Frequency.P3M)
           .paymentFrequency(Frequency.P3M)

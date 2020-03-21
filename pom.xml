@@ -112,8 +112,8 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>2020.01.SNAPSHOT</murisq-basics.version>
-    <og-strata.version>2.6.10-SNAPSHOT</og-strata.version>
+    <murisq-basics.version>2020.02.0</murisq-basics.version>
+    <og-strata.version>2.7.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>2.1.1</joda-convert.version>
     <joda-beans.version>2.3</joda-beans.version>

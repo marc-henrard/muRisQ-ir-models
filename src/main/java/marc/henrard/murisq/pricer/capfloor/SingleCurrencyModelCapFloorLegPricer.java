@@ -24,12 +24,7 @@ import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorLeg;
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
 
 /**
- * Measures for cap/floor legs in a multi-curve rational model.
- * <p>
- * <i>Reference: </i>
- * <p>
- * Theoretical description: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2016).
- * Rational multi-curve models with counterparty-risk valuation adjustments. <i>Quantitative Finance</i>, 16(6): 847-866.
+ * Measures for cap/floor legs in a single currency model.
  * 
  * @author Marc Henrard
  */
@@ -76,7 +71,6 @@ public class SingleCurrencyModelCapFloorLegPricer {
         .reduce((c1, c2) -> c1.plus(c2))
         .get();
   }
-
 
   /**
    * Computes the implied volatility in the Bachelier model.
