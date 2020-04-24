@@ -25,7 +25,7 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
    * Calculates the volatility of the (zero-coupon) bond scaled by the cash account
    * numeraire, i.e. alpha, for a given period.
    * 
-   * @param data  the Hull-White model data
+   * @param parameters  the Hull-White model parameters
    * @param startExpiry the start time of the expiry period
    * @param endExpiry  the end time of the expiry period
    * @param bondMaturity the time to maturity for the bond
@@ -263,6 +263,49 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
           (exp2[loopperiod] - exp2[loopperiod + 1]);
     }
     return factor / numerator;
+  }
+  
+  /**
+   * Computes the crosses component of the variance used for rates on different periods.
+   * <p>
+   * Correspond to the computation of the integral
+   *    \int_0^t (\nu(s,t_2)-\nu(s,t_1))(\nu(s,t_4)-\nu(s,t_3)) ds
+   * where t = endIntegralTime
+   * 
+   * @param parameters  the Hull-White model parameters
+   * @param endIntegralTime the end time for the integration period
+   * @param t1 the start time for the first cross
+   * @param t2 the end time for the first cross
+   * @param t3 the start time for the second cross
+   * @param t4 the end time for the second cross
+   * @return the variance contribution
+   */
+  public double varianceCrossTerm(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters, 
+      double endIntegralTime,
+      double t1,
+      double t2,
+      double t3,
+      double t4) {
+
+    double kappa = parameters.getMeanReversion();
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArrayUnsafe(), endIntegralTime) + 1);
+    // Period in which the time endIntegralTime is; volatilityTime.get(i-1) <= endIntegralTime < volatilityTime.get(i);
+    double[] s = new double[indexEnd + 1];
+    System.arraycopy(parameters.getVolatilityTime().toArrayUnsafe(), 0, s, 0, indexEnd);
+    s[indexEnd] = endIntegralTime;
+    double[] exp2as = new double[indexEnd + 1];
+    for (int loopperiod = 0; loopperiod < indexEnd + 1; loopperiod++) {
+      exp2as[loopperiod] = Math.exp(2 * kappa * s[loopperiod]);
+    }
+    double factor1 = 0.0d;
+    for (int loopperiod = 0; loopperiod < indexEnd; loopperiod++) {
+      double eta2 = parameters.getVolatility().get(loopperiod) * parameters.getVolatility().get(loopperiod);
+      factor1 += eta2 * (exp2as[loopperiod + 1] - exp2as[loopperiod]);
+    }
+    double factor2 = (Math.exp(-kappa * t1) - Math.exp(-kappa * t2)) 
+        * (Math.exp(-kappa * t3) - Math.exp(-kappa * t4)) / (2 * kappa * kappa * kappa);
+    return factor1 * factor2;
   }
 
 }

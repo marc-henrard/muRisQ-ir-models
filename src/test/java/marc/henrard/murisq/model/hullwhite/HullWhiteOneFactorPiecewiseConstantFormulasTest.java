@@ -11,8 +11,6 @@ import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.pricer.impl.rate.model.HullWhiteOneFactorPiecewiseConstantInterestRateModel;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 
-import marc.henrard.murisq.model.hullwhite.HullWhiteOneFactorPiecewiseConstantFormulas;
-
 /**
  * Tests {@link HullWhiteOneFactorPiecewiseConstantFormulas}.
  * 
@@ -237,6 +235,44 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
     double varExpected = factor2 / numerator;
     double varComputed = FORMULAS.shortRateMeanModelPart(MODEL_PARAMETERS, endTime);
     assertEquals(varComputed, varExpected, TOLERANCE_VARIANCE);
+  }
+
+  /* Cross terms for variance related to rates on 2 different periods. */
+  public void varianceCrossTerm_ConstVol() {
+    double endTime = 4.5;
+    double t1 = 5.0d;
+    double t2 = 5.25d;
+    double t3 = 6.0d;
+    double t4 = 6.25d;
+    double sigma = VOLATILITY_CST.get(0);
+    double numerator = 2 * Math.pow(MEAN_REVERSION, 3);
+    double factor2 = (Math.exp(-MEAN_REVERSION * t1) - Math.exp(-MEAN_REVERSION * t2)) *
+        (Math.exp(-MEAN_REVERSION * t3) - Math.exp(-MEAN_REVERSION * t4));
+    double factor1 = sigma * sigma *( Math.exp(2 * MEAN_REVERSION * endTime) - 1.0d);
+    double varianceExpected = factor1 * factor2 / numerator;
+    double varianceComputed = FORMULAS.varianceCrossTerm(MODEL_CST_PARAMETERS, endTime, t1, t2, t3, t4);
+    assertEquals(varianceComputed, varianceExpected, TOLERANCE_VARIANCE);
+  }
+  
+  public void varianceCrossTerm_PiecewiseConstVol() {
+    double endTime = 4.5;
+    double[] ti = {0.0, 0.5, 1.0, 2.0, 4.0, endTime};
+    double[] etai = {0.015, 0.011, 0.012, 0.013, 0.014};
+    double t1 = 5.0d;
+    double t2 = 5.25d;
+    double t3 = 6.0d;
+    double t4 = 6.25d;
+    double numerator = 2 * Math.pow(MEAN_REVERSION, 3);
+    double factor2 = (Math.exp(-MEAN_REVERSION * t1) - Math.exp(-MEAN_REVERSION * t2)) *
+        (Math.exp(-MEAN_REVERSION * t3) - Math.exp(-MEAN_REVERSION * t4));
+    double factor1 = 0;
+    for (int i = 0; i < etai.length; i++) {
+      factor1 += etai[i] * etai[i] *
+          ( Math.exp(2 * MEAN_REVERSION * ti[i+1]) - Math.exp(2 * MEAN_REVERSION * ti[i]));
+    }
+    double varianceExpected = factor1 * factor2 / numerator;
+    double varianceComputed = FORMULAS.varianceCrossTerm(MODEL_PARAMETERS, endTime, t1, t2, t3, t4);
+    assertEquals(varianceComputed, varianceExpected, TOLERANCE_VARIANCE);
   }
   
 }
