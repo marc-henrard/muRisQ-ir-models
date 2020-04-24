@@ -37,7 +37,12 @@ public enum FallbackType implements NamedEnum {
   /**
    * The Compounded Setting in Arrears Rate, shifted by 2 business days, based on calculation period.
    */
-  COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD;
+  COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD,
+  /**
+   * The Compounded Setting in Arrears Rate, with start accrual date shifted 2 business days and period 
+   * based on Ibor tenor. As published in Bloomberg IBOR fallback rule book.
+   */
+  COMPOUNDED_IN_ARREARS_2DAYS_TENOR;
 
   private static final EnumNames<FallbackType> NAMES = EnumNames.of(FallbackType.class);
 
