@@ -3,21 +3,23 @@
  */
 package marc.henrard.murisq.product.generic;
 
-import static com.opengamma.strata.collect.TestHelper.assertThrows;
-import static org.testng.Assert.assertEquals;
+import static com.opengamma.strata.collect.TestHelper.assertSerialization;
+import static com.opengamma.strata.collect.TestHelper.coverEnum;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests {@link FallbackType}.
  * 
  * @author Marc Henrard
  */
-@Test
 public class FallbackTypeTest {
 
-  @DataProvider(name = "name")
+  //-------------------------------------------------------------------------
   public static Object[][] data_name() {
     return new Object[][] {
         {FallbackType.SPOT_OVERNIGHT, "SpotOvernight"},
@@ -26,24 +28,43 @@ public class FallbackTypeTest {
         {FallbackType.OIS_BENCHMARK, "OisBenchmark"},
         {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD, "CompoundedInArrears2daysCalcperiod"},
         {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_IBORPERIOD, "CompoundedInArrears2daysIborperiod"},
+        {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_TENOR, "CompoundedInArrears2daysTenor"},
     };
   }
 
-  @Test(dataProvider = "name")
-  public void toString(FallbackType type, String name) {
-    assertEquals(type.toString(), name);
+  @ParameterizedTest
+  @MethodSource("data_name")
+  public void test_toString(FallbackType convention, String name) {
+    assertThat(convention.toString()).isEqualTo(name);
   }
 
-  @Test(dataProvider = "name")
-  public void ofString(FallbackType type, String name) {
-    assertEquals(FallbackType.of(name), type);
+  @ParameterizedTest
+  @MethodSource("data_name")
+  public void test_of_lookup(FallbackType convention, String name) {
+    assertThat(FallbackType.of(name)).isEqualTo(convention);
   }
 
-  public void ofNotFound() {
-    assertThrows(() -> FallbackType.of("Unknown"), IllegalArgumentException.class);
+  @Test
+  public void test_of_lookup_notFound() {
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> FallbackType.of("Rubbish"));
   }
 
-  public void ofNull() {
-    assertThrows(() -> FallbackType.of(null), IllegalArgumentException.class);
+  @Test
+  public void test_of_lookup_null() {
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> FallbackType.of(null));
   }
+
+  //-------------------------------------------------------------------------
+  @Test
+  public void coverage() {
+    coverEnum(FallbackType.class);
+  }
+
+  @Test
+  public void test_serialization() {
+    assertSerialization(FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_TENOR);
+  }
+  
 }
