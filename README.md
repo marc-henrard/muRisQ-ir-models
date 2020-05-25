@@ -62,6 +62,7 @@ Explicit formula for implicit volatility.
 ### 2. Hull-White one-factor
 * Convexity adjustment for futures. Implementation with flexible start and end date.
 * Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation. Available at (https://ssrn.com/abstract=3134346).
+* Different formulas for cross-terms: same model parameters (Asian options) or different model parameters (discounting transition)
 
 ### 3. Rational Multi-curve Model
 
@@ -111,10 +112,11 @@ Some recent public courses:
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), 23-24 September 2019.
 * Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 4-5 November 2019.
-* Planned: Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
-* Planned: Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
-* Planned: Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (Frankfurt, Germany), 1 April 2020.
-* Planned: Workshop *Rate transition: Quantitative perspective on benchmarks, transition, fallback and regulation*. QuantMinds International -- KNect365 (Hamburg, Germany), 12-14 May 2020. 
+* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
+* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
+* Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. In-house course, International Financial Organisation (on-line), April 2020.
+* Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS course (London, UK), May 2020.
+* Planned *Martingales and Fixed Income Valuation*, CQF Module 6. CQF Institute (London, UK), May 2020.
 
 
 ## Advisory
@@ -125,7 +127,7 @@ Some recent public courses:
     * *Exchange traded instruments*: Development of exchanged traded instruments, detailed term sheet, regulatory approval, CCP's risk management procedures.
     * *Margin methodologies*: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
     * *Simulation*: Model implementation for efficient simulation, xVA underlying models 
-    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks transition and discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, CCP discounting switch, valuation impacts, risk management, ALM, cost of protocol
+    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks transition and discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, CCP discounting switch, valuation impacts, risk management, ALM, cost of protocol, discounting big bang
     * *Code*: Large quant libraries available to price and risk manage interest rate books
 * Risk management
 	* Hedging strategies (design and back testing)
@@ -140,7 +142,7 @@ Some recent public courses:
 	* White paper: Independent assessment of new products and services.
 * Regulatory impacts
     * *Assessments*: Impact assessments for derivative users.
-    * *Bilateral margins*: Quantitative impacts of uncleared margin regulation (UMR), bilateral margin methodologies, ISDA SIMM™ computations.
+    * *Bilateral margins*: Quantitative impacts of uncleared margin regulation (UMR), bilateral margin methodologies, ISDA and regulatory SIMM computations.
     * *Compression*: Exposure reduction, portfolio compression
     * *Business strategy*: cleared v uncleared OTC derivatives, cost of trading, access to market infrastructure
     * *Regulatory consultative documents*: Comments on consultative documents.

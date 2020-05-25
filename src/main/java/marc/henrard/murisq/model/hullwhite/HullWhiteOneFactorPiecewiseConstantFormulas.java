@@ -4,8 +4,12 @@
 package marc.henrard.murisq.model.hullwhite;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.collect.tuple.Pair;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 
 /**
@@ -306,6 +310,152 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
     double factor2 = (Math.exp(-kappa * t1) - Math.exp(-kappa * t2)) 
         * (Math.exp(-kappa * t3) - Math.exp(-kappa * t4)) / (2 * kappa * kappa * kappa);
     return factor1 * factor2;
+  }
+
+  /**
+   * Computes the covariances for rates on different periods and different model parameters. 
+   * Does not include the correlation between Brownian motions.
+   * <p>
+   * The volatility times must be the same for each parameters. This condition is not checked to avoid slow computations.
+   * The method {@link HullWhiteOneFactorPiecewiseConstantFormulas#parametersCommonTimes} can be used to produced the 
+   * required parameters sets.
+   * <p>
+   * Correspond to the computation of the integral
+   *    \int_0^min(t1,t2) \nu_1(s,u_1) \nu_2(s,u_2) ds
+   * where t1 = endIntegralTime1, t1 = endIntegralTime2
+   * 
+   * @param parameters  the Hull-White model parameters
+   * @param endIntegralTime1 the end time for the first factor diffusion
+   * @param endTime2 the end time for the second factor diffusion
+   * @param u1 the maturity of the first factor
+   * @param u2 the maturity of the second factor
+   * @return the covariance
+   */
+  public double varianceCrossTermCashAccount(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters1, 
+      HullWhiteOneFactorPiecewiseConstantParameters parameters2, 
+      double endIntegralTime1,
+      double endIntegralTime2,
+      double u1,
+      double u2) {
+    
+    double kappa1 = parameters1.getMeanReversion();
+    double kappa2 = parameters2.getMeanReversion();
+    double endIntegralTime = Math.min(endIntegralTime1, endIntegralTime2);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters1.getVolatilityTime().toArrayUnsafe(), endIntegralTime) + 1);
+    // Period in which the time endIntegralTime is; volatilityTime.get(i-1) <= endIntegralTime < volatilityTime.get(i);
+    double[] s = new double[indexEnd + 1];
+    System.arraycopy(parameters1.getVolatilityTime().toArrayUnsafe(), 0, s, 0, indexEnd);
+    s[indexEnd] = endIntegralTime;
+    double[] expa1s = new double[indexEnd + 1];
+    double[] expa2s = new double[indexEnd + 1];
+    double[] expa1a2s = new double[indexEnd + 1];
+    for (int loopperiod = 0; loopperiod < indexEnd + 1; loopperiod++) {
+      expa1s[loopperiod] = Math.exp(kappa1 * s[loopperiod]);
+      expa2s[loopperiod] = Math.exp(kappa2 * s[loopperiod]);
+      expa1a2s[loopperiod] = Math.exp((kappa1 + kappa2) * s[loopperiod]);
+    }
+    double term1 = 0.0d;
+    double term2 = 0.0d;
+    double term3 = 0.0d;
+    double term4 = 0.0d;
+    double factor1 = 1.0d / (kappa1 * kappa2);
+    for (int loopperiod = 0; loopperiod < indexEnd; loopperiod++) {
+      double eta12 = parameters1.getVolatility().get(loopperiod) * parameters2.getVolatility().get(loopperiod);
+      term1 += eta12 * (s[loopperiod + 1] - s[loopperiod]);
+      term2 += eta12 * (expa1s[loopperiod + 1] - expa1s[loopperiod]);
+      term3 += eta12 * (expa2s[loopperiod + 1] - expa2s[loopperiod]);
+      term4 += eta12 * (expa1a2s[loopperiod + 1] - expa1a2s[loopperiod]);
+    }
+    term2 *= -Math.exp(-kappa1 * u1) / kappa1;
+    term3 *= -Math.exp(-kappa2 * u2) / kappa2;
+    term4 *= Math.exp(-kappa1 * u1 - kappa2 * u2) / (kappa1 + kappa2);
+    return factor1 * (term1 + term2 + term3 + term4);
+  }
+  
+  /**
+   * 
+   * Computes the covariances for rates on with a HW model parameters and a constant volatility factor.
+   * Does not include the correlation between Brownian motions.
+   * <p>
+   * Correspond to the computation of the integral
+   *    \int_0^t \nu_1(s,u_1) ds
+   * where t = endIntegralTime
+   * 
+   * @param parameters  the Hull-White model parameters
+   * @param endIntegralTime the end time 
+   * @param u1 the maturity 
+   * @return the covariance
+   */
+  public double varianceCrossTermConstantVolCashAccount(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double endIntegralTime,
+      double u1) {
+    
+    double kappa = parameters.getMeanReversion();
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArrayUnsafe(), endIntegralTime) + 1);
+    // Period in which the time endIntegralTime is; volatilityTime.get(i-1) <= endIntegralTime < volatilityTime.get(i);
+    double[] s = new double[indexEnd + 1];
+    System.arraycopy(parameters.getVolatilityTime().toArrayUnsafe(), 0, s, 0, indexEnd);
+    s[indexEnd] = endIntegralTime;
+    double[] expas = new double[indexEnd + 1];
+    for (int loopperiod = 0; loopperiod < indexEnd + 1; loopperiod++) {
+      expas[loopperiod] = Math.exp(kappa * s[loopperiod]);
+    }
+    double term1 = 0.0d;
+    double term2 = 0.0d;
+    double factor1 = 1.0d / kappa;
+    for (int loopperiod = 0; loopperiod < indexEnd; loopperiod++) {
+      double eta = parameters.getVolatility().get(loopperiod);
+      term1 += eta * (s[loopperiod + 1] - s[loopperiod]);
+      term2 += eta * (expas[loopperiod + 1] - expas[loopperiod]);
+    }
+    term2 *= -Math.exp(-kappa * u1) / kappa;
+    return factor1 * (term1 + term2);
+  }
+
+  /**
+   * From two sets of Hull-White parameters, returns equivalent sets but with common volatility times.
+   * The volatility times of the outputs are the joint times of the inputs.
+   * 
+   * @param parameters1  the first Hull-White parameters
+   * @param parameters2  the second Hull-White parameters
+   * @return  the pair of equivalent models
+   */
+  public Pair<HullWhiteOneFactorPiecewiseConstantParameters, HullWhiteOneFactorPiecewiseConstantParameters>
+      parametersCommonTimes(
+          HullWhiteOneFactorPiecewiseConstantParameters parameters1,
+          HullWhiteOneFactorPiecewiseConstantParameters parameters2) {
+
+    double eps = 1.0E-4;
+    double[] vol1 = parameters1.getVolatility().toArrayUnsafe();
+    double[] vol2 = parameters2.getVolatility().toArrayUnsafe();
+    DoubleArray time1 = parameters1.getVolatilityTime(); // Including 0 and 1000
+    DoubleArray time2 = parameters2.getVolatilityTime(); // Including 0 and 1000
+    DoubleArray timesJointSorted = time1.concat(time2.subArray(1, time2.size() - 1));
+    timesJointSorted = timesJointSorted.sorted(); // sorting
+    List<Double> timesJointSortedWithoutDuplicates = timesJointSorted
+        .stream().distinct().boxed().collect(Collectors.toList());
+    int nbTimes = timesJointSortedWithoutDuplicates.size();
+    double[] vol1JointTimes = new double[nbTimes - 1];
+    double[] vol2JointTimes = new double[nbTimes - 1];
+    for (int loopt = 0; loopt < nbTimes - 1; loopt++) {
+      int i1 = Math.abs(Arrays.binarySearch(time1.toArrayUnsafe(),
+          timesJointSortedWithoutDuplicates.get(loopt + 1) - eps)) - 2;
+      vol1JointTimes[loopt] = vol1[i1];
+      int i2 = Math.abs(Arrays.binarySearch(time2.toArrayUnsafe(),
+          timesJointSortedWithoutDuplicates.get(loopt + 1) - eps)) - 2;
+      vol2JointTimes[loopt] = vol2[i2];
+    }
+    DoubleArray times = DoubleArray.copyOf(timesJointSortedWithoutDuplicates)
+        .subArray(1, timesJointSortedWithoutDuplicates.size() - 1);
+    HullWhiteOneFactorPiecewiseConstantParameters parameters1Equivalent =
+        HullWhiteOneFactorPiecewiseConstantParameters.of(parameters1.getMeanReversion(),
+            DoubleArray.ofUnsafe(vol1JointTimes), times);
+    HullWhiteOneFactorPiecewiseConstantParameters parameters2Equivalent =
+        HullWhiteOneFactorPiecewiseConstantParameters.of(parameters2.getMeanReversion(),
+            DoubleArray.ofUnsafe(vol2JointTimes), times);
+    return Pair.of(parameters1Equivalent, parameters2Equivalent);
   }
 
 }
