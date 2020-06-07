@@ -64,7 +64,11 @@ Explicit formula for implicit volatility.
 * Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation. Available at (https://ssrn.com/abstract=3134346).
 * Different formulas for cross-terms: same model parameters (Asian options) or different model parameters (discounting transition)
 
-### 3. Rational Multi-curve Model
+### 3. G2++
+* Parameters description
+* Formula for the variance of pseudo-discount factors rescaled by the collateral account
+
+### 4. Rational Multi-curve Model
 
 #### Description
 The model describes the evolution of the discount curve and the Libor process in an explicit way. The quantities are not presented through a SDE but directly as explicit quantities depending on simple random variables. This leads to explicit dynamic and in general (almost) explicit formulas for simple instruments and very easy Monte Carlo simulations.
