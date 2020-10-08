@@ -68,7 +68,23 @@ Explicit formula for implicit volatility.
 * Parameters description
 * Formula for the variance of pseudo-discount factors rescaled by the collateral account
 
-### 4. Rational Multi-curve Model
+### 4. LIBOR/Forward Market Model
+
+#### Description
+LIBOR or Forward Market Model (also called BGM/Brae/Gatarek/Musiela) with displaced diffusion and deterministic LIBOR/OIS spread. The model dynamic is on the forward associated to pseudo-discount factors in a multi-curve and collateral discounting approach. Multi-factor model.
+
+#### References
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2010). Swaptions in Libor Market Model with local volatility. *Wilmott Journal*, 2(3):135--154.
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2014). *Interest Rate Modelling in the Multi-curve Framework:
+  Foundations, Evolution and Implementation*. Applied Quantitative Finance. Palgrave Macmillan. ISBN: 978-1-137-37465-3.
+
+#### Code 
+* Parameters description
+* European physical delivery swaptions price by efficient approximation (preditor-corrector type)
+* Monte Carlo rate evolution
+* Monte Carlo pricing of European swaptions
+
+### 5. Rational Multi-curve Model
 
 #### Description
 The model describes the evolution of the discount curve and the Libor process in an explicit way. The quantities are not presented through a SDE but directly as explicit quantities depending on simple random variables. This leads to explicit dynamic and in general (almost) explicit formulas for simple instruments and very easy Monte Carlo simulations.
@@ -120,7 +136,8 @@ Some recent public courses:
 * Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
 * Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. In-house course, International Financial Organisation (on-line), April 2020.
 * Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS course (London, UK), May 2020.
-* Planned *Martingales and Fixed Income Valuation*, CQF Module 6. CQF Institute (London, UK), May 2020.
+* *Martingales and Fixed Income Valuation*, CQF Module 6. CQF Institute (London, UK), May 2020.
+* Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc.
 
 
 ## Advisory

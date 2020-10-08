@@ -4,17 +4,17 @@
 package marc.henrard.murisq.product.futures;
 
 import static com.opengamma.strata.collect.TestHelper.assertSerialization;
-import static com.opengamma.strata.collect.TestHelper.assertThrowsIllegalArg;
 import static com.opengamma.strata.collect.TestHelper.coverBeanEquals;
 import static com.opengamma.strata.collect.TestHelper.coverImmutableBean;
 import static com.opengamma.strata.product.swap.type.FixedIborSwapConventions.EUR_FIXED_1Y_EURIBOR_3M;
 import static com.opengamma.strata.product.swap.type.FixedOvernightSwapConventions.EUR_FIXED_1Y_EONIA_OIS;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.Tenor;
@@ -30,7 +30,6 @@ import marc.henrard.murisq.product.futures.OisFuturesResolved;
  * 
  * @author Marc Henrard
  */
-@Test
 public class OisFuturesTest {
   
   private static final ReferenceData REF_DATA = ReferenceData.standard();
@@ -49,7 +48,8 @@ public class OisFuturesTest {
       .accrualFactor(ACCRUAL_FACTOR)
       .notional(NOTIONAL)
       .lastTradeDate(LAST_TRADE_DATE).build();
-  
+
+  @Test
   public void builder() {
     assertEquals(OIS_FUT.getSecurityId(), SECURITY_ID);
     assertEquals(OIS_FUT.getUnderlying(), UNDERLYING);
@@ -57,27 +57,31 @@ public class OisFuturesTest {
     assertEquals(OIS_FUT.getNotional(), NOTIONAL);
     assertEquals(OIS_FUT.getLastTradeDate(), LAST_TRADE_DATE);
   }
-  
+
+  @Test
   public void builder_wrong_swap_index() {
     Swap underlyingIbor = EUR_FIXED_1Y_EURIBOR_3M
         .createTrade(LAST_TRADE_DATE, Tenor.of(TENOR), BuySell.BUY, 1.0, 0.0, REF_DATA).getProduct();
-    assertThrowsIllegalArg(() -> OisFutures.builder()
-        .securityId(SECURITY_ID)
-        .underlying(underlyingIbor)
-        .accrualFactor(ACCRUAL_FACTOR)
-        .notional(NOTIONAL)
-        .lastTradeDate(LAST_TRADE_DATE).build());
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> OisFutures.builder()
+            .securityId(SECURITY_ID)
+            .underlying(underlyingIbor)
+            .accrualFactor(ACCRUAL_FACTOR)
+            .notional(NOTIONAL)
+            .lastTradeDate(LAST_TRADE_DATE).build());
   }
-  
+
+  @Test
   public void builder_wrong_swap_date() {
     Swap underlying = EUR_FIXED_1Y_EURIBOR_3M
         .createTrade(LAST_TRADE_DATE.minusMonths(1), Tenor.of(TENOR), BuySell.BUY, 1.0, 0.0, REF_DATA).getProduct();
-    assertThrowsIllegalArg(() -> OisFutures.builder()
-        .securityId(SECURITY_ID)
-        .underlying(underlying)
-        .accrualFactor(ACCRUAL_FACTOR)
-        .notional(NOTIONAL)
-        .lastTradeDate(LAST_TRADE_DATE).build());
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> OisFutures.builder()
+            .securityId(SECURITY_ID)
+            .underlying(underlying)
+            .accrualFactor(ACCRUAL_FACTOR)
+            .notional(NOTIONAL)
+            .lastTradeDate(LAST_TRADE_DATE).build());
   }
 
   //-------------------------------------------------------------------------

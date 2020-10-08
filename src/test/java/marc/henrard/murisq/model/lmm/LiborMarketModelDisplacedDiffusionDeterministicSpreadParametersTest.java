@@ -34,7 +34,7 @@ public class LiborMarketModelDisplacedDiffusionDeterministicSpreadParametersTest
   private static final DoubleArray ACCRUAL_FACTORS = DoubleArray.of(NB_PERIODS, (i) -> 0.25);
   private static final DoubleArray DISPLACEMENTS = DoubleArray.of(NB_PERIODS, (i) -> DISPLACEMENT);
   private static final DoubleArray IBOR_TIMES = DoubleArray.of(NB_PERIODS + 1, (i) -> 0.25 + i * 0.25);
-  private static final DoubleArray MULTIPLICATIVE_SPREADS = DoubleArray.of(NB_PERIODS, (i) -> 1.01);
+  private static final DoubleArray MULTIPLICATIVE_SPREADS = DoubleArray.of(NB_PERIODS, (i) -> (1.01 + i * 0.0001));
   private static final DoubleMatrix VOLATILITIES =
       DoubleMatrix.of(NB_PERIODS, 2, (j, i) -> SIGMA * (j + 10.0d) / 100.0d * (i + 11.0d) / 125.0d); 
   private static final LocalDate VALUATION_DATE = LocalDate.of(2020, 8, 18);
@@ -78,9 +78,20 @@ public class LiborMarketModelDisplacedDiffusionDeterministicSpreadParametersTest
         double volExpected = SIGMA * (j + 10.0d) / 100.0d * (i + 11.0d) / 125.0d; 
         int index = 2 * j + i;
         double volComputed = PARAMETERS.getParameter(index);
-        System.out.println("i: " + i + " - j: " + j );
         assertThat(volComputed).isEqualTo(volExpected, TOLERANCE_DOUBLE);
       }
+    }
+  }
+
+  /* Test parameters getter. */
+  @Test
+  public void iborRateFromDscForwards() {
+    double fwd = 0.0123;
+    for(int i=0; i<NB_PERIODS; i++) {
+      double iborRateComputed = PARAMETERS.iborRateFromDscForwards(fwd, i);
+      double iborRateExpected = (MULTIPLICATIVE_SPREADS.get(i) * (1 + ACCRUAL_FACTORS.get(i) * fwd) - 1.0d)
+          / ACCRUAL_FACTORS.get(i);
+      assertThat(iborRateComputed).isEqualTo(iborRateExpected, TOLERANCE_DOUBLE);
     }
   }
 

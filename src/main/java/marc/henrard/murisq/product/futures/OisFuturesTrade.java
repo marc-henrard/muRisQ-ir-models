@@ -34,7 +34,8 @@ import com.opengamma.strata.product.TradeInfo;
  * Long the futures is long the rate and equivalent to a pay fix OIS.
  * <p>
  * This futures design is described in:
- * Henrard, Marc (2018). Risk-based overnight-linked futures design. TODO: Add SSRN publication link when available.
+ * Henrard, Marc (2018). Risk-based overnight-linked futures design. 
+ * Available at {@linktourl https://ssrn.com/abstract=3238640}.
  * 
  * @author Marc Henrard
  */

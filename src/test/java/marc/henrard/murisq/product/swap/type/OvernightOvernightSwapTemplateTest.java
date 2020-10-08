@@ -8,10 +8,10 @@ import static com.opengamma.strata.basics.date.Tenor.TENOR_2Y;
 import static com.opengamma.strata.basics.index.OvernightIndices.USD_FED_FUND;
 import static com.opengamma.strata.basics.index.OvernightIndices.USD_SOFR;
 import static com.opengamma.strata.collect.TestHelper.assertSerialization;
-import static com.opengamma.strata.collect.TestHelper.assertThrowsIllegalArg;
 import static com.opengamma.strata.collect.TestHelper.coverBeanEquals;
 import static com.opengamma.strata.collect.TestHelper.coverImmutableBean;
 import static com.opengamma.strata.product.swap.OvernightAccrualMethod.COMPOUNDED;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
@@ -92,7 +92,7 @@ public class OvernightOvernightSwapTemplateTest {
 
   //-------------------------------------------------------------------------
   public void test_builder_notEnoughData() {
-    assertThrowsIllegalArg(() -> OvernightOvernightSwapTemplate.builder()
+    assertThatIllegalArgumentException().isThrownBy(() -> OvernightOvernightSwapTemplate.builder()
         .tenor(TENOR_2Y)
         .build());
   }

@@ -161,14 +161,14 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
               PRICER_SWAPTION_HW.presentValue(swaptionResolved, MULTICURVE_EUR, HW_PROVIDER);
           assertThat(pvApprox.getCurrency()).isEqualTo(pvHw.getCurrency());
           assertThat(pvApprox.getAmount()).isEqualTo(pvHw.getAmount(), TOLERANCE_APPROX);
-          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
-              + ", " + pvApprox + ", " + pvHw + ", " + (pvHw.getAmount()-pvApprox.getAmount()));
+//          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
+//              + ", " + pvApprox + ", " + pvHw + ", " + (pvHw.getAmount()-pvApprox.getAmount()));
           double ivApprox = PRICER_SWAPTION_BACHELIER
               .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, HW_DAYCOUNT, pvApprox.getAmount());
           double ivHw = PRICER_SWAPTION_BACHELIER
               .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, HW_DAYCOUNT, pvHw.getAmount());
-          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
-              + ", " + ivApprox + ", " + ivHw + ", " + (ivHw-ivApprox));
+//          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
+//              + ", " + ivApprox + ", " + ivHw + ", " + (ivHw-ivApprox));
           assertThat(ivApprox).isEqualTo(ivHw, TOLERANCE_APPROX_IV); // Compare implied volatilities
         } // end loopmoney
       } // end looptenor
