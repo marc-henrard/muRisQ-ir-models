@@ -11,14 +11,7 @@ import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.market.param.ParameterizedData;
 
 /**
- * Interest rate multi-curve rational model with one factor.
- * <p>
- * <i>References: </i>
- * <p>
- * Theoretical description: Crepey, S., Macrina, A., Nguyen, T.~M., and Skovmand, D. (2016).
- * Rational multi-curve models with counterparty-risk valuation adjustments. <i>Quantitative Finance</i>, 16(6): 847-866.
- * <p>
- * Implementation: Henrard, Marc. (2016) Rational multi-curve interest rate model: pricing of liquid instruments.
+ * Interest rate multi-curve model for a single currency.
  * 
  * @author Marc Henrard
  */

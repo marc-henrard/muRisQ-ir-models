@@ -90,7 +90,7 @@ public class OvernightOvernightSwapConventionsTest {
   public static Object[][] data_float_leg2() {
     return new Object[][] {
         {OvernightOvernightSwapConventions.USD_SOFR_3M_FED_FUND_3M, OvernightIndices.USD_FED_FUND},
-        {OvernightOvernightSwapConventions.EUR_EONIA_3M_ESTER_3M, OvernightIndices.EUR_ESTER},
+        {OvernightOvernightSwapConventions.EUR_EONIA_3M_ESTER_3M, OvernightIndices.EUR_ESTR},
     };
   }
 
