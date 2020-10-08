@@ -4,16 +4,16 @@
 package marc.henrard.murisq.product.futures;
 
 import static com.opengamma.strata.collect.TestHelper.assertSerialization;
-import static com.opengamma.strata.collect.TestHelper.assertThrowsIllegalArg;
 import static com.opengamma.strata.collect.TestHelper.coverBeanEquals;
 import static com.opengamma.strata.collect.TestHelper.coverImmutableBean;
 import static com.opengamma.strata.product.swap.type.FixedOvernightSwapConventions.EUR_FIXED_1Y_EONIA_OIS;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.testng.Assert.assertEquals;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.Tenor;
@@ -31,7 +31,6 @@ import marc.henrard.murisq.product.futures.OisFuturesTradeResolved;
  * 
  * @author Marc Henrard
  */
-@Test
 public class OisFuturesTradeTest {
   
   private static final ReferenceData REF_DATA = ReferenceData.standard();
@@ -59,7 +58,8 @@ public class OisFuturesTradeTest {
       .product(OIS_FUT)
       .price(TRADE_PRICE)
       .quantity(QUANTITY).build();
-  
+
+  @Test
   public void builder() {
     assertEquals(TRADE.getInfo(), INFO);
     assertEquals(TRADE.getProduct(), OIS_FUT);
@@ -68,6 +68,7 @@ public class OisFuturesTradeTest {
   }
 
   //-------------------------------------------------------------------------
+  @Test
   public void resolve() {
     OisFuturesTradeResolved resolved = TRADE.resolve(REF_DATA);
     OisFuturesTradeResolved expected = OisFuturesTradeResolved.builder()
@@ -77,13 +78,15 @@ public class OisFuturesTradeTest {
         .quantity(QUANTITY).build();
     assertEquals(resolved, expected);
   }
-  
+
+  @Test
   public void mising_trade_date() {
-    assertThrowsIllegalArg(() -> OisFuturesTrade.builder()
-        .info(TradeInfo.empty())
-        .product(OIS_FUT)
-        .price(TRADE_PRICE)
-        .quantity(QUANTITY).build());
+    assertThatIllegalArgumentException()
+        .isThrownBy(() -> OisFuturesTrade.builder()
+            .info(TradeInfo.empty())
+            .product(OIS_FUT)
+            .price(TRADE_PRICE)
+            .quantity(QUANTITY).build());
   }
 
   //-------------------------------------------------------------------------
