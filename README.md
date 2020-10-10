@@ -63,6 +63,7 @@ Explicit formula for implicit volatility.
 * Convexity adjustment for futures. Implementation with flexible start and end date.
 * Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation. Available at (https://ssrn.com/abstract=3134346).
 * Different formulas for cross-terms: same model parameters (Asian options) or different model parameters (discounting transition)
+* Pricing of CMS coupons/caplets/floorlets by efficient approximation.
 
 ### 3. G2++
 * Parameters description

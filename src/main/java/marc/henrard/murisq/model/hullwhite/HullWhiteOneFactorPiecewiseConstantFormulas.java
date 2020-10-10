@@ -14,6 +14,8 @@ import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantPara
 
 /**
  * Formulas related to the Hull-White one-factor/extended Vasicek model with piecewise constant volatility.
+ * 
+ * @author Marc Henrard
  */
 public class HullWhiteOneFactorPiecewiseConstantFormulas {
   
