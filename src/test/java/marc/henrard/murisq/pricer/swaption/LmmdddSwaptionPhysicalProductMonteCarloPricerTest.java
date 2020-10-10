@@ -49,13 +49,13 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
 import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
 import marc.henrard.murisq.model.lmm.LmmdddUtils;
 import marc.henrard.murisq.pricer.decomposition.MulticurveDecisionScheduleCalculator;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
-import marc.henrard.murisq.pricer.montecarlo.MonteCarloDataSet;
 
 /**
  * Tests {@link LmmdddSwaptionPhysicalProductMonteCarloPricer} and partly
@@ -77,7 +77,8 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
       DiscountingSwapProductPricer.DEFAULT;
 
   /* Market Data */
-  private static final ImmutableRatesProvider MULTICURVE_EUR = MonteCarloDataSet.MULTICURVE_EUR;
+  private static final ImmutableRatesProvider MULTICURVE_EUR = 
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
 
   /* Swaption description */
   private static final Period EXPIRY = Period.ofMonths(60);
@@ -243,7 +244,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
     MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(me, MULTICURVE_EUR, LMMHW);
     List<MulticurveEquivalentValues> valuesExpiry =
         PRICER_MC_1.evolve(initialValues, me.getDecisionTime(), nbPaths);
-    DoubleArray aggregationComputed = PRICER_MC_1.aggregation(me, valuesExpiry, LMMHW);
+    DoubleArray aggregationComputed = PRICER_MC_1.aggregation(SWAPTION_RESOLVED, me, valuesExpiry, LMMHW);
     // Local implementation
     double[] delta = LMMHW.getAccrualFactors().toArrayUnsafe();
     double[] beta = LMMHW.getMultiplicativeSpreads().toArrayUnsafe();

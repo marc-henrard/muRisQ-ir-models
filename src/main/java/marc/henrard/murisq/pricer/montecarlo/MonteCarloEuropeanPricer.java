@@ -12,15 +12,17 @@ import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.ResolvedProduct;
 
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
+import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
 
 /**
  * Generic Monte Carlo pricer for European options.
- * @author marc
  *
  * @param <P> the type of product to be priced 
  * @param <M> the single currency model
+ * 
+ * @author Marc Henrard
  */
 public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends SingleCurrencyModelParameters>  {
   
@@ -106,12 +108,14 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
    * The aggregation consists in applying the product specific quantities to the model quantities 
    * and multiplying by the numeraire. The starting numeraire is not applied to the results.
    * 
+   * @param product  the financial product; in some cases some information are not available in the MulticurveEquivalent
    * @param me  the multi-curve equivalent
    * @param valuesExpiry  the values at expiry for the model quantities; one value for each path
    * @param model  the interest rate model
    * @return the aggregated value
    */
   abstract DoubleArray aggregation(
+      P product,
       MulticurveEquivalent me,
       List<MulticurveEquivalentValues> valuesExpiry, 
       M model);
@@ -136,16 +140,46 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
     for (int loopblock = 0; loopblock < decomposition.getFirst(); loopblock++) {
       List<MulticurveEquivalentValues> valuesExpiry =
           evolve(initialValues, mce.getDecisionTime(), decomposition.getSecond());
-      pv += aggregation(mce, valuesExpiry, model).sum();
+      pv += aggregation(product, mce, valuesExpiry, model).sum();
     }
     if (decomposition.getThird() > 0) { // Residual number of path if non zero.
       List<MulticurveEquivalentValues> valuesExpiryResidual =
           evolve(initialValues, mce.getDecisionTime(), decomposition.getThird());
-      pv += aggregation(mce, valuesExpiryResidual, model).sum();
+      pv += aggregation(product, mce, valuesExpiryResidual, model).sum();
     }
     double initialNumeraireValue = numeraireInitialValue(multicurve);
     pv = pv /getNbPaths() * initialNumeraireValue;
     return pv;
+  }
+
+  /**
+   * Returns the numeraire rebased discount factors at the different LMM dates.
+   * <p>
+   * The numeraire is the discount factor at the last date, hence the last discounting is 1 and the 
+   * one at other dates are above one for positive rates.
+   * 
+   * @param model  the interest rate model
+   * @param valuesExpiry  the modeled values at expiry
+   * @return  the rebased discount factors, dimension: path x dates
+   */
+  default double[][] discounting(
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
+      List<MulticurveEquivalentValues> valuesExpiry) {
+
+    int nbFwdPeriods = model.getIborPeriodsCount();
+    int nbPathsDsc = valuesExpiry.size();
+    double[] delta = model.getAccrualFactors().toArrayUnsafe();
+    double[][] discounting = new double[nbPathsDsc][nbFwdPeriods + 1];
+    for (int looppath = 0; looppath < nbPathsDsc; looppath++) {
+      MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
+      double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
+      discounting[looppath][nbFwdPeriods] = 1.0;
+      for (int loopdsc = nbFwdPeriods - 1; loopdsc >= 0; loopdsc--) {
+        discounting[looppath][loopdsc] =
+            discounting[looppath][loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
+      }
+    }
+    return discounting;
   }
   
 }
