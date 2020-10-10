@@ -3,12 +3,15 @@
  */
 package marc.henrard.murisq.pricer.decomposition;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
+import com.opengamma.strata.basics.currency.Payment;
 import com.opengamma.strata.collect.ArgChecker;
+import com.opengamma.strata.product.cms.CmsPeriod;
 import com.opengamma.strata.product.rate.FixedRateComputation;
 import com.opengamma.strata.product.rate.IborRateComputation;
 import com.opengamma.strata.product.swap.NotionalExchange;
@@ -20,8 +23,12 @@ import com.opengamma.strata.product.swap.SwapLegType;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 
+import marc.henrard.murisq.product.cms.CmsPeriodResolved;
+
 /**
  * Calculator of decision schedule in the multi-curve framework for different instruments.
+ * 
+ * @author Marc Henrard
  */
 public class MulticurveDecisionScheduleCalculator {
   
@@ -34,6 +41,30 @@ public class MulticurveDecisionScheduleCalculator {
   public static MulticurveEquivalentSchedule decisionSchedule(ResolvedSwaption swaption) {
     MulticurveEquivalent multicurveEquivalent = multicurveEquivalent(swaption.getUnderlying());
     multicurveEquivalent = multicurveEquivalent.toBuilder().decisionTime(swaption.getExpiry()).build();
+    List<MulticurveEquivalent> schedules = new ArrayList<>();
+    schedules.add(multicurveEquivalent);
+    return MulticurveEquivalentSchedule.builder().schedules(schedules).build();
+  }
+  
+  /**
+   * Constructs the multi-curve decision schedule for a CMS period.
+   * <p>
+   * The coupon period payment date is the last item in the discountFactorPayments.
+   * 
+   * @param cms  the CMS period
+   * @return the decision schedule
+   */
+  public static MulticurveEquivalentSchedule decisionSchedule(CmsPeriodResolved cms) {
+    CmsPeriod cms2 = cms.getPeriod();
+    MulticurveEquivalent multicurveEquivalent = multicurveEquivalent(cms2.getUnderlyingSwap());
+    // Adding payment date
+    Payment payment =
+        Payment.of(cms2.getCurrency(), cms2.getNotional() * cms2.getYearFraction(), cms2.getPaymentDate());
+    List<NotionalExchange> pmce = new ArrayList<>(multicurveEquivalent.getDiscountFactorPayments());
+    pmce.add(NotionalExchange.of(payment));
+    multicurveEquivalent = multicurveEquivalent.toBuilder().discountFactorPayments(pmce).build();
+    ZonedDateTime fixingTime = cms.getPeriod().getIndex().calculateFixingDateTime(cms.getPeriod().getFixingDate());
+    multicurveEquivalent = multicurveEquivalent.toBuilder().decisionTime(fixingTime).build();
     List<MulticurveEquivalent> schedules = new ArrayList<>();
     schedules.add(multicurveEquivalent);
     return MulticurveEquivalentSchedule.builder().schedules(schedules).build();

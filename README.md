@@ -82,8 +82,11 @@ LIBOR or Forward Market Model (also called BGM/Brae/Gatarek/Musiela) with displa
 #### Code 
 * Parameters description
 * European physical delivery swaptions price by efficient approximation (preditor-corrector type)
-* Monte Carlo rate evolution
-* Monte Carlo pricing of European swaptions
+* Monte Carlo rate evolution (Predictor-corrector style)
+* Monte Carlo pricers:
+  * European swaption
+  * IBOR Ratchet
+  * CMS coupon, caplet, floorlet
 
 ### 5. Rational Multi-curve Model
 

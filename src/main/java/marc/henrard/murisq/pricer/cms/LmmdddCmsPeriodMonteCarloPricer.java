@@ -1,62 +1,53 @@
 /**
  * Copyright (C) 2020 - present by Marc Henrard.
  */
-package marc.henrard.murisq.pricer.exotic;
+package marc.henrard.murisq.pricer.cms;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.joda.beans.ImmutableBean;
 import org.joda.beans.gen.BeanDefinition;
 import org.joda.beans.gen.PropertyDefinition;
 
-import com.google.common.collect.ImmutableList;
 import com.opengamma.strata.basics.currency.Currency;
-import com.opengamma.strata.basics.currency.Payment;
-import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.random.RandomNumberGenerator;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.rate.RatesProvider;
-import com.opengamma.strata.product.rate.IborRateComputation;
-import com.opengamma.strata.product.swap.NotionalExchange;
-import com.opengamma.strata.product.swap.RateAccrualPeriod;
-import com.opengamma.strata.product.swap.RatePaymentPeriod;
-import com.opengamma.strata.product.swap.ResolvedSwap;
-import com.opengamma.strata.product.swap.ResolvedSwapLeg;
-import com.opengamma.strata.product.swap.SwapLegType;
-import com.opengamma.strata.product.swap.SwapPaymentPeriod;
+import com.opengamma.strata.product.cms.CmsPeriod;
+import com.opengamma.strata.product.cms.CmsPeriodType;
 
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
+import marc.henrard.murisq.pricer.decomposition.MulticurveDecisionScheduleCalculator;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
-import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentSchedule;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
-import marc.henrard.murisq.pricer.montecarlo.MonteCarloMultiDatesPricer;
-import marc.henrard.murisq.product.rate.IborRatchetRateComputation;
+import marc.henrard.murisq.pricer.montecarlo.MonteCarloEuropeanPricer;
+import marc.henrard.murisq.product.cms.CmsPeriodResolved;
 
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import org.joda.beans.Bean;
-import org.joda.beans.JodaBeanUtils;
 import org.joda.beans.MetaBean;
 import org.joda.beans.MetaProperty;
 import org.joda.beans.impl.direct.DirectFieldsBeanBuilder;
 import org.joda.beans.impl.direct.DirectMetaBean;
-import org.joda.beans.impl.direct.DirectMetaProperty;
 import org.joda.beans.impl.direct.DirectMetaPropertyMap;
+import org.joda.beans.Bean;
+import org.joda.beans.JodaBeanUtils;
+import org.joda.beans.impl.direct.DirectMetaProperty;
 
 /**
- * Monte Carlo pricer for ratchets in the Libor Market Model with deterministic multiplicative spread.
+ * Monte Carlo pricer for CMS periods (coupons, caplets, floorlets) in the Libor Market Model with
+ * deterministic multiplicative spread.
  * 
  * @author Marc Henrard
  */
 @BeanDefinition
-public final class LmmdddRatchetProductMonteCarloPricer 
-    implements MonteCarloMultiDatesPricer<ResolvedSwap, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>, 
-    ImmutableBean, Serializable {
+public final class LmmdddCmsPeriodMonteCarloPricer
+    implements MonteCarloEuropeanPricer<CmsPeriodResolved, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>, 
+ImmutableBean, Serializable {
 
   /** The number of paths */
   @PropertyDefinition
@@ -74,43 +65,19 @@ public final class LmmdddRatchetProductMonteCarloPricer
   @PropertyDefinition(validate = "notNull")
   private final LiborMarketModelMonteCarloEvolution evolution;
   
-  
   @Override
   public int getNbFactors() {
     return model.getFactorCount();
   }
 
   @Override
-  public MulticurveEquivalentSchedule multicurveEquivalent(ResolvedSwap product) {
-    ArgChecker.isTrue(product.getLegs().size()==1, "product must have one leg");
-    ResolvedSwapLeg leg = product.getLegs().get(0);
-    ArgChecker.isTrue(leg.getType().equals(SwapLegType.OTHER), "leg must be of type OTHER");
-    ImmutableList<SwapPaymentPeriod> periods = leg.getPaymentPeriods();
-    List<MulticurveEquivalent> schedules = new ArrayList<>();
-    for(SwapPaymentPeriod p: periods) {
-      ArgChecker.isTrue(p instanceof RatePaymentPeriod, "payment periods must be of type RatePaymentPeriod");
-      RatePaymentPeriod ratePeriod = (RatePaymentPeriod) p;
-      ArgChecker.isTrue(ratePeriod.getAccrualPeriods().size()==1, "one accrual per payment period");
-      ArgChecker.isTrue(ratePeriod.getAccrualPeriods().get(0).getRateComputation() instanceof IborRatchetRateComputation,
-          "rate computation must be of type IborRatchetRateComputation");
-      RateAccrualPeriod accrualPeriod = ratePeriod.getAccrualPeriods().get(0);
-      IborRatchetRateComputation ratchetPeriod = (IborRatchetRateComputation) accrualPeriod.getRateComputation();
-      schedules.add(
-          MulticurveEquivalent.of(
-              ratchetPeriod.getIndex().calculateFixingDateTime(ratchetPeriod.getFixingDate()), // fixing time
-              ImmutableList.of(), // No fix payment
-              ImmutableList.of(IborRateComputation.of(ratchetPeriod.getObservation())),
-              ImmutableList.of(NotionalExchange.of(Payment.of(ratchetPeriod.getCurrency(),
-                  accrualPeriod.getYearFraction() * ratePeriod.getNotional(), ratePeriod.getPaymentDate()))),
-              // Amount: accrual factor * notional
-              ImmutableList.of(), // No ON coupon
-              ImmutableList.of()));
-    }
-    return MulticurveEquivalentSchedule.of(schedules);
+  public MulticurveEquivalent multicurveEquivalent(CmsPeriodResolved product) {
+    return MulticurveDecisionScheduleCalculator
+        .decisionSchedule(product).getSchedules().get(0);
   }
 
   @Override
-  public double getNumeraireValue(RatesProvider multicurve) {
+  public double numeraireInitialValue(RatesProvider multicurve) {
     // The pseudo-numeraire is the pseudo-discount factor on the last model date.
     DoubleArray iborTimes = model.getIborTimes();
     double numeraireTime = iborTimes.get(iborTimes.size() - 1);
@@ -120,11 +87,11 @@ public final class LmmdddRatchetProductMonteCarloPricer
 
   @Override
   public MulticurveEquivalentValues initialValues(
-      MulticurveEquivalentSchedule mce, 
+      MulticurveEquivalent mce, 
       RatesProvider multicurve,
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model) {
     
-    // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods, not instrument dependent
+    // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods
     DoubleArray iborTimes = model.getIborTimes();
     Currency ccy = model.getCurrency();
     DiscountFactors dsc = multicurve.discountFactors(ccy);
@@ -138,104 +105,109 @@ public final class LmmdddRatchetProductMonteCarloPricer
   }
 
   @Override
-  public List<List<MulticurveEquivalentValues>> evolve(
-      MulticurveEquivalentValues initialValues,
-      List<ZonedDateTime> expiries,
-      int numberSample) {
-    
-    return evolution.evolveMultiSteps(expiries, initialValues, model, numberGenerator, numberSample);
+  public List<MulticurveEquivalentValues> evolve(
+      MulticurveEquivalentValues initialValues, 
+      ZonedDateTime expiry,
+      int numberPaths) {
+  
+  return evolution.evolveOneStep(expiry, initialValues, model, numberGenerator, numberPaths);
   }
 
   @Override
-  public double[][] aggregation( // path x cash flows
-      MulticurveEquivalentSchedule me,
-      ResolvedSwap product, 
-      List<List<MulticurveEquivalentValues>> valuesExpiries, // dimensions: paths x expiry
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model){
+  public DoubleArray aggregation(
+      CmsPeriodResolved cms,
+      MulticurveEquivalent me,
+      List<MulticurveEquivalentValues> valuesExpiry,
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model) {
 
-    int nbPaths = valuesExpiries.size();
-    int nbFixings = me.getExpiriesCount();
-    ArgChecker.isTrue(product.getLegs().size()==1, "product must have one leg");
-    ResolvedSwapLeg leg = product.getLegs().get(0);
-    ArgChecker.isTrue(leg.getType().equals(SwapLegType.OTHER), "leg must be of type OTHER");
-    ImmutableList<SwapPaymentPeriod> periods = leg.getPaymentPeriods();
-    double[] effectiveTimes = new double[nbFixings];
-    double[] paymentTimes = new double[nbFixings];
-    double[] amounts = new double[nbFixings];
-    IborRatchetRateComputation[] ratchetPeriods = new IborRatchetRateComputation[nbFixings];
-    for (int loopfixing = 0; loopfixing < nbFixings; loopfixing++) {
-      SwapPaymentPeriod p = periods.get(loopfixing);
-      ArgChecker.isTrue(p instanceof RatePaymentPeriod, "payment periods must be of type RatePaymentPeriod");
-      RatePaymentPeriod ratePeriod = (RatePaymentPeriod) p;
-      ArgChecker.isTrue(ratePeriod.getAccrualPeriods().size() == 1, "one accrual per payment period");
-      ArgChecker.isTrue(
-          ratePeriod.getAccrualPeriods().get(0).getRateComputation() instanceof IborRatchetRateComputation,
-          "rate computation must be of type IborRatchetRateComputation");
-      RateAccrualPeriod accrualPeriod = ratePeriod.getAccrualPeriods().get(0);
-      ratchetPeriods[loopfixing] = (IborRatchetRateComputation) accrualPeriod.getRateComputation();
-      effectiveTimes[loopfixing] =
-          model.getTimeMeasure().relativeTime(model.getValuationDate(), ratchetPeriods[loopfixing].getEffectiveDate());
-      paymentTimes[loopfixing] =
-          model.getTimeMeasure().relativeTime(model.getValuationDate(), ratePeriod.getPaymentDate());
-      amounts[loopfixing] = me.getSchedules().get(loopfixing).getIborPayments().get(0).getPaymentAmount().getAmount();
+    int nbPathsA = valuesExpiry.size();
+    int nbDF = me.getDiscountFactorPayments().size(); // Last DF payment corresponds to the coupon payment date
+    double[] fixTimes = new double[nbDF];
+    for (int i = 0; i < nbDF; i++) {
+      fixTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getDiscountFactorPayments().get(i).getPaymentDate());
     }
-    int[] indexIborTimes = model.getIborTimeIndex(effectiveTimes);
-    int[] indexPaymentTimes = model.getIborTimeIndex(paymentTimes);
+    int[] fixIndices = model.getIborTimeIndex(fixTimes);
+    int nbIbor = me.getIborComputations().size();
+    double[] iborPaymentTimes = new double[nbIbor]; // payment time
+    double[] iborEffectiveTimes = new double[nbIbor]; // effective time, to find the right forward rate
+    for (int i = 0; i < nbIbor; i++) {
+      iborPaymentTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getIborPayments().get(i).getPaymentDate());
+      iborEffectiveTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getIborComputations().get(i).getEffectiveDate());
+    }
+    int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
+    int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
+    
+    double[][] discounting = discounting(model, valuesExpiry);
+    // Swap rate
+    double[] swapRate =  new double[nbPathsA];
+    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+      MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
+      double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
+      double pvbp = 0.0; // path value numeraire re-based
+      for (int loopfix = 0; loopfix < nbDF - 1; loopfix++) { // -1 as the last DF payment corresponds to the payment date
+        pvbp += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
+            discounting[looppath][fixIndices[loopfix]];
+      }
+      double pvIborLeg = 0.0; // path value numeraire re-based
+      for (int loopibor = 0; loopibor < nbIbor; loopibor++) {
+        int ipay = iborPaymentIndices[loopibor];
+        int ifwd = iborEffectiveIndices[loopibor];
+        double iborRate = model.iborRateFromDscForwards(valueFwdPath[ifwd], ifwd);
+        pvIborLeg += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
+            iborRate * discounting[looppath][ipay];
+      }
+      swapRate[looppath] = -pvIborLeg / pvbp;
+    }
+    // PV
+    double[] pv = new double[nbPathsA];
+    double[] payoffs = payoff(swapRate, cms.getPeriod());
+    double paymentAmount = me.getDiscountFactorPayments().get(nbDF - 1).getPaymentAmount().getAmount();
+    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+      pv[looppath] = paymentAmount * discounting[looppath][fixIndices[nbDF - 1]] * payoffs[looppath];
 
-    double[][] pv = new double[nbPaths][nbFixings];
-    for (int looppath = 0; looppath < nbPaths; looppath++) { // loop paths
-      double[] ratchetRates = new double[nbFixings + 1]; // one extra dim to facilitate recursion
-      for (int loopfixing = 0; loopfixing < nbFixings; loopfixing++) { // loop expiries
-        MulticurveEquivalentValues valuePathExpiry = valuesExpiries.get(looppath).get(loopfixing);
-        double[] valueFwdPathExpiry = valuePathExpiry.getOnRates().toArrayUnsafe();
-        double[] discounting = discounting(model, valuePathExpiry);
-        double iborRate = model
-            .iborRateFromDscForwards(valueFwdPathExpiry[indexIborTimes[loopfixing]], indexIborTimes[loopfixing]);
-        ratchetRates[loopfixing + 1] = ratchetPeriods[loopfixing].rate(ratchetRates[loopfixing], iborRate);
-        pv[looppath][loopfixing] = amounts[loopfixing] * ratchetRates[loopfixing + 1] 
-            * discounting[indexPaymentTimes[loopfixing]];
-      } // end loop expiries
-    } // end loop paths
-    return pv;
+    }
+    return DoubleArray.ofUnsafe(pv);
   }
   
   /**
-   * Returns the numeraire rebased discount factors at the different LMM dates.
-   * <p>
-   * The numeraire is the discount factor at the last date, hence the last discounting is 1 and the 
-   * one at other dates are above one for positive rates.
+   * Computes the CMS payoff rate from the swap rate.
    * 
-   * @param model  the interest rate model
-   * @param valuesExpiry  the modeled values at expiry
-   * @return  the rebased discount factors, dimension: IBOR dates
+   * @param swapRate  the swap rate
+   * @param cms  the CMS period description
+   * @return the payoff
    */
-  public double[] discounting(
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
-      MulticurveEquivalentValues valuesExpiry) {
-
-    int nbFwdPeriods = model.getIborPeriodsCount();
-    double[] delta = model.getAccrualFactors().toArrayUnsafe();
-    double[] discounting = new double[nbFwdPeriods + 1];
-    double[] valueFwdPath = valuesExpiry.getOnRates().toArrayUnsafe();
-    discounting[nbFwdPeriods] = 1.0;
-    for (int loopdsc = nbFwdPeriods - 1; loopdsc >= 0; loopdsc--) {
-      discounting[loopdsc] =
-          discounting[loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
+  public double[] payoff(double[] swapRate, CmsPeriod cms) {
+    if (cms.getCmsPeriodType().equals(CmsPeriodType.CAPLET)) {
+      double[] payoff = new double[swapRate.length];
+      for (int i = 0; i < swapRate.length; i++) {
+        payoff[i] = Math.max(0, swapRate[i] - cms.getStrike());
+      }
+      return payoff;
     }
-    return discounting;
+    if (cms.getCmsPeriodType().equals(CmsPeriodType.FLOORLET)) {
+      double[] payoff = new double[swapRate.length];
+      for (int i = 0; i < swapRate.length; i++) {
+        payoff[i] = Math.max(0,  cms.getStrike() - swapRate[i]);
+      }
+      return payoff;
+    }
+    return swapRate;
   }
 
   //------------------------- AUTOGENERATED START -------------------------
   /**
-   * The meta-bean for {@code LmmdddRatchetProductMonteCarloPricer}.
+   * The meta-bean for {@code LmmdddCmsPeriodMonteCarloPricer}.
    * @return the meta-bean, not null
    */
-  public static LmmdddRatchetProductMonteCarloPricer.Meta meta() {
-    return LmmdddRatchetProductMonteCarloPricer.Meta.INSTANCE;
+  public static LmmdddCmsPeriodMonteCarloPricer.Meta meta() {
+    return LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE;
   }
 
   static {
-    MetaBean.register(LmmdddRatchetProductMonteCarloPricer.Meta.INSTANCE);
+    MetaBean.register(LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE);
   }
 
   /**
@@ -247,11 +219,11 @@ public final class LmmdddRatchetProductMonteCarloPricer
    * Returns a builder used to create an instance of the bean.
    * @return the builder, not null
    */
-  public static LmmdddRatchetProductMonteCarloPricer.Builder builder() {
-    return new LmmdddRatchetProductMonteCarloPricer.Builder();
+  public static LmmdddCmsPeriodMonteCarloPricer.Builder builder() {
+    return new LmmdddCmsPeriodMonteCarloPricer.Builder();
   }
 
-  private LmmdddRatchetProductMonteCarloPricer(
+  private LmmdddCmsPeriodMonteCarloPricer(
       int nbPaths,
       int pathNumberBlock,
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
@@ -268,8 +240,8 @@ public final class LmmdddRatchetProductMonteCarloPricer
   }
 
   @Override
-  public LmmdddRatchetProductMonteCarloPricer.Meta metaBean() {
-    return LmmdddRatchetProductMonteCarloPricer.Meta.INSTANCE;
+  public LmmdddCmsPeriodMonteCarloPricer.Meta metaBean() {
+    return LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE;
   }
 
   //-----------------------------------------------------------------------
@@ -332,7 +304,7 @@ public final class LmmdddRatchetProductMonteCarloPricer
       return true;
     }
     if (obj != null && obj.getClass() == this.getClass()) {
-      LmmdddRatchetProductMonteCarloPricer other = (LmmdddRatchetProductMonteCarloPricer) obj;
+      LmmdddCmsPeriodMonteCarloPricer other = (LmmdddCmsPeriodMonteCarloPricer) obj;
       return (nbPaths == other.nbPaths) &&
           (pathNumberBlock == other.pathNumberBlock) &&
           JodaBeanUtils.equal(model, other.model) &&
@@ -356,7 +328,7 @@ public final class LmmdddRatchetProductMonteCarloPricer
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder(192);
-    buf.append("LmmdddRatchetProductMonteCarloPricer{");
+    buf.append("LmmdddCmsPeriodMonteCarloPricer{");
     buf.append("nbPaths").append('=').append(nbPaths).append(',').append(' ');
     buf.append("pathNumberBlock").append('=').append(pathNumberBlock).append(',').append(' ');
     buf.append("model").append('=').append(model).append(',').append(' ');
@@ -368,7 +340,7 @@ public final class LmmdddRatchetProductMonteCarloPricer
 
   //-----------------------------------------------------------------------
   /**
-   * The meta-bean for {@code LmmdddRatchetProductMonteCarloPricer}.
+   * The meta-bean for {@code LmmdddCmsPeriodMonteCarloPricer}.
    */
   public static final class Meta extends DirectMetaBean {
     /**
@@ -380,27 +352,27 @@ public final class LmmdddRatchetProductMonteCarloPricer
      * The meta-property for the {@code nbPaths} property.
      */
     private final MetaProperty<Integer> nbPaths = DirectMetaProperty.ofImmutable(
-        this, "nbPaths", LmmdddRatchetProductMonteCarloPricer.class, Integer.TYPE);
+        this, "nbPaths", LmmdddCmsPeriodMonteCarloPricer.class, Integer.TYPE);
     /**
      * The meta-property for the {@code pathNumberBlock} property.
      */
     private final MetaProperty<Integer> pathNumberBlock = DirectMetaProperty.ofImmutable(
-        this, "pathNumberBlock", LmmdddRatchetProductMonteCarloPricer.class, Integer.TYPE);
+        this, "pathNumberBlock", LmmdddCmsPeriodMonteCarloPricer.class, Integer.TYPE);
     /**
      * The meta-property for the {@code model} property.
      */
     private final MetaProperty<LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters> model = DirectMetaProperty.ofImmutable(
-        this, "model", LmmdddRatchetProductMonteCarloPricer.class, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters.class);
+        this, "model", LmmdddCmsPeriodMonteCarloPricer.class, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters.class);
     /**
      * The meta-property for the {@code numberGenerator} property.
      */
     private final MetaProperty<RandomNumberGenerator> numberGenerator = DirectMetaProperty.ofImmutable(
-        this, "numberGenerator", LmmdddRatchetProductMonteCarloPricer.class, RandomNumberGenerator.class);
+        this, "numberGenerator", LmmdddCmsPeriodMonteCarloPricer.class, RandomNumberGenerator.class);
     /**
      * The meta-property for the {@code evolution} property.
      */
     private final MetaProperty<LiborMarketModelMonteCarloEvolution> evolution = DirectMetaProperty.ofImmutable(
-        this, "evolution", LmmdddRatchetProductMonteCarloPricer.class, LiborMarketModelMonteCarloEvolution.class);
+        this, "evolution", LmmdddCmsPeriodMonteCarloPricer.class, LiborMarketModelMonteCarloEvolution.class);
     /**
      * The meta-properties.
      */
@@ -436,13 +408,13 @@ public final class LmmdddRatchetProductMonteCarloPricer
     }
 
     @Override
-    public LmmdddRatchetProductMonteCarloPricer.Builder builder() {
-      return new LmmdddRatchetProductMonteCarloPricer.Builder();
+    public LmmdddCmsPeriodMonteCarloPricer.Builder builder() {
+      return new LmmdddCmsPeriodMonteCarloPricer.Builder();
     }
 
     @Override
-    public Class<? extends LmmdddRatchetProductMonteCarloPricer> beanType() {
-      return LmmdddRatchetProductMonteCarloPricer.class;
+    public Class<? extends LmmdddCmsPeriodMonteCarloPricer> beanType() {
+      return LmmdddCmsPeriodMonteCarloPricer.class;
     }
 
     @Override
@@ -496,15 +468,15 @@ public final class LmmdddRatchetProductMonteCarloPricer
     protected Object propertyGet(Bean bean, String propertyName, boolean quiet) {
       switch (propertyName.hashCode()) {
         case 1723700122:  // nbPaths
-          return ((LmmdddRatchetProductMonteCarloPricer) bean).getNbPaths();
+          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getNbPaths();
         case -1504032417:  // pathNumberBlock
-          return ((LmmdddRatchetProductMonteCarloPricer) bean).getPathNumberBlock();
+          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getPathNumberBlock();
         case 104069929:  // model
-          return ((LmmdddRatchetProductMonteCarloPricer) bean).getModel();
+          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getModel();
         case 1709932938:  // numberGenerator
-          return ((LmmdddRatchetProductMonteCarloPricer) bean).getNumberGenerator();
+          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getNumberGenerator();
         case 261136251:  // evolution
-          return ((LmmdddRatchetProductMonteCarloPricer) bean).getEvolution();
+          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getEvolution();
       }
       return super.propertyGet(bean, propertyName, quiet);
     }
@@ -522,9 +494,9 @@ public final class LmmdddRatchetProductMonteCarloPricer
 
   //-----------------------------------------------------------------------
   /**
-   * The bean-builder for {@code LmmdddRatchetProductMonteCarloPricer}.
+   * The bean-builder for {@code LmmdddCmsPeriodMonteCarloPricer}.
    */
-  public static final class Builder extends DirectFieldsBeanBuilder<LmmdddRatchetProductMonteCarloPricer> {
+  public static final class Builder extends DirectFieldsBeanBuilder<LmmdddCmsPeriodMonteCarloPricer> {
 
     private int nbPaths;
     private int pathNumberBlock;
@@ -542,7 +514,7 @@ public final class LmmdddRatchetProductMonteCarloPricer
      * Restricted copy constructor.
      * @param beanToCopy  the bean to copy from, not null
      */
-    private Builder(LmmdddRatchetProductMonteCarloPricer beanToCopy) {
+    private Builder(LmmdddCmsPeriodMonteCarloPricer beanToCopy) {
       this.nbPaths = beanToCopy.getNbPaths();
       this.pathNumberBlock = beanToCopy.getPathNumberBlock();
       this.model = beanToCopy.getModel();
@@ -600,8 +572,8 @@ public final class LmmdddRatchetProductMonteCarloPricer
     }
 
     @Override
-    public LmmdddRatchetProductMonteCarloPricer build() {
-      return new LmmdddRatchetProductMonteCarloPricer(
+    public LmmdddCmsPeriodMonteCarloPricer build() {
+      return new LmmdddCmsPeriodMonteCarloPricer(
           nbPaths,
           pathNumberBlock,
           model,
@@ -667,7 +639,7 @@ public final class LmmdddRatchetProductMonteCarloPricer
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder(192);
-      buf.append("LmmdddRatchetProductMonteCarloPricer.Builder{");
+      buf.append("LmmdddCmsPeriodMonteCarloPricer.Builder{");
       buf.append("nbPaths").append('=').append(JodaBeanUtils.toString(nbPaths)).append(',').append(' ');
       buf.append("pathNumberBlock").append('=').append(JodaBeanUtils.toString(pathNumberBlock)).append(',').append(' ');
       buf.append("model").append('=').append(JodaBeanUtils.toString(model)).append(',').append(' ');

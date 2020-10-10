@@ -59,11 +59,11 @@ import com.opengamma.strata.product.swap.SwapLeg;
 import com.opengamma.strata.product.swap.SwapPaymentPeriod;
 
 import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
 import marc.henrard.murisq.model.lmm.LmmdddUtils;
 import marc.henrard.murisq.pricer.capfloor.HullWhiteCapFloorLegPricer;
-import marc.henrard.murisq.pricer.montecarlo.MonteCarloDataSet;
 
 /**
  * Test {@link LmmdddRatchetProductMonteCarloPricer}.
@@ -78,7 +78,7 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
   private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/London");
   private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);
   
-  private static final ImmutableRatesProvider MULTICURVE_EUR = MonteCarloDataSet.MULTICURVE_EUR;
+  private static final ImmutableRatesProvider MULTICURVE_EUR = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
   
   /* LMM parameters (HW-like) */
   private static final double MEAN_REVERTION = 0.02;

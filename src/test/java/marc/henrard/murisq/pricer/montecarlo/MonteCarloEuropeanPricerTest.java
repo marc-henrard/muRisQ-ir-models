@@ -5,7 +5,6 @@ package marc.henrard.murisq.pricer.montecarlo;
 
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_3M;
 import static com.opengamma.strata.basics.index.OvernightIndices.EUR_EONIA;
-import static marc.henrard.murisq.pricer.montecarlo.MonteCarloDataSet.MULTICURVE_EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
@@ -23,6 +22,7 @@ import com.opengamma.strata.math.impl.cern.RandomEngine;
 import com.opengamma.strata.math.impl.random.NormalRandomNumberGenerator;
 
 import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
 import marc.henrard.murisq.model.lmm.LmmdddUtils;
@@ -31,6 +31,8 @@ import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductMonteCar
 /**
  * Tests {@link MonteCarloEuropeanPricer}.
  * Interface; tests only some default methods.
+ * discounting method tested in {@link LmmdddCmsPeriodMonteCarloPricerTest} and 
+ * {@link LmmdddSwaptionPhysicalProductMonteCarloPricerTest}.
  * 
  * @author Marc Henrard
  */
@@ -46,7 +48,8 @@ public class MonteCarloEuropeanPricerTest {
       ImmutableList.of(LocalDate.of(2016, 11, 20), LocalDate.of(2020, 2, 20));
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMMHW = 
       LmmdddUtils.
-      lmmHw(MEAN_REVERTION, HW_SIGMA, IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
+      lmmHw(MEAN_REVERTION, HW_SIGMA, IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
+          MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120,
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
   private static final RandomEngine ENGINE = new MersenneTwister64(0);
   private static final NormalRandomNumberGenerator RND = 
@@ -92,9 +95,6 @@ public class MonteCarloEuropeanPricerTest {
     assertThat(dec.getFirst()).isEqualTo(blocks);
     assertThat(dec.getSecond()).isEqualTo(pathPerBlock);
     assertThat(dec.getThird()).isEqualTo(extra);
-    
   }
-  
-  
 
 }
