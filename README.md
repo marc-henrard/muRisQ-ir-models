@@ -66,8 +66,11 @@ Explicit formula for implicit volatility.
 * Pricing of CMS coupons/caplets/floorlets by efficient approximation.
 
 ### 3. G2++
+
+#### Code 
 * Parameters description
-* Formula for the variance of pseudo-discount factors rescaled by the collateral account
+* Different formulas for variance and volatility in different setup
+* Pricing of European swaptions (physical settlement) with efficient explicit approximation and with numerical integration 2D.
 
 ### 4. LIBOR/Forward Market Model
 
@@ -76,8 +79,7 @@ LIBOR or Forward Market Model (also called BGM/Brae/Gatarek/Musiela) with displa
 
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2010). Swaptions in Libor Market Model with local volatility. *Wilmott Journal*, 2(3):135--154.
-* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2014). *Interest Rate Modelling in the Multi-curve Framework:
-  Foundations, Evolution and Implementation*. Applied Quantitative Finance. Palgrave Macmillan. ISBN: 978-1-137-37465-3.
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2014). *Interest Rate Modelling in the Multi-curve Framework: Foundations, Evolution and Implementation*. Applied Quantitative Finance. Palgrave Macmillan. ISBN: 978-1-137-37465-3.
 
 #### Code 
 * Parameters description
