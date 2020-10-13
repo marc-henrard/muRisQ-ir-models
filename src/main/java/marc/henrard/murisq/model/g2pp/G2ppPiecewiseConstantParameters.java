@@ -118,6 +118,15 @@ public class G2ppPiecewiseConstantParameters
   private final int nbVolatilities; // Not a property
   /** The valuation zone.*/
   private final ZonedDateTime valuationDateTime; // Not a property
+  
+  /**
+   * Returns the two mean reversions in an array.
+   * 
+   * @return the mean reversions
+   */
+  public double[] getMeanReversions() {
+    return new double[]{kappa1, kappa2};
+  }
 
   //-------------------------------------------------------------------------
 
