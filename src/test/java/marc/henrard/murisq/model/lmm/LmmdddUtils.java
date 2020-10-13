@@ -27,6 +27,8 @@ import marc.henrard.murisq.basics.time.TimeMeasurement;
  */
 public class LmmdddUtils {
   
+  private static final double TIME_TOLERANCE = 5.0d/350.0d; // To allow for long week-ends
+  
   /**
    * Create a Hull-White-one-factor-like LMM.
    * 
@@ -85,7 +87,7 @@ public class LmmdddUtils {
         .displacements(DoubleArray.ofUnsafe(displacements))
         .multiplicativeSpreads(DoubleArray.ofUnsafe(multiplicativeSpreads))
         .timeMeasure(ScaledSecondTime.DEFAULT)
-        .timeTolerance(1.0d / 300.0d)
+        .timeTolerance(TIME_TOLERANCE)
         .volatilities(DoubleMatrix.ofUnsafe(volatilities)).build();
   }
   
@@ -156,7 +158,7 @@ public class LmmdddUtils {
         .displacements(DoubleArray.ofUnsafe(displacements))
         .multiplicativeSpreads(DoubleArray.ofUnsafe(multiplicativeSpreads))
         .timeMeasure(ScaledSecondTime.DEFAULT)
-        .timeTolerance(1.0d / 300.0d)
+        .timeTolerance(TIME_TOLERANCE)
         .volatilities(DoubleMatrix.ofUnsafe(volatilities)).build();
   }
 

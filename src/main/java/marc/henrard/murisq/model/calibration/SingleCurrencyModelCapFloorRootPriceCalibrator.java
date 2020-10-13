@@ -39,7 +39,7 @@ public class SingleCurrencyModelCapFloorRootPriceCalibrator {
       STEP_MAX,
       DecompositionFactory.SV_COMMONS);
 
-  /** The template generating {@link RationalParameters}. */
+  /** The template generating {@link SingleCurrencyModelParameters}. */
   private final SingleCurrencyModelTemplate template;
 
   /**
@@ -61,7 +61,7 @@ public class SingleCurrencyModelCapFloorRootPriceCalibrator {
   }
   
   /**
-   * Calibrates the model parameters to a set of cap/floor trades by least-square approach.
+   * Calibrates the model parameters to a set of cap/floor trades by exact root finding approach.
    * <p>
    * The calibration uses explicit constraints and reduces the number of calibration parameters to 
    * the non-fixed parameters.

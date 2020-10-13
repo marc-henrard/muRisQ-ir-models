@@ -42,7 +42,6 @@ import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantPara
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.pricer.swaption.HullWhiteSwaptionPhysicalProductPricer;
-import com.opengamma.strata.pricer.swaption.NormalSwaptionPhysicalProductPricer;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwapTrade;
@@ -113,8 +112,8 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
       LmmdddSwaptionPhysicalProductExplicitApproxPricer.DEFAULT;
   private static final HullWhiteSwaptionPhysicalProductPricer PRICER_SWAPTION_HW =
       HullWhiteSwaptionPhysicalProductPricer.DEFAULT;
-  private static final NormalSwaptionPhysicalProductPricer PRICER_SWAPTION_BACHELIER =
-      NormalSwaptionPhysicalProductPricer.DEFAULT;
+  private static final NormalSwaptionPhysicalProductPricer2 PRICER_SWAPTION_BACHELIER =
+      NormalSwaptionPhysicalProductPricer2.DEFAULT;
 
   /* Tests */
   private static final Offset<Double> TOLERANCE_APPROX = within(1.0E+1);
@@ -259,6 +258,5 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
 //  }
   
   // TODO: Compare to MC for LMM with different displacement and multi-factors
-  // TODO: Compare to G2++
 
 }
