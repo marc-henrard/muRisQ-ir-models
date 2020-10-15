@@ -41,7 +41,7 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
   /**
    * Create an instance of the calibrator.
    * 
-   * @param template  the rational model template
+   * @param startingParameters  the starting parameters to be adjusted
    * @return the instance
    */
   public static LmmdddSwaptionRootBachelierVolatility1Calibrator of(
@@ -51,7 +51,8 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
   
   /**
    * Private constructor. 
-   * @param template
+   * 
+   * @param startingParameters  the starting parameters to be adjusted
    */
   private LmmdddSwaptionRootBachelierVolatility1Calibrator(
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters) {
@@ -61,7 +62,7 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
   /**
    * Calibrates the model parameters to a swaption by exact root finding approach.
    * <p>
-   * The calibration is done to the implied volatility.
+   * The calibration is done to the Bachelier/normal implied volatility.
    * 
    * @param swaption  the swaption product
    * @param impliedVolatility  the Bachelier/normal model implied volatility
