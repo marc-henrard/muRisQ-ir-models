@@ -39,7 +39,7 @@ import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductExplicit
  * 
  * @author Marc Henrard
  */
-public class LmmdddSwaptionRootBachelierVolatilityNCalibrator {
+public class LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator {
   
   /** The precision used in root-finding search. */
   private static final double TOLERANCE_ABS = 1.0E-9;
@@ -72,12 +72,12 @@ public class LmmdddSwaptionRootBachelierVolatilityNCalibrator {
    * @param extrapolatorRight  the right extrapolator for the scaling factors
    * @return the instance
    */
-  public static LmmdddSwaptionRootBachelierVolatilityNCalibrator of(
+  public static LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator of(
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters,
       CurveInterpolator interpolator,
       CurveExtrapolator extrapolatorLeft,
       CurveExtrapolator extrapolatorRight) {
-    return new LmmdddSwaptionRootBachelierVolatilityNCalibrator(startingParameters, interpolator, 
+    return new LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator(startingParameters, interpolator, 
         extrapolatorLeft, extrapolatorRight);
   }
   
@@ -89,7 +89,7 @@ public class LmmdddSwaptionRootBachelierVolatilityNCalibrator {
    * @param extrapolatorLeft  the left extrapolator for the scaling factors
    * @param extrapolatorRight  the right extrapolator for the scaling factors
    */
-  private LmmdddSwaptionRootBachelierVolatilityNCalibrator(
+  private LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator(
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters,
       CurveInterpolator interpolator,
       CurveExtrapolator extrapolatorLeft,

@@ -3,8 +3,10 @@
  */
 package marc.henrard.murisq.model.lmm;
 
+import java.util.List;
 import java.util.function.Function;
 
+import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.collect.array.DoubleMatrix;
 import com.opengamma.strata.math.impl.differentiation.VectorFieldFirstOrderDifferentiator;
@@ -16,13 +18,13 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductExplicitApproxPricer;
 
 /**
- * Exact calibration by root-finding of one swaption for the LMM displaced diffusion.
+ * Exact calibration by root-finding of two swaptions for the LMM displaced diffusion.
  * <p>
- * The start volatilities a multiplied by a common factor to achieve calibration.
+ * The start volatilities and the skew are multiplied each by a factor to achieve calibration.
  * 
  * @author Marc Henrard
  */
-public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
+public class LmmdddSwaptionRootBachelierVolatility2SkewCalibrator {
   
   /** The precision used in root-finding search. */
   private static final double TOLERANCE_ABS = 1.0E-9;
@@ -44,9 +46,9 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
    * @param startingParameters  the starting parameters to be adjusted
    * @return the instance
    */
-  public static LmmdddSwaptionRootBachelierVolatility1Calibrator of(
+  public static LmmdddSwaptionRootBachelierVolatility2SkewCalibrator of(
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters) {
-    return new LmmdddSwaptionRootBachelierVolatility1Calibrator(startingParameters);
+    return new LmmdddSwaptionRootBachelierVolatility2SkewCalibrator(startingParameters);
   }
   
   /**
@@ -54,7 +56,7 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
    * 
    * @param startingParameters  the starting parameters to be adjusted
    */
-  private LmmdddSwaptionRootBachelierVolatility1Calibrator(
+  private LmmdddSwaptionRootBachelierVolatility2SkewCalibrator(
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters) {
     this.startingParameters = startingParameters;
   }
@@ -70,18 +72,25 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
    * @return  the calibrated model parameters
    */
   public LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters calibrate(
-      ResolvedSwaption swaption, 
-      double impliedVolatility,
+      List<ResolvedSwaption> swaptions, 
+      DoubleArray impliedVolatilities,
       RatesProvider multicurve) {
     
-    ModelValues function = new ModelValues(swaption, impliedVolatility, multicurve, startingParameters);
+    ArgChecker.isTrue(swaptions.size() == 2, 
+        "there must be exactly two swaptions in the calibration set");
+    ModelValues function = new ModelValues(swaptions, impliedVolatilities, multicurve, startingParameters);
     VectorFieldFirstOrderDifferentiator differentiator = new VectorFieldFirstOrderDifferentiator();
     Function<DoubleArray, DoubleMatrix>  jacobian = differentiator.differentiate(function);
-    DoubleArray parametersCalibrated = ROOT_FINDER.findRoot(function, jacobian, DoubleArray.of(1.0d));
+    DoubleArray parametersCalibrated = 
+        ROOT_FINDER.findRoot(function, jacobian, DoubleArray.of(1.0d, 1.0d));
     DoubleMatrix volatilityUpdated = 
         startingParameters.getVolatilities().multipliedBy(parametersCalibrated.get(0));
+    DoubleArray displacementUpdated = 
+        startingParameters.getDisplacements().multipliedBy(parametersCalibrated.get(1));
     LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters parametersUpdated = 
-        startingParameters.toBuilder().volatilities(volatilityUpdated).build();
+        startingParameters.toBuilder()
+        .volatilities(volatilityUpdated)
+        .displacements(displacementUpdated).build();
     return parametersUpdated;
   }
 
@@ -93,20 +102,20 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
     private static final LmmdddSwaptionPhysicalProductExplicitApproxPricer PRICER_SWAPTION_LMM_APPROX = 
         LmmdddSwaptionPhysicalProductExplicitApproxPricer.DEFAULT;
     
-    private final ResolvedSwaption swaption;
-    private final double ivMarket;
+    private final List<ResolvedSwaption> swaptions;
+    private final DoubleArray ivMarket;
     private final RatesProvider multicurve;
     private final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters;
 
     // Constructor
     public ModelValues(
-        ResolvedSwaption swaption, 
-        double impliedVolatility,
+        List<ResolvedSwaption> swaptions, 
+        DoubleArray impliedVolatilities,
         RatesProvider multicurve, 
         LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters startingParameters) {
       
-      this.swaption = swaption;
-      this.ivMarket = impliedVolatility;
+      this.swaptions = swaptions;
+      this.ivMarket = impliedVolatilities;
       this.multicurve = multicurve;
       this.startingParameters = startingParameters;
     }
@@ -114,10 +123,17 @@ public class LmmdddSwaptionRootBachelierVolatility1Calibrator {
     @Override
     public DoubleArray apply(DoubleArray x) {
       DoubleMatrix volatilityUpdated = startingParameters.getVolatilities().multipliedBy(x.get(0));
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters parametersUpdated = 
-          startingParameters.toBuilder().volatilities(volatilityUpdated).build();
-      double ivModel = PRICER_SWAPTION_LMM_APPROX.impliedVolatilityBachelier(swaption, multicurve, parametersUpdated);
-      return DoubleArray.of(ivMarket - ivModel);
+      DoubleArray displacementUpdated = startingParameters.getDisplacements().multipliedBy(x.get(1));
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters parametersUpdated =
+          startingParameters.toBuilder()
+          .volatilities(volatilityUpdated)
+          .displacements(displacementUpdated).build();
+      double[] ivModel = new double[2];
+      for (int i = 0; i < 2; i++) {
+        ivModel[i] = PRICER_SWAPTION_LMM_APPROX
+            .impliedVolatilityBachelier(swaptions.get(i), multicurve, parametersUpdated);
+      }
+      return ivMarket.minus(DoubleArray.ofUnsafe(ivModel));
     }
     
   }

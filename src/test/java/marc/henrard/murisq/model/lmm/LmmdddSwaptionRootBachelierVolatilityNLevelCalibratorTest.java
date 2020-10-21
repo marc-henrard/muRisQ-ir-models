@@ -46,11 +46,11 @@ import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductExplicitApproxPricer;
 
 /**
- * Tests {@link LmmdddSwaptionRootBachelierVolatilityNCalibrator}.
+ * Tests {@link LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator}.
  * 
  * @author Marc Henrard
  */
-public class LmmdddSwaptionRootBachelierVolatilityNCalibratorTest {
+public class LmmdddSwaptionRootBachelierVolatilityNLevelCalibratorTest {
   
   private static final ReferenceData REF_DATA = ReferenceData.standard();
 
@@ -102,10 +102,10 @@ public class LmmdddSwaptionRootBachelierVolatilityNCalibratorTest {
   private static final CurveInterpolator INTERPOLATOR = CurveInterpolators.LINEAR;
   private static final CurveExtrapolator EXTRAPOLATOR_LEFT = CurveExtrapolators.FLAT;
   private static final CurveExtrapolator EXTRAPOLATOR_RIGHT = CurveExtrapolators.FLAT;
-  private static final LmmdddSwaptionRootBachelierVolatilityNCalibrator LMM_CALIBRATOR_1F =
-      LmmdddSwaptionRootBachelierVolatilityNCalibrator.of(LMM_HW_START, INTERPOLATOR, EXTRAPOLATOR_LEFT, EXTRAPOLATOR_RIGHT);
-  private static final LmmdddSwaptionRootBachelierVolatilityNCalibrator LMM_CALIBRATOR_2F =
-      LmmdddSwaptionRootBachelierVolatilityNCalibrator.of(LMM_2F_START, INTERPOLATOR, EXTRAPOLATOR_LEFT, EXTRAPOLATOR_RIGHT);
+  private static final LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator LMM_CALIBRATOR_1F =
+      LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator.of(LMM_HW_START, INTERPOLATOR, EXTRAPOLATOR_LEFT, EXTRAPOLATOR_RIGHT);
+  private static final LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator LMM_CALIBRATOR_2F =
+      LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator.of(LMM_2F_START, INTERPOLATOR, EXTRAPOLATOR_LEFT, EXTRAPOLATOR_RIGHT);
   
   /* Tests */
   private static final Offset<Double> TOLERANCE_APPROX_IV = within(1.0E-8);
@@ -129,7 +129,7 @@ public class LmmdddSwaptionRootBachelierVolatilityNCalibratorTest {
     calibration(LMM_CALIBRATOR_2F);
   }
   
-  private void calibration(LmmdddSwaptionRootBachelierVolatilityNCalibrator calibrator) {
+  private void calibration(LmmdddSwaptionRootBachelierVolatilityNLevelCalibrator calibrator) {
     Period[][] expiries = // dimension tests-calibration set
         new Period[][] {
             {Period.ofMonths(6), Period.ofMonths(12), Period.ofMonths(60)},
