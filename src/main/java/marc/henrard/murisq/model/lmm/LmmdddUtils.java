@@ -162,4 +162,68 @@ public class LmmdddUtils {
         .volatilities(DoubleMatrix.ofUnsafe(volatilities)).build();
   }
 
+  
+  /**
+   * Generate a one-factor model with flat volatilities.
+   * 
+   * @param a  the mean reversion 
+   * @param volLevel  the starting volatility level
+   * @param iborDates  the ibor dates
+   * @param iborIndex  the underlying Ibor index
+   * @param lmmTimeMeasure  the time measure for the times in the model
+   * @param multicurve  the multi-curve used to compute beta values
+   * @param valuationZone  the valuation zone
+   * @param valuationTime  the valuation time
+   * @param refData  the reference data with holidays
+   * @return the model
+   */
+  public static LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmm1(
+      double a,
+      double volLevel,
+      double displacement,
+      List<LocalDate> iborDates,
+      OvernightIndex overnightIndex,
+      IborIndex iborIndex,
+      TimeMeasurement lmmTimeMeasure,
+      RatesProvider multicurve,
+      ZoneId valuationZone,
+      LocalTime valuationTime,
+      ReferenceData refData) {
+
+    LocalDate valuationDate = multicurve.getValuationDate();
+    int nbDates = iborDates.size();
+    double[] iborTimes = new double[nbDates];
+    for (int i = 0; i < nbDates; i++) {
+      iborTimes[i] = lmmTimeMeasure.relativeTime(valuationDate, iborDates.get(i));
+    }
+    double[] accrualFactors = new double[nbDates - 1];
+    double[] displacements = new double[nbDates - 1];
+    Arrays.fill(displacements, displacement);
+    double[] multiplicativeSpreads = new double[nbDates - 1];
+    double[][] volatilities = new double[nbDates - 1][1]; // 1-factor model
+    for (int i = 0; i < nbDates - 1; i++) {
+      accrualFactors[i] = iborIndex.getDayCount().relativeYearFraction(iborDates.get(i), iborDates.get(i + 1));
+      LocalDate fixingDate = iborIndex.calculateFixingFromEffective(iborDates.get(i), refData);
+      IborIndexObservation obs = IborIndexObservation.of(iborIndex, fixingDate, refData);
+      double iborRate = multicurve.iborIndexRates(iborIndex).rate(obs);
+      double dfStart = multicurve.discountFactor(iborIndex.getCurrency(), obs.getEffectiveDate());
+      double dfEnd = multicurve.discountFactor(iborIndex.getCurrency(), obs.getMaturityDate());
+      double fwdRatio = dfStart / dfEnd;
+      multiplicativeSpreads[i] = (1.0 + accrualFactors[i] * iborRate) / fwdRatio;
+      volatilities[i][0] = volLevel;
+    }
+    return LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters.builder()
+        .valuationDate(valuationDate).valuationTime(valuationTime).valuationZone(valuationZone)
+        .overnightIndex(overnightIndex)
+        .iborIndex(iborIndex)
+        .meanReversion(a)
+        .accrualFactors(DoubleArray.ofUnsafe(accrualFactors))
+        .iborTimes(DoubleArray.ofUnsafe(iborTimes))
+        .displacements(DoubleArray.ofUnsafe(displacements))
+        .multiplicativeSpreads(DoubleArray.ofUnsafe(multiplicativeSpreads))
+        .timeMeasure(ScaledSecondTime.DEFAULT)
+        .timeTolerance(TIME_TOLERANCE)
+        .volatilities(DoubleMatrix.ofUnsafe(volatilities)).build();
+  }
+
 }

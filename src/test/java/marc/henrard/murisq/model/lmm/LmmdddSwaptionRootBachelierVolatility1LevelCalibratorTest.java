@@ -40,11 +40,11 @@ import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductExplicitApproxPricer;
 
 /**
- * Tests {@link LmmdddSwaptionRootBachelierVolatility1Calibrator}.
+ * Tests {@link LmmdddSwaptionRootBachelierVolatility1LevelCalibrator}.
  * 
  * @author Marc Henrard
  */
-public class LmmdddSwaptionRootBachelierVolatility1CalibratorTest {
+public class LmmdddSwaptionRootBachelierVolatility1LevelCalibratorTest {
   
   private static final ReferenceData REF_DATA = ReferenceData.standard();
 
@@ -94,10 +94,10 @@ public class LmmdddSwaptionRootBachelierVolatility1CalibratorTest {
 
   /* Calibration */
   private static final double IV_TARGET = 0.0075;
-  private static final LmmdddSwaptionRootBachelierVolatility1Calibrator LMM1_CALIBRATOR_1F =
-      LmmdddSwaptionRootBachelierVolatility1Calibrator.of(LMM_HW_START);
-  private static final LmmdddSwaptionRootBachelierVolatility1Calibrator LMM1_CALIBRATOR_2F =
-      LmmdddSwaptionRootBachelierVolatility1Calibrator.of(LMM_2F_START);
+  private static final LmmdddSwaptionRootBachelierVolatility1LevelCalibrator LMM1_CALIBRATOR_1F =
+      LmmdddSwaptionRootBachelierVolatility1LevelCalibrator.of(LMM_HW_START);
+  private static final LmmdddSwaptionRootBachelierVolatility1LevelCalibrator LMM1_CALIBRATOR_2F =
+      LmmdddSwaptionRootBachelierVolatility1LevelCalibrator.of(LMM_2F_START);
   private static final Offset<Double> TOLERANCE_APPROX_IV = within(1.0E-8);
 
   /* Test calibration with one factor volatilities. */
