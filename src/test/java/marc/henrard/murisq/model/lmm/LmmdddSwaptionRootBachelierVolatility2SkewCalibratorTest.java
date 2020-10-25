@@ -101,6 +101,7 @@ public class LmmdddSwaptionRootBachelierVolatility2SkewCalibratorTest {
       LmmdddSwaptionRootBachelierVolatility2SkewCalibrator.of(LMM_1F_START);
   private static final LmmdddSwaptionRootBachelierVolatility2SkewCalibrator LMM1_CALIBRATOR_2F =
       LmmdddSwaptionRootBachelierVolatility2SkewCalibrator.of(LMM_2F_START);
+  
   private static final Offset<Double> TOLERANCE_APPROX_IV = within(1.0E-8);
   private static final boolean PRINT_DETAILS = false;
 
