@@ -29,6 +29,7 @@ public class FallbackTypeTest {
         {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_CALCPERIOD, "CompoundedInArrears2daysCalcperiod"},
         {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_IBORPERIOD, "CompoundedInArrears2daysIborperiod"},
         {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_TENOR, "CompoundedInArrears2daysTenor"},
+        {FallbackType.COMPOUNDED_IN_ARREARS_2DAYS_TENOR_2DAYS_PAYMENT, "CompoundedInArrears2daysTenor2daysPayment"},
     };
   }
 

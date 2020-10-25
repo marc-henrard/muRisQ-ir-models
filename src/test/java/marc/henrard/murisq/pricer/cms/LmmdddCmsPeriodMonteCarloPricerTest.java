@@ -134,6 +134,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
   private static final Offset<Double> TOLERANCE_DF = within(1.0E-12);
   private static final Offset<Double> TOLERANCE_RATE = within(1.0E-12);
   private static final Offset<Double> TOLERANCE_PV_EXACT = within(1.0E-12);
+  private static final boolean PRINT_DETAILS = false;
   
   /* Multi-curve equivalent, only one case */
   @Test
@@ -389,8 +390,8 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
   public void comparison_hw() {
     Offset<Double> toleranceRate = within(7.5E-4);
     int nbPaths = 10_000;
-//    long start, end;
-//    start = System.currentTimeMillis();
+    long start, end;
+    start = System.currentTimeMillis();
     // nbPaths/error 10,000: ~7.5E-4 / 100,000: ~3.0E-4 (90s) / 500,000: ~2.3E-4 (428s) / 1,000,000: ~2.0E-4 (748s)
     DayCount dayCountHw = DayCounts.ACT_365F;
     HullWhiteOneFactorPiecewiseConstantParameters parametersHw =
@@ -425,8 +426,10 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
                   PRICER_CMS_HW.presentValue(CMS_PERIODS[looptype][loopindex][loopexp][looplag][loopstrike],
                       MULTICURVE_EUR, providerHw);
               double fwdHw = pvHw.getAmount() / (period.getNotional() * period.getYearFraction());
-//              System.out.println(INDICES[loopindex] + EXPIRIES[loopexp].toString() + TYPES[looptype] +
-//                  PAYMENT_LAG[looplag] + STRIKES[loopstrike] + ", " + fwdLmm + ", " + fwdHw + ", " + (fwdHw - fwdLmm));
+              if(PRINT_DETAILS) {
+              System.out.println(INDICES[loopindex] + EXPIRIES[loopexp].toString() + TYPES[looptype] +
+                  PAYMENT_LAG[looplag] + STRIKES[loopstrike] + ", " + fwdLmm + ", " + fwdHw + ", " + (fwdHw - fwdLmm));
+              }
               assertThat(fwdLmm).isEqualTo(fwdHw, toleranceRate); // Compare forward rates
               maxError = Math.max(Math.abs(fwdLmm - fwdHw), maxError);
             }
@@ -434,8 +437,10 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
         }
       }
     }
-//    end = System.currentTimeMillis();
-//    System.out.println("Paths: " + nbPaths + " in " + (end - start) + " ms. Max error: " + maxError);
+    end = System.currentTimeMillis();
+    if(PRINT_DETAILS) {
+    System.out.println("Paths: " + nbPaths + " in " + (end - start) + " ms. Max error: " + maxError);
+    }
   }
   
   private static LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw(ResolvedSwap swap) {
