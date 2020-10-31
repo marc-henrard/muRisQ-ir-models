@@ -72,7 +72,7 @@ public class LmmdddSwaptionRootBachelierVolatility2SkewCalibratorTest {
     }
   }
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMM_1F_START = 
-      LmmdddUtils.lmm1(MEAN_REVERTION, VOL1, DISPLACEMENT, 
+      LmmdddExamplesUtils.lmm1(MEAN_REVERTION, VOL1, DISPLACEMENT, 
           IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR, 
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
 
@@ -81,7 +81,7 @@ public class LmmdddSwaptionRootBachelierVolatility2SkewCalibratorTest {
   private static final double VOL2_ANGLE = Math.PI * 0.5;
   private static final double VOL2_LEVEL_2 = 0.02;
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMM_2F_START =
-      LmmdddUtils.lmm2Angle(MEAN_REVERTION, VOL2_LEVEL_1, VOL2_ANGLE, VOL2_LEVEL_2, DISPLACEMENT,
+      LmmdddExamplesUtils.lmm2Angle(MEAN_REVERTION, VOL2_LEVEL_1, VOL2_ANGLE, VOL2_LEVEL_2, DISPLACEMENT,
           IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
 

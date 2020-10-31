@@ -52,7 +52,7 @@ import marc.henrard.murisq.basics.time.ScaledSecondTime;
 import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
-import marc.henrard.murisq.model.lmm.LmmdddUtils;
+import marc.henrard.murisq.model.lmm.LmmdddExamplesUtils;
 import marc.henrard.murisq.pricer.decomposition.MulticurveDecisionScheduleCalculator;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
@@ -110,7 +110,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
     }
   }
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMMHW = 
-      LmmdddUtils.
+      LmmdddExamplesUtils.
       lmmHw(MEAN_REVERTION, HW_SIGMA, IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
           MULTICURVE_EUR, VALUATION_ZONE, VALUATION_TIME, REF_DATA);
   private static final double VOL2_LEVEL_1 = 0.09;
@@ -330,7 +330,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
         iborDates.add(period.getEndDate());
       }
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw =
-          LmmdddUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
+          LmmdddExamplesUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
               EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
               VALUATION_ZONE, VALUATION_TIME, REF_DATA);
       RandomEngine engine = new MersenneTwister64(0); // To have same seed for each test
@@ -394,7 +394,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
       for (SwapPaymentPeriod period : iborLeg) {
         iborDates.add(period.getEndDate());
       }
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmm = LmmdddUtils.
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmm = LmmdddExamplesUtils.
           lmm2Angle(MEAN_REVERTION, VOL2_LEVEL_1, VOL2_ANGLE, VOL2_LEVEL_2, DISPLACEMENT,
               iborDates, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
               VALUATION_ZONE, VALUATION_TIME, REF_DATA);
