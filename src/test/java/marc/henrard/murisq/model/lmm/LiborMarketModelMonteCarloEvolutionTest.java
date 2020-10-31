@@ -94,9 +94,9 @@ public class LiborMarketModelMonteCarloEvolutionTest {
   /* LMM parameters (HW-like) */
   private static final double MEAN_REVERTION = 0.02;
   private static final double HW_SIGMA = 0.01;
-  private static final double VOL2_LEVEL_1 = 0.06;
+  private static final double VOL2_LEVEL_1 = 0.02;
   private static final double VOL2_ANGLE = Math.PI * 0.5;
-  private static final double VOL2_LEVEL_A = 0.04;
+  private static final double VOL2_LEVEL_A = 0.08;
   private static final double DISPLACEMENT = 0.10; // 10% rate displacement
   
   /* Pricer */
@@ -109,6 +109,7 @@ public class LiborMarketModelMonteCarloEvolutionTest {
   /* Tests */
   private static final Offset<Double> TOLERANCE_MC_1 = within(1.0E-1);
   private static final Offset<Double> TOLERANCE_MC_2 = within(1.0E+5);
+  private static final boolean PRINT_DETAILS = false;
   
   /* Test Monte Carlo with single fixed cash-flow. */
   @Test
@@ -195,7 +196,7 @@ public class LiborMarketModelMonteCarloEvolutionTest {
     for(SwapPaymentPeriod period: iborLegPayments) {
       iborDates.add(period.getEndDate());
     }
-    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw = LmmdddUtils.
+    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw = LmmdddExamplesUtils.
         lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
             VALUATION_ZONE, VALUATION_TIME, REF_DATA);
     RandomEngine engine = new MersenneTwister64(0);
@@ -253,9 +254,11 @@ public class LiborMarketModelMonteCarloEvolutionTest {
     
     MultiCurrencyAmount pvDsc = PRICER_SWAP.presentValue(swap2.resolve(REF_DATA), MULTICURVE_EUR);
     double pvMc = lmm_angle2_european(expiryDate, swap2, nbPaths);
-//    System.out.println(pvDsc + "," + pvMc);
-    double pvMcPreviousRun = 9364400.49832724; // 1,000 paths: 9364400.49832724
-    // 1,000,000 paths: 9300338.1459319 // 2,000,000 paths: 9300645.765171481
+    if (PRINT_DETAILS) {
+      System.out.println(pvDsc + "," + pvMc);
+    }
+    double pvMcPreviousRun = 9361333.3796; // 1,000 paths: 9361333.3796
+    // Dsc: 9300123.1484 - MC 1,000,000 paths: 9300506.8394 
     assertThat(pvMc).isEqualTo(pvMcPreviousRun, TOLERANCE_MC_1);
     assertThat(pvMc).isEqualTo(pvDsc.getAmount(EUR_FIXED_1Y_EURIBOR_3M.getFixedLeg().getCurrency()).getAmount(), TOLERANCE_MC_2);
   }
@@ -277,10 +280,11 @@ public class LiborMarketModelMonteCarloEvolutionTest {
     Swap swap2 = Swap.of(swap1.getProduct().getLegs().get(0), iborLeg);
     MultiCurrencyAmount pvDsc = PRICER_SWAP.presentValue(swap2.resolve(REF_DATA), MULTICURVE_EUR);
     double pvMc = lmm_angle2_european(expiryDate, swap2, nbPaths);
-    double pvMcPreviousRun = 1132992.2224364262;
-    // pvDsc: 1110607.0301221774
-    // Paths/pv: 1,000 paths/1132992.2224364262 ; 10,000/1117271.5137225906 ; 100,000/1110240.3928383377
-    //           1,000,000/1109948.9048894863
+    if (PRINT_DETAILS) {
+      System.out.println(pvDsc + "," + pvMc);
+    }
+    double pvMcPreviousRun = 1129934.2599; // 1,000 paths: 1129934.2599
+    // Dsc: 1110607.0301 - MC 1,000,000 paths: 1109913.19897611
     assertThat(pvMc).isEqualTo(pvMcPreviousRun, TOLERANCE_MC_1);
     Offset<Double> toleranceMc = within(2.5E+4);
     assertThat(pvMc)
@@ -302,7 +306,7 @@ public class LiborMarketModelMonteCarloEvolutionTest {
     for(SwapPaymentPeriod period: iborLegPayments) {
       iborDates.add(period.getEndDate());
     }
-    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmAngle = LmmdddUtils.
+    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmAngle = LmmdddExamplesUtils.
         lmm2Angle(MEAN_REVERTION, VOL2_LEVEL_1, VOL2_ANGLE, VOL2_LEVEL_A, DISPLACEMENT,
             iborDates, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
             VALUATION_ZONE, VALUATION_TIME, REF_DATA);

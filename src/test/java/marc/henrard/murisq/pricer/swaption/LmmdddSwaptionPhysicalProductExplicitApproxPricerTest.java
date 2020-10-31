@@ -53,7 +53,7 @@ import com.opengamma.strata.product.swaption.Swaption;
 
 import marc.henrard.murisq.basics.time.ScaledSecondTime;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
-import marc.henrard.murisq.model.lmm.LmmdddUtils;
+import marc.henrard.murisq.model.lmm.LmmdddExamplesUtils;
 
 /**
  * Tests {@link LmmdddSwaptionPhysicalProductExplicitApproxPricer}.
@@ -118,6 +118,7 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
   /* Tests */
   private static final Offset<Double> TOLERANCE_APPROX = within(1.0E+1);
   private static final Offset<Double> TOLERANCE_APPROX_IV = within(2.0E-6); // Implied volatility withing 0.02 bps
+  private static final boolean PRINT_DETAILS = false;
   
   /* Test v Hull-White model 
    * LMM dates are equal to underlying swap dates. */
@@ -136,7 +137,7 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
       for (SwapPaymentPeriod period : iborLeg) {
         iborDates.add(period.getEndDate());
       }
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw = LmmdddUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw = LmmdddExamplesUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
           EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
 
@@ -160,14 +161,18 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
               PRICER_SWAPTION_HW.presentValue(swaptionResolved, MULTICURVE_EUR, HW_PROVIDER);
           assertThat(pvApprox.getCurrency()).isEqualTo(pvHw.getCurrency());
           assertThat(pvApprox.getAmount()).isEqualTo(pvHw.getAmount(), TOLERANCE_APPROX);
+//          if(PRINT_DETAILS) {
 //          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
 //              + ", " + pvApprox + ", " + pvHw + ", " + (pvHw.getAmount()-pvApprox.getAmount()));
+//          }
           double ivApprox = PRICER_SWAPTION_BACHELIER
               .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, HW_DAYCOUNT, pvApprox.getAmount());
           double ivHw = PRICER_SWAPTION_BACHELIER
               .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, HW_DAYCOUNT, pvHw.getAmount());
-//          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
-//              + ", " + ivApprox + ", " + ivHw + ", " + (ivHw-ivApprox));
+          if(PRINT_DETAILS) {
+          System.out.println(expiries[loopexp].toString() + tenors[looptenor] + moneyness[loopmoney] 
+              + ", " + ivApprox + ", " + ivHw + ", " + (ivHw-ivApprox));
+          }
           assertThat(ivApprox).isEqualTo(ivHw, TOLERANCE_APPROX_IV); // Compare implied volatilities
         } // end loopmoney
       } // end looptenor

@@ -25,7 +25,7 @@ import marc.henrard.murisq.basics.time.ScaledSecondTime;
 import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
-import marc.henrard.murisq.model.lmm.LmmdddUtils;
+import marc.henrard.murisq.model.lmm.LmmdddExamplesUtils;
 import marc.henrard.murisq.pricer.swaption.LmmdddSwaptionPhysicalProductMonteCarloPricer;
 
 /**
@@ -47,7 +47,7 @@ public class MonteCarloEuropeanPricerTest {
   private static final List<LocalDate> IBOR_DATES = 
       ImmutableList.of(LocalDate.of(2016, 11, 20), LocalDate.of(2020, 2, 20));
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMMHW = 
-      LmmdddUtils.
+      LmmdddExamplesUtils.
       lmmHw(MEAN_REVERTION, HW_SIGMA, IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
           MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120,
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
