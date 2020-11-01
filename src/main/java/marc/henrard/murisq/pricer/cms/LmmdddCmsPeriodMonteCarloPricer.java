@@ -174,6 +174,7 @@ ImmutableBean, Serializable {
   
   /**
    * Computes the CMS payoff rate from the swap rate.
+   * TODO: transfer to CmsPeriodResolved
    * 
    * @param swapRate  the swap rate
    * @param cms  the CMS period description
