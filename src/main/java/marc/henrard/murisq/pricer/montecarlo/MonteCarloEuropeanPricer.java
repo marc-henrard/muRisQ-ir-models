@@ -12,7 +12,6 @@ import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.ResolvedProduct;
 
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
-import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
 
@@ -147,36 +146,6 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
     double initialNumeraireValue = numeraireInitialValue(multicurve);
     pv = pv /getNbPaths() * initialNumeraireValue;
     return pv;
-  }
-
-  /**
-   * Returns the numeraire rebased discount factors at the different LMM dates.
-   * <p>
-   * The numeraire is the discount factor at the last date, hence the last discounting is 1 and the 
-   * one at other dates are above one for positive rates.
-   * 
-   * @param model  the interest rate model
-   * @param valuesExpiry  the modeled values at expiry
-   * @return  the rebased discount factors, dimension: path x dates
-   */
-  default double[][] discounting(
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
-      List<MulticurveEquivalentValues> valuesExpiry) {
-
-    int nbFwdPeriods = model.getIborPeriodsCount();
-    int nbPathsDsc = valuesExpiry.size();
-    double[] delta = model.getAccrualFactors().toArrayUnsafe();
-    double[][] discounting = new double[nbPathsDsc][nbFwdPeriods + 1];
-    for (int looppath = 0; looppath < nbPathsDsc; looppath++) {
-      MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
-      double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
-      discounting[looppath][nbFwdPeriods] = 1.0;
-      for (int loopdsc = nbFwdPeriods - 1; loopdsc >= 0; loopdsc--) {
-        discounting[looppath][loopdsc] =
-            discounting[looppath][loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
-      }
-    }
-    return discounting;
   }
   
 }

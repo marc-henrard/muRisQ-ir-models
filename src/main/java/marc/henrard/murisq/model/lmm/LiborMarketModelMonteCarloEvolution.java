@@ -77,10 +77,10 @@ public final class LiborMarketModelMonteCarloEvolution
 
     double[] stepTimes = new double[] {model.relativeTime(stepDateTime)};
     int nbLmmPeriods = model.getDisplacements().size();
-    double[][] initForwards = new double[nbLmmPeriods][nbPaths];
+    double[][] initForwards = new double[nbPaths][nbLmmPeriods];
     DoubleArray initialValueOnRates = initialValues.getOnRates();
-    for (int i = 0; i < nbLmmPeriods; i++) {
-      Arrays.fill(initForwards[i], initialValueOnRates.get(i));
+    for (int i = 0; i < nbPaths; i++) {
+      initForwards[i] = initialValueOnRates.toArray().clone();
     }
     double[][][] pathsData = pathGeneratorForwards(stepTimes, initForwards, model, numberGenerator);
     List<MulticurveEquivalentValues> paths = new ArrayList<>();
@@ -94,6 +94,33 @@ public final class LiborMarketModelMonteCarloEvolution
       paths.add(pathValues);
     }
     return paths;
+  }
+  
+  /**
+   * 
+   * @param stepDateTime
+   * @param initialValues
+   * @param model
+   * @param numberGenerator
+   * @param nbPaths
+   * @return overnight rates, dimensions: path x lmm periods
+   */
+  public double[][] evolveOneStepFast(
+      ZonedDateTime stepDateTime,
+      MulticurveEquivalentValues initialValues,
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
+      RandomNumberGenerator numberGenerator,
+      int nbPaths) {
+
+    double[] stepTimes = new double[] {model.relativeTime(stepDateTime)};
+    int nbLmmPeriods = model.getDisplacements().size();
+    double[][] initForwards = new double[nbPaths][nbLmmPeriods];
+    DoubleArray initialValueOnRates = initialValues.getOnRates();
+    for (int i = 0; i < nbPaths; i++) {
+      initForwards[i] = initialValueOnRates.toArray().clone();
+    }
+    double[][][] pathsData = pathGeneratorForwards(stepTimes, initForwards, model, numberGenerator);
+    return pathsData[0];
   }
   
   /**
@@ -147,9 +174,9 @@ public final class LiborMarketModelMonteCarloEvolution
    * 
    * @param stepTimes  the required step times, today is represented by 0, the times must be positive and in 
    *  increasing order
-   * @param initForwards  the initial forward rates, dimensions: LMM periods x paths, the number of paths must be the
+   * @param initForwards  the initial forward rates, dimensions:  paths x LMM periods, the number of paths must be the
    *  same for each rate
-   * @return the forward rates at each step, dimensions: steps x LMM periods x paths
+   * @return the forward rates at each step, dimensions: steps x paths x LMM periods
    */
   public double[][][] pathGeneratorForwards(
       double[] stepTimes,
@@ -157,17 +184,17 @@ public final class LiborMarketModelMonteCarloEvolution
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmm,
       RandomNumberGenerator numberGenerator) {
 
-    final int nbPeriod = initForwards.length;
-    final int nbPath = initForwards[0].length;
+    final int nbPaths = initForwards.length;
+    final int nbPeriods = initForwards[0].length;
     final int nbJump = stepTimes.length;
-    double[][] initTmp = new double[nbPeriod][nbPath]; // modified at each step
-    for (int loopperiod = 0; loopperiod < nbPeriod; loopperiod++) {
-      System.arraycopy(initForwards[loopperiod], 0, initTmp[loopperiod], 0, nbPath);
+    double[][] initTmp = new double[nbPaths][nbPeriods]; // modified at each step
+    for (int looppath = 0; looppath < nbPaths; looppath++) {
+      initTmp[looppath] = initForwards[looppath].clone();
     }
     final double[] jumpTimeAugmented = new double[nbJump + 1];
     jumpTimeAugmented[0] = 0;
     System.arraycopy(stepTimes, 0, jumpTimeAugmented, 1, nbJump); // Add 0 in the steps to facilitate algorithm
-    final double[][][] result = new double[nbJump][nbPeriod][nbPath];
+    final double[][][] result = new double[nbJump][nbPaths][nbPeriods];
     for (int loopjump = 0; loopjump < nbJump; loopjump++) { // Long jump start
       // Intermediary jumps; intermediary values are not exported
       double[] jumpIn;
@@ -183,8 +210,8 @@ public final class LiborMarketModelMonteCarloEvolution
         }
       }
       initTmp = stepPredictorCorrector(jumpIn, initTmp, lmm, numberGenerator);
-      for (int loopperiod = 0; loopperiod < nbPeriod; loopperiod++) {
-        System.arraycopy(initTmp[loopperiod], 0, result[loopjump][loopperiod], 0, nbPath);
+      for (int looppath = 0; looppath < nbPaths; looppath++) {
+        result[loopjump][looppath] = initTmp[looppath].clone();
       }
     } // Long jump end
     return result;
@@ -203,10 +230,10 @@ public final class LiborMarketModelMonteCarloEvolution
    * 
    * @param jumpTimes  the intermediary jump times, the start step is the first time in the array and 
    *   the last jump time is the long step time
-   * @param initForwards  the initial forward rates, dimensions: periodsLMM x paths, the number of path must be the
+   * @param initForwards  the initial forward rates, dimensions:  paths x periodsLMM, the number of path must be the
    *   same for each rate
    * @param lmm  the model parameters
-   * @return the forward rates at the end of the step
+   * @return the forward rates at the end of the step; dimensions:  paths x periodsLMM
    */
   public double[][] stepPredictorCorrector(
       double[] jumpTimes,
@@ -225,7 +252,7 @@ public final class LiborMarketModelMonteCarloEvolution
     MatrixAlgebra algebra = new CommonsMatrixAlgebra();
     DoubleMatrix s = (DoubleMatrix) algebra.multiply(gammaLMM, algebra.getTranspose(gammaLMM));
     int nbJump = jumpTimes.length - 1;
-    int nbPath = initForwards[0].length;
+    int nbPath = initForwards.length;
     double[] dt = new double[nbJump];
     double[] alpha = new double[nbJump];
     double[] alpha2 = new double[nbJump];
@@ -278,30 +305,30 @@ public final class LiborMarketModelMonteCarloEvolution
       final double[][] coefCorrect = new double[nbIndices][nbPath];
       for (int looppath = 0; looppath < nbPath; looppath++) {
         for (int loopn = 0; loopn < nbIndices - 1; loopn++) {
-          coefPredict[looppath][loopn] = (f[index + loopn + 1][looppath] + almm[index + loopn + 1]) /
-              (f[index + loopn + 1][looppath] + deltaI[loopn + 1]);
+          coefPredict[looppath][loopn] = (f[looppath][index + loopn + 1] + almm[index + loopn + 1]) /
+              (f[looppath][index + loopn + 1] + deltaI[loopn + 1]);
         }
       }
       for (int loopdrift = nbIndices - 1; loopdrift >= 0; loopdrift--) {
         if (loopdrift < nbIndices - 1) {
           for (int looppath = 0; looppath < nbPath; looppath++) {
             coefCorrect[loopdrift + 1][looppath] = 
-                (f[index + loopdrift + 1][looppath] + almm[index + loopdrift + 1])
-                  / (f[index + loopdrift + 1][looppath] + deltaI[loopdrift + 1]); // Note: f has already been updated
+                (f[looppath][index + loopdrift + 1] + almm[index + loopdrift + 1])
+                  / (f[looppath][index + loopdrift + 1] + deltaI[loopdrift + 1]); // Note: f has already been updated
             for (int loop = loopdrift + 1; loop < nbIndices; loop++) {
               muPredict[loopdrift][looppath] += salpha2.get(loop, loopdrift) * coefPredict[looppath][loop - 1];
               muCorrect[loopdrift][looppath] += salpha2.get(loop, loopdrift) * coefCorrect[loop][looppath];
             }
           }
           for (int looppath = 0; looppath < nbPath; looppath++) {
-            f[loopdrift + index][looppath] = (f[loopdrift + index][looppath] + almm[index + loopdrift]) 
+            f[looppath][loopdrift + index] = (f[looppath][loopdrift + index] + almm[index + loopdrift]) 
                 * Math.exp(-0.5 * (muPredict[loopdrift][looppath] + muCorrect[loopdrift][looppath]) * dt[loopjump] + cc[loopdrift][looppath]) 
                 - almm[index + loopdrift];
           }
         } else { // Last forward rate does not have state dependent drift
           for (int looppath = 0; looppath < nbPath; looppath++) {
-            f[loopdrift + index][looppath] =
-                (f[loopdrift + index][looppath] + almm[index + loopdrift]) * Math.exp(cc[loopdrift][looppath]) 
+            f[looppath][loopdrift + index] =
+                (f[looppath][loopdrift + index] + almm[index + loopdrift]) * Math.exp(cc[loopdrift][looppath]) 
                 - almm[index + loopdrift];
           }
         }

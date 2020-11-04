@@ -352,8 +352,60 @@ public class LmmdddCmsSpreadPeriodMonteCarloPricerTest {
       System.out.println("Paths: " + nbPaths + " in " + (end - start) + " ms. Max error: " + maxError);
     }
   }
-  
-  // Spread options with approximated dynamic?
+
+  /* Estimation of MC performance */
+  @Test
+  public void performance() {
+    int nbRep = 5;
+    int nbPaths = 10_000;
+    long start, end;
+    start = System.currentTimeMillis();
+    // nbPaths:time 1x2,000: 3.7s / 5x10,000: 85.4s / 100,000: ~4.1E-4 (699s) / 200,000: ~1.8E-4 (1400s)
+    double tmp = 0.0;
+    for (int looprep = 0; looprep < nbRep; looprep++)
+      for (int loopexp = 0; loopexp < NB_EXPIRIES; loopexp++) {
+        for (int looplag = 0; looplag < NB_PAY_LAG; looplag++) {
+          System.out.println(EXPIRIES[loopexp] + " - " + PAYMENT_LAG[looplag]);
+          RandomEngine engine = new MersenneTwister64(0); // To have same seed for each test
+          NormalRandomNumberGenerator generator = new NormalRandomNumberGenerator(0.0d, 1.0d, engine);
+          LmmdddCmsSpreadPeriodMonteCarloPricer pricerCmsSpreadLmm2F = cmsSpreadPricer(generator, LMM_2F, nbPaths);
+          for (int looptype = 0; looptype < 3; looptype++) {
+            double pvSpreadLmm2F =
+                pricerCmsSpreadLmm2F.presentValueDouble(CMS_SPREAD_PERIODS[looptype][loopexp][looplag], MULTICURVE_EUR);
+            tmp += pvSpreadLmm2F;
+          }
+        }
+      }
+    end = System.currentTimeMillis();
+    System.out.println("Paths: " + nbPaths + " and " + nbRep + " repetitions in " + (end - start) + " ms. -- Tmp: " + tmp);
+  }
+
+  /* Estimation of MC performance */
+  @Test
+  public void performance_fast() {
+    int nbRep = 5;
+    int nbPaths = 10_000;
+    long start, end;
+    start = System.currentTimeMillis();
+    // nbPaths:time 1x2,000: 3.7s / 5x10,000: 85.4s
+    double tmp = 0.0;
+    for (int looprep = 0; looprep < nbRep; looprep++)
+      for (int loopexp = 0; loopexp < NB_EXPIRIES; loopexp++) {
+        for (int looplag = 0; looplag < NB_PAY_LAG; looplag++) {
+          System.out.println(EXPIRIES[loopexp] + " - " + PAYMENT_LAG[looplag]);
+          RandomEngine engine = new MersenneTwister64(0); // To have same seed for each test
+          NormalRandomNumberGenerator generator = new NormalRandomNumberGenerator(0.0d, 1.0d, engine);
+          LmmdddCmsSpreadPeriodMonteCarloPricer pricerCmsSpreadLmm2F = cmsSpreadPricer(generator, LMM_2F, nbPaths);
+          for (int looptype = 0; looptype < 3; looptype++) {
+            double pvSpreadLmm2F =
+                pricerCmsSpreadLmm2F.presentValueDoubleFast(CMS_SPREAD_PERIODS[looptype][loopexp][looplag], MULTICURVE_EUR);
+            tmp += pvSpreadLmm2F;
+          }
+        }
+      }
+    end = System.currentTimeMillis();
+    System.out.println("Paths: " + nbPaths + " and " + nbRep + " repetitions in " + (end - start) + " ms. -- Tmp: " + tmp);
+  }
 
   private static LmmdddCmsPeriodMonteCarloPricer cmsPricer(
       NormalRandomNumberGenerator generator,

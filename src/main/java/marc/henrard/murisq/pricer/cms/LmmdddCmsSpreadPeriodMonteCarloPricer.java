@@ -4,13 +4,16 @@
 package marc.henrard.murisq.pricer.cms;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 import org.joda.beans.ImmutableBean;
 import org.joda.beans.gen.BeanDefinition;
 import org.joda.beans.gen.PropertyDefinition;
 
 import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.collect.tuple.Triple;
 import com.opengamma.strata.math.impl.random.RandomNumberGenerator;
+import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
 import com.opengamma.strata.product.swap.SwapLegType;
 
@@ -101,6 +104,119 @@ public final class LmmdddCmsSpreadPeriodMonteCarloPricer
     for (int looppath = 0; looppath < nbPathsA; looppath++) {
       MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
       double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
+      double[] pvbp = new double[2]; // path value numeraire re-based
+      for (int i = 0; i < 2; i++) {
+        int istart = (i == 0) ? 0 : nbFixed1;
+        int iend = (i == 0) ? nbFixed1 : nbDF - 1;
+        for (int loopfix = istart; loopfix < iend; loopfix++) {
+          pvbp[i] += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
+              discounting[looppath][fixIndices[loopfix]];
+        }
+      }
+      double[] pvIborLeg = new double[2]; // path value numeraire re-based
+      for (int i = 0; i < 2; i++) {
+        int istart = (i == 0) ? 0 : nbIbor1;
+        int iend = (i == 0) ? nbIbor1 : nbIbor;
+        for (int loopibor = istart; loopibor < iend; loopibor++) {
+          int ipay = iborPaymentIndices[loopibor];
+          int ifwd = iborEffectiveIndices[loopibor];
+          double iborRate = model.iborRateFromDscForwards(valueFwdPath[ifwd], ifwd);
+          pvIborLeg[i] += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
+              iborRate * discounting[looppath][ipay];
+        }
+      }
+      for (int i = 0; i < 2; i++) {
+        swapRate[i][looppath] = -pvIborLeg[i] / pvbp[i];
+      }
+    }
+    // PV
+    double[] pv = new double[nbPathsA];
+    double[] payoffs = cmsSpread.payoff(swapRate[0], swapRate[1]);
+    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+      pv[looppath] = discounting[looppath][fixIndices[nbDF - 1]] * payoffs[looppath];
+    }
+    return DoubleArray.ofUnsafe(pv);
+  }
+  
+  public double presentValueDoubleFast(
+      CmsSpreadPeriodResolved product, 
+      RatesProvider multicurve) {
+
+    MulticurveEquivalent mce = multicurveEquivalent(product);
+    MulticurveEquivalentValues initialValues = initialValues(mce, multicurve);
+    Triple<Integer, Integer, Integer> decomposition = decomposition(); // fullblocks, path block, residual
+    double pv = 0.0;
+    for (int loopblock = 0; loopblock < decomposition.getFirst(); loopblock++) {
+      double[][] valuesExpiry =
+          evolveFast(initialValues, mce.getDecisionTime(), decomposition.getSecond());
+      pv += aggregationFast(product, mce, valuesExpiry).sum();
+    }
+    if (decomposition.getThird() > 0) { // Residual number of path if non zero.
+      double[][] valuesExpiryResidual =
+          evolveFast(initialValues, mce.getDecisionTime(), decomposition.getThird());
+      pv += aggregationFast(product, mce, valuesExpiryResidual).sum();
+    }
+    double initialNumeraireValue = numeraireInitialValue(multicurve);
+    pv = pv /getNbPaths() * initialNumeraireValue;
+    return pv;
+  }
+  
+  /**
+   * 
+   * @param initialValues
+   * @param expiry
+   * @param numberPaths
+   * @return overnight rates, dimensions lmm periods x path
+   */
+  public double[][] evolveFast(
+      MulticurveEquivalentValues initialValues,
+      ZonedDateTime expiry,
+      int numberPaths) {
+
+    return getEvolution()
+        .evolveOneStepFast(expiry, initialValues, getModel(), getNumberGenerator(), numberPaths);
+  }
+
+  /**
+   * 
+   * @param cmsSpread
+   * @param me
+   * @param valuesExpiry  overnight rates, dimensions: path x lmm periods
+   * @return
+   */
+  public DoubleArray aggregationFast(
+      CmsSpreadPeriodResolved cmsSpread,
+      MulticurveEquivalent me,
+      double[][] valuesExpiry) {
+
+    ResolvedSwapLeg fixedLeg1 = cmsSpread.getUnderlyingSwap1().getLegs(SwapLegType.FIXED).get(0);
+    int nbFixed1 = fixedLeg1.getPaymentPeriods().size();
+    ResolvedSwapLeg iborLeg1 = cmsSpread.getUnderlyingSwap1().getLegs(SwapLegType.IBOR).get(0);
+    int nbIbor1 = iborLeg1.getPaymentPeriods().size();
+    int nbPathsA = valuesExpiry.length;
+    int nbDF = me.getDiscountFactorPayments().size(); // Last DF payment corresponds to the coupon payment date
+    double[] fixTimes = new double[nbDF];
+    for (int i = 0; i < nbDF; i++) {
+      fixTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getDiscountFactorPayments().get(i).getPaymentDate());
+    }
+    int[] fixIndices = model.getIborTimeIndex(fixTimes);
+    int nbIbor = me.getIborComputations().size();
+    double[] iborPaymentTimes = new double[nbIbor]; // payment time
+    double[] iborEffectiveTimes = new double[nbIbor]; // effective time, to find the right forward rate
+    for (int i = 0; i < nbIbor; i++) {
+      iborPaymentTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getIborPayments().get(i).getPaymentDate());
+      iborEffectiveTimes[i] = model.getTimeMeasure()
+          .relativeTime(model.getValuationDate(), me.getIborComputations().get(i).getEffectiveDate());
+    }
+    int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
+    int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
+    double[][] discounting = discountingFast(valuesExpiry);
+    // Swap rates
+    double[][] swapRate = new double[2][nbPathsA];
+    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+      double[] valueFwdPath = valuesExpiry[looppath];
       double[] pvbp = new double[2]; // path value numeraire re-based
       for (int i = 0; i < 2; i++) {
         int istart = (i == 0) ? 0 : nbFixed1;
