@@ -41,6 +41,9 @@ LIBOR fallback options analysis. Value transfer, convexity adjustments and risk 
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).
 
+### 4. CMS spread periods
+Description of CMS spread fields and payoff. CMS spread coupons, caplets and floorlets. Generalized payoff: w1 * rate1 - w2 * rate2
+
 ## Curves
 
 ### 1. Overnight-Overnight conventions and nodes
@@ -75,7 +78,7 @@ Explicit formula for implicit volatility.
 ### 4. LIBOR/Forward Market Model
 
 #### Description
-LIBOR or Forward Market Model (also called BGM/Brae/Gatarek/Musiela) with displaced diffusion and deterministic LIBOR/OIS spread. The model dynamic is on the forward associated to pseudo-discount factors in a multi-curve and collateral discounting approach. Multi-factor model.
+LIBOR or Forward Market Model (also called BGM - Brace/Gatarek/Musiela) with displaced diffusion and deterministic LIBOR/OIS spread. The model dynamic is on the forward associated to pseudo-discount factors in a multi-curve and collateral discounting approach. Multi-factor model.
 
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2010). Swaptions in Libor Market Model with local volatility. *Wilmott Journal*, 2(3):135--154.
@@ -89,6 +92,7 @@ LIBOR or Forward Market Model (also called BGM/Brae/Gatarek/Musiela) with displa
   * European swaption
   * IBOR Ratchet
   * CMS coupon, caplet, floorlet
+  * Generalized CMS spread coupon, caplet, floorlet
 
 ### 5. Rational Multi-curve Model
 

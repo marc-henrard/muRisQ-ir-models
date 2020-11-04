@@ -85,8 +85,7 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
    */
   abstract MulticurveEquivalentValues initialValues(
       MulticurveEquivalent mce,
-      RatesProvider multicurve, 
-      M model);
+      RatesProvider multicurve);
   
   /**
    * Evolves the model up to the expiry date/time.
@@ -117,8 +116,7 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
   abstract DoubleArray aggregation(
       P product,
       MulticurveEquivalent me,
-      List<MulticurveEquivalentValues> valuesExpiry, 
-      M model);
+      List<MulticurveEquivalentValues> valuesExpiry);
   
   /**
    * Present value as a double.
@@ -130,22 +128,21 @@ public interface MonteCarloEuropeanPricer<P extends ResolvedProduct, M extends S
    */
   default double presentValueDouble(
       P product, 
-      RatesProvider multicurve,
-      M model) {
+      RatesProvider multicurve) {
 
     MulticurveEquivalent mce = multicurveEquivalent(product);
-    MulticurveEquivalentValues initialValues = initialValues(mce, multicurve, model);
+    MulticurveEquivalentValues initialValues = initialValues(mce, multicurve);
     Triple<Integer, Integer, Integer> decomposition = decomposition(); // fullblocks, path block, residual
     double pv = 0.0;
     for (int loopblock = 0; loopblock < decomposition.getFirst(); loopblock++) {
       List<MulticurveEquivalentValues> valuesExpiry =
           evolve(initialValues, mce.getDecisionTime(), decomposition.getSecond());
-      pv += aggregation(product, mce, valuesExpiry, model).sum();
+      pv += aggregation(product, mce, valuesExpiry).sum();
     }
     if (decomposition.getThird() > 0) { // Residual number of path if non zero.
       List<MulticurveEquivalentValues> valuesExpiryResidual =
           evolve(initialValues, mce.getDecisionTime(), decomposition.getThird());
-      pv += aggregation(product, mce, valuesExpiryResidual, model).sum();
+      pv += aggregation(product, mce, valuesExpiryResidual).sum();
     }
     double initialNumeraireValue = numeraireInitialValue(multicurve);
     pv = pv /getNbPaths() * initialNumeraireValue;
