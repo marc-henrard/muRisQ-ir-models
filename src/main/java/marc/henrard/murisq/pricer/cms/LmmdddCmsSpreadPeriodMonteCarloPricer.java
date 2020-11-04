@@ -11,6 +11,8 @@ import org.joda.beans.gen.PropertyDefinition;
 
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.random.RandomNumberGenerator;
+import com.opengamma.strata.product.swap.ResolvedSwapLeg;
+import com.opengamma.strata.product.swap.SwapLegType;
 
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
@@ -18,29 +20,29 @@ import marc.henrard.murisq.pricer.decomposition.MulticurveDecisionScheduleCalcul
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
 import marc.henrard.murisq.pricer.montecarlo.LmmdddMonteCarloEuropeanPricer;
-import marc.henrard.murisq.product.cms.CmsPeriodResolved;
+import marc.henrard.murisq.product.cms.CmsSpreadPeriodResolved;
 
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.joda.beans.Bean;
+import org.joda.beans.JodaBeanUtils;
 import org.joda.beans.MetaBean;
 import org.joda.beans.MetaProperty;
 import org.joda.beans.impl.direct.DirectFieldsBeanBuilder;
 import org.joda.beans.impl.direct.DirectMetaBean;
-import org.joda.beans.impl.direct.DirectMetaPropertyMap;
-import org.joda.beans.Bean;
-import org.joda.beans.JodaBeanUtils;
 import org.joda.beans.impl.direct.DirectMetaProperty;
+import org.joda.beans.impl.direct.DirectMetaPropertyMap;
 
 /**
- * Monte Carlo pricer for CMS periods (coupons, caplets, floorlets) in the Libor Market Model with
+ * Monte Carlo pricer for CMS spread periods (coupons, caplets, floorlets) in the Libor Market Model with
  * deterministic multiplicative spread.
  * 
  * @author Marc Henrard
  */
 @BeanDefinition
-public final class LmmdddCmsPeriodMonteCarloPricer
-implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Serializable {
+public final class LmmdddCmsSpreadPeriodMonteCarloPricer
+    implements LmmdddMonteCarloEuropeanPricer<CmsSpreadPeriodResolved>, ImmutableBean, Serializable {
 
   /** The number of paths */
   @PropertyDefinition
@@ -52,24 +54,28 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
   @PropertyDefinition(validate = "notNull")
   private final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model;
   /** The random number generator. */
-  @PropertyDefinition(validate = "notNull")
+  @PropertyDefinition(validate = "notNull", overrideGet = true)
   private final RandomNumberGenerator numberGenerator;
   /** The methods related to the model evolution. */
-  @PropertyDefinition(validate = "notNull")
+  @PropertyDefinition(validate = "notNull", overrideGet = true)
   private final LiborMarketModelMonteCarloEvolution evolution;
 
   @Override
-  public MulticurveEquivalent multicurveEquivalent(CmsPeriodResolved product) {
+  public MulticurveEquivalent multicurveEquivalent(CmsSpreadPeriodResolved product) {
     return MulticurveDecisionScheduleCalculator
         .decisionSchedule(product).getSchedules().get(0);
   }
 
   @Override
   public DoubleArray aggregation(
-      CmsPeriodResolved cms,
+      CmsSpreadPeriodResolved cmsSpread,
       MulticurveEquivalent me,
       List<MulticurveEquivalentValues> valuesExpiry) {
 
+    ResolvedSwapLeg fixedLeg1 = cmsSpread.getUnderlyingSwap1().getLegs(SwapLegType.FIXED).get(0);
+    int nbFixed1 = fixedLeg1.getPaymentPeriods().size();
+    ResolvedSwapLeg iborLeg1 = cmsSpread.getUnderlyingSwap1().getLegs(SwapLegType.IBOR).get(0);
+    int nbIbor1 = iborLeg1.getPaymentPeriods().size();
     int nbPathsA = valuesExpiry.size();
     int nbDF = me.getDiscountFactorPayments().size(); // Last DF payment corresponds to the coupon payment date
     double[] fixTimes = new double[nbDF];
@@ -89,49 +95,57 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     }
     int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
     int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
-    
     double[][] discounting = discounting(model, valuesExpiry);
-    // Swap rate
-    double[] swapRate =  new double[nbPathsA];
+    // Swap rates
+    double[][] swapRate = new double[2][nbPathsA];
     for (int looppath = 0; looppath < nbPathsA; looppath++) {
       MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
       double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
-      double pvbp = 0.0; // path value numeraire re-based
-      for (int loopfix = 0; loopfix < nbDF - 1; loopfix++) { // -1 as the last DF payment corresponds to the payment date
-        pvbp += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
-            discounting[looppath][fixIndices[loopfix]];
+      double[] pvbp = new double[2]; // path value numeraire re-based
+      for (int i = 0; i < 2; i++) {
+        int istart = (i == 0) ? 0 : nbFixed1;
+        int iend = (i == 0) ? nbFixed1 : nbDF - 1;
+        for (int loopfix = istart; loopfix < iend; loopfix++) {
+          pvbp[i] += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
+              discounting[looppath][fixIndices[loopfix]];
+        }
       }
-      double pvIborLeg = 0.0; // path value numeraire re-based
-      for (int loopibor = 0; loopibor < nbIbor; loopibor++) {
-        int ipay = iborPaymentIndices[loopibor];
-        int ifwd = iborEffectiveIndices[loopibor];
-        double iborRate = model.iborRateFromDscForwards(valueFwdPath[ifwd], ifwd);
-        pvIborLeg += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
-            iborRate * discounting[looppath][ipay];
+      double[] pvIborLeg = new double[2]; // path value numeraire re-based
+      for (int i = 0; i < 2; i++) {
+        int istart = (i == 0) ? 0 : nbIbor1;
+        int iend = (i == 0) ? nbIbor1 : nbIbor;
+        for (int loopibor = istart; loopibor < iend; loopibor++) {
+          int ipay = iborPaymentIndices[loopibor];
+          int ifwd = iborEffectiveIndices[loopibor];
+          double iborRate = model.iborRateFromDscForwards(valueFwdPath[ifwd], ifwd);
+          pvIborLeg[i] += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
+              iborRate * discounting[looppath][ipay];
+        }
       }
-      swapRate[looppath] = -pvIborLeg / pvbp;
+      for (int i = 0; i < 2; i++) {
+        swapRate[i][looppath] = -pvIborLeg[i] / pvbp[i];
+      }
     }
     // PV
     double[] pv = new double[nbPathsA];
-    double[] payoffs = cms.payoff(swapRate);
+    double[] payoffs = cmsSpread.payoff(swapRate[0], swapRate[1]);
     for (int looppath = 0; looppath < nbPathsA; looppath++) {
       pv[looppath] = discounting[looppath][fixIndices[nbDF - 1]] * payoffs[looppath];
-
     }
     return DoubleArray.ofUnsafe(pv);
   }
 
   //------------------------- AUTOGENERATED START -------------------------
   /**
-   * The meta-bean for {@code LmmdddCmsPeriodMonteCarloPricer}.
+   * The meta-bean for {@code LmmdddCmsSpreadPeriodMonteCarloPricer}.
    * @return the meta-bean, not null
    */
-  public static LmmdddCmsPeriodMonteCarloPricer.Meta meta() {
-    return LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE;
+  public static LmmdddCmsSpreadPeriodMonteCarloPricer.Meta meta() {
+    return LmmdddCmsSpreadPeriodMonteCarloPricer.Meta.INSTANCE;
   }
 
   static {
-    MetaBean.register(LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE);
+    MetaBean.register(LmmdddCmsSpreadPeriodMonteCarloPricer.Meta.INSTANCE);
   }
 
   /**
@@ -143,11 +157,11 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
    * Returns a builder used to create an instance of the bean.
    * @return the builder, not null
    */
-  public static LmmdddCmsPeriodMonteCarloPricer.Builder builder() {
-    return new LmmdddCmsPeriodMonteCarloPricer.Builder();
+  public static LmmdddCmsSpreadPeriodMonteCarloPricer.Builder builder() {
+    return new LmmdddCmsSpreadPeriodMonteCarloPricer.Builder();
   }
 
-  private LmmdddCmsPeriodMonteCarloPricer(
+  private LmmdddCmsSpreadPeriodMonteCarloPricer(
       int nbPaths,
       int pathNumberBlock,
       LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model,
@@ -164,8 +178,8 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
   }
 
   @Override
-  public LmmdddCmsPeriodMonteCarloPricer.Meta metaBean() {
-    return LmmdddCmsPeriodMonteCarloPricer.Meta.INSTANCE;
+  public LmmdddCmsSpreadPeriodMonteCarloPricer.Meta metaBean() {
+    return LmmdddCmsSpreadPeriodMonteCarloPricer.Meta.INSTANCE;
   }
 
   //-----------------------------------------------------------------------
@@ -200,6 +214,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
    * Gets the random number generator.
    * @return the value of the property, not null
    */
+  @Override
   public RandomNumberGenerator getNumberGenerator() {
     return numberGenerator;
   }
@@ -209,6 +224,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
    * Gets the methods related to the model evolution.
    * @return the value of the property, not null
    */
+  @Override
   public LiborMarketModelMonteCarloEvolution getEvolution() {
     return evolution;
   }
@@ -228,7 +244,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
       return true;
     }
     if (obj != null && obj.getClass() == this.getClass()) {
-      LmmdddCmsPeriodMonteCarloPricer other = (LmmdddCmsPeriodMonteCarloPricer) obj;
+      LmmdddCmsSpreadPeriodMonteCarloPricer other = (LmmdddCmsSpreadPeriodMonteCarloPricer) obj;
       return (nbPaths == other.nbPaths) &&
           (pathNumberBlock == other.pathNumberBlock) &&
           JodaBeanUtils.equal(model, other.model) &&
@@ -252,7 +268,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
   @Override
   public String toString() {
     StringBuilder buf = new StringBuilder(192);
-    buf.append("LmmdddCmsPeriodMonteCarloPricer{");
+    buf.append("LmmdddCmsSpreadPeriodMonteCarloPricer{");
     buf.append("nbPaths").append('=').append(nbPaths).append(',').append(' ');
     buf.append("pathNumberBlock").append('=').append(pathNumberBlock).append(',').append(' ');
     buf.append("model").append('=').append(model).append(',').append(' ');
@@ -264,7 +280,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
 
   //-----------------------------------------------------------------------
   /**
-   * The meta-bean for {@code LmmdddCmsPeriodMonteCarloPricer}.
+   * The meta-bean for {@code LmmdddCmsSpreadPeriodMonteCarloPricer}.
    */
   public static final class Meta extends DirectMetaBean {
     /**
@@ -276,27 +292,27 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
      * The meta-property for the {@code nbPaths} property.
      */
     private final MetaProperty<Integer> nbPaths = DirectMetaProperty.ofImmutable(
-        this, "nbPaths", LmmdddCmsPeriodMonteCarloPricer.class, Integer.TYPE);
+        this, "nbPaths", LmmdddCmsSpreadPeriodMonteCarloPricer.class, Integer.TYPE);
     /**
      * The meta-property for the {@code pathNumberBlock} property.
      */
     private final MetaProperty<Integer> pathNumberBlock = DirectMetaProperty.ofImmutable(
-        this, "pathNumberBlock", LmmdddCmsPeriodMonteCarloPricer.class, Integer.TYPE);
+        this, "pathNumberBlock", LmmdddCmsSpreadPeriodMonteCarloPricer.class, Integer.TYPE);
     /**
      * The meta-property for the {@code model} property.
      */
     private final MetaProperty<LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters> model = DirectMetaProperty.ofImmutable(
-        this, "model", LmmdddCmsPeriodMonteCarloPricer.class, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters.class);
+        this, "model", LmmdddCmsSpreadPeriodMonteCarloPricer.class, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters.class);
     /**
      * The meta-property for the {@code numberGenerator} property.
      */
     private final MetaProperty<RandomNumberGenerator> numberGenerator = DirectMetaProperty.ofImmutable(
-        this, "numberGenerator", LmmdddCmsPeriodMonteCarloPricer.class, RandomNumberGenerator.class);
+        this, "numberGenerator", LmmdddCmsSpreadPeriodMonteCarloPricer.class, RandomNumberGenerator.class);
     /**
      * The meta-property for the {@code evolution} property.
      */
     private final MetaProperty<LiborMarketModelMonteCarloEvolution> evolution = DirectMetaProperty.ofImmutable(
-        this, "evolution", LmmdddCmsPeriodMonteCarloPricer.class, LiborMarketModelMonteCarloEvolution.class);
+        this, "evolution", LmmdddCmsSpreadPeriodMonteCarloPricer.class, LiborMarketModelMonteCarloEvolution.class);
     /**
      * The meta-properties.
      */
@@ -332,13 +348,13 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     }
 
     @Override
-    public LmmdddCmsPeriodMonteCarloPricer.Builder builder() {
-      return new LmmdddCmsPeriodMonteCarloPricer.Builder();
+    public LmmdddCmsSpreadPeriodMonteCarloPricer.Builder builder() {
+      return new LmmdddCmsSpreadPeriodMonteCarloPricer.Builder();
     }
 
     @Override
-    public Class<? extends LmmdddCmsPeriodMonteCarloPricer> beanType() {
-      return LmmdddCmsPeriodMonteCarloPricer.class;
+    public Class<? extends LmmdddCmsSpreadPeriodMonteCarloPricer> beanType() {
+      return LmmdddCmsSpreadPeriodMonteCarloPricer.class;
     }
 
     @Override
@@ -392,15 +408,15 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     protected Object propertyGet(Bean bean, String propertyName, boolean quiet) {
       switch (propertyName.hashCode()) {
         case 1723700122:  // nbPaths
-          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getNbPaths();
+          return ((LmmdddCmsSpreadPeriodMonteCarloPricer) bean).getNbPaths();
         case -1504032417:  // pathNumberBlock
-          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getPathNumberBlock();
+          return ((LmmdddCmsSpreadPeriodMonteCarloPricer) bean).getPathNumberBlock();
         case 104069929:  // model
-          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getModel();
+          return ((LmmdddCmsSpreadPeriodMonteCarloPricer) bean).getModel();
         case 1709932938:  // numberGenerator
-          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getNumberGenerator();
+          return ((LmmdddCmsSpreadPeriodMonteCarloPricer) bean).getNumberGenerator();
         case 261136251:  // evolution
-          return ((LmmdddCmsPeriodMonteCarloPricer) bean).getEvolution();
+          return ((LmmdddCmsSpreadPeriodMonteCarloPricer) bean).getEvolution();
       }
       return super.propertyGet(bean, propertyName, quiet);
     }
@@ -418,9 +434,9 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
 
   //-----------------------------------------------------------------------
   /**
-   * The bean-builder for {@code LmmdddCmsPeriodMonteCarloPricer}.
+   * The bean-builder for {@code LmmdddCmsSpreadPeriodMonteCarloPricer}.
    */
-  public static final class Builder extends DirectFieldsBeanBuilder<LmmdddCmsPeriodMonteCarloPricer> {
+  public static final class Builder extends DirectFieldsBeanBuilder<LmmdddCmsSpreadPeriodMonteCarloPricer> {
 
     private int nbPaths;
     private int pathNumberBlock;
@@ -438,7 +454,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
      * Restricted copy constructor.
      * @param beanToCopy  the bean to copy from, not null
      */
-    private Builder(LmmdddCmsPeriodMonteCarloPricer beanToCopy) {
+    private Builder(LmmdddCmsSpreadPeriodMonteCarloPricer beanToCopy) {
       this.nbPaths = beanToCopy.getNbPaths();
       this.pathNumberBlock = beanToCopy.getPathNumberBlock();
       this.model = beanToCopy.getModel();
@@ -496,8 +512,8 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     }
 
     @Override
-    public LmmdddCmsPeriodMonteCarloPricer build() {
-      return new LmmdddCmsPeriodMonteCarloPricer(
+    public LmmdddCmsSpreadPeriodMonteCarloPricer build() {
+      return new LmmdddCmsSpreadPeriodMonteCarloPricer(
           nbPaths,
           pathNumberBlock,
           model,
@@ -563,7 +579,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder(192);
-      buf.append("LmmdddCmsPeriodMonteCarloPricer.Builder{");
+      buf.append("LmmdddCmsSpreadPeriodMonteCarloPricer.Builder{");
       buf.append("nbPaths").append('=').append(JodaBeanUtils.toString(nbPaths)).append(',').append(' ');
       buf.append("pathNumberBlock").append('=').append(JodaBeanUtils.toString(pathNumberBlock)).append(',').append(' ');
       buf.append("model").append('=').append(JodaBeanUtils.toString(model)).append(',').append(' ');

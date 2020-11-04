@@ -207,7 +207,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
       .pathNumberBlock(PATHSPERBLOCK)
       .build();
     MulticurveEquivalent mce = pricer.multicurveEquivalent(cms);
-    MulticurveEquivalentValues mceValues = pricer.initialValues(mce, MULTICURVE_EUR, lmmHw);
+    MulticurveEquivalentValues mceValues = pricer.initialValues(mce, MULTICURVE_EUR);
     assertThat(mceValues.getDiscountFactors()).isEqualTo(null);
     assertThat(mceValues.getIborRates()).isEqualTo(null);
     assertThat(mceValues.getOnRates().size()).isEqualTo(lmmHw.getIborTimes().size() - 1);
@@ -245,7 +245,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
             .pathNumberBlock(PATHSPERBLOCK)
             .build();
     MulticurveEquivalent mce = pricerComputed.multicurveEquivalent(cms);
-    MulticurveEquivalentValues initialValues = pricerComputed.initialValues(mce, MULTICURVE_EUR, lmmHw);
+    MulticurveEquivalentValues initialValues = pricerComputed.initialValues(mce, MULTICURVE_EUR);
     List<MulticurveEquivalentValues> valuesExpiryComputed =
         pricerComputed.evolve(initialValues, mce.getDecisionTime(), nbPaths);
     RandomEngine engineExpected = new MersenneTwister64(0);
@@ -274,7 +274,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
       .build();
     int nbPaths = 100;
     MulticurveEquivalent mce = pricer.multicurveEquivalent(cms);
-    MulticurveEquivalentValues initialValues = pricer.initialValues(mce, MULTICURVE_EUR, lmmHw);
+    MulticurveEquivalentValues initialValues = pricer.initialValues(mce, MULTICURVE_EUR);
     List<MulticurveEquivalentValues> valuesExpiry =
         pricer.evolve(initialValues, mce.getDecisionTime(), nbPaths);
     int nbFwdPeriods = lmmHw.getIborPeriodsCount();
@@ -315,10 +315,10 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
 
     int nbPaths = 100;
     MulticurveEquivalent me = pricer.multicurveEquivalent(cms);
-    MulticurveEquivalentValues initialValues = pricer.initialValues(me, MULTICURVE_EUR, lmmHw);
+    MulticurveEquivalentValues initialValues = pricer.initialValues(me, MULTICURVE_EUR);
     List<MulticurveEquivalentValues> valuesExpiry =
         pricer.evolve(initialValues, me.getDecisionTime(), nbPaths);
-    DoubleArray aggregationComputed = pricer.aggregation(cms, me, valuesExpiry, lmmHw);
+    DoubleArray aggregationComputed = pricer.aggregation(cms, me, valuesExpiry);
     // Local implementation
     double[] delta = lmmHw.getAccrualFactors().toArrayUnsafe();
     double[] beta = lmmHw.getMultiplicativeSpreads().toArrayUnsafe();
@@ -374,11 +374,10 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
       }
       swapRate[looppath] = -pvIborLeg / pvbp;
     }
-    double[] payoffs = pricer.payoff(swapRate, period);
+    double[] payoffs = cms.payoff(swapRate);
     double[] pv = new double[nbPaths];
     for (int looppath = 0; looppath < nbPaths; looppath++) {
-      pv[looppath] = me.getDiscountFactorPayments().get(nbDf - 1).getPaymentAmount().getAmount() *
-          discounting[looppath][dfIndices[nbDf - 1]] * payoffs[looppath];
+      pv[looppath] = discounting[looppath][dfIndices[nbDf - 1]] * payoffs[looppath];
       assertThat(aggregationComputed.get(looppath)).isEqualTo(pv[looppath], TOLERANCE_PV_EXACT);
     }
 
@@ -420,7 +419,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
             for (int loopstrike = 0; loopstrike < NB_STRIKES; loopstrike++) {
               CmsPeriodResolved cms =
                   CmsPeriodResolved.of(CMS_PERIODS[looptype][loopindex][loopexp][looplag][loopstrike]);
-              double pvLmm = pricer.presentValueDouble(cms, MULTICURVE_EUR, lmmHw);
+              double pvLmm = pricer.presentValueDouble(cms, MULTICURVE_EUR);
               double fwdLmm = pvLmm / (period.getNotional() * period.getYearFraction());
               CurrencyAmount pvHw =
                   PRICER_CMS_HW.presentValue(CMS_PERIODS[looptype][loopindex][loopexp][looplag][loopstrike],
@@ -442,6 +441,8 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
     System.out.println("Paths: " + nbPaths + " in " + (end - start) + " ms. Max error: " + maxError);
     }
   }
+  
+  // TODO: CMS cap low strike v CMS coupon + strike
   
   private static LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw(ResolvedSwap swap) {
     List<LocalDate> iborDates = new ArrayList<>();

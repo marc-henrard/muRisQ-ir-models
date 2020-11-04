@@ -87,8 +87,7 @@ public final class LmmdddSwaptionPhysicalProductMonteCarloPricer
   @Override
   public MulticurveEquivalentValues initialValues(
       MulticurveEquivalent mce, 
-      RatesProvider multicurve,
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model) {
+      RatesProvider multicurve) {
     
     // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods
     DoubleArray iborTimes = model.getIborTimes();
@@ -116,8 +115,7 @@ public final class LmmdddSwaptionPhysicalProductMonteCarloPricer
   public DoubleArray aggregation(
       ResolvedSwaption product,
       MulticurveEquivalent me,
-      List<MulticurveEquivalentValues> valuesExpiry,
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model) {
+      List<MulticurveEquivalentValues> valuesExpiry) {
 
     int nbPathsA = valuesExpiry.size();
     int nbFix = me.getDiscountFactorPayments().size();

@@ -215,7 +215,7 @@ public class LiborMarketModelMonteCarloEvolutionTest {
         .longShort(LongShort.LONG)
         .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
         .underlying(swap).build();
-    double pvMc = priceSwaptionLmmMc.presentValueDouble(swaption.resolve(REF_DATA), MULTICURVE_EUR, lmmHw);
+    double pvMc = priceSwaptionLmmMc.presentValueDouble(swaption.resolve(REF_DATA), MULTICURVE_EUR);
     return pvMc;
   }
   
@@ -326,7 +326,7 @@ public class LiborMarketModelMonteCarloEvolutionTest {
         .longShort(LongShort.LONG)
         .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
         .underlying(swap).build();
-    double pvMc = priceSwaptionLmmMc.presentValueDouble(swaption.resolve(REF_DATA), MULTICURVE_EUR, lmmAngle);
+    double pvMc = priceSwaptionLmmMc.presentValueDouble(swaption.resolve(REF_DATA), MULTICURVE_EUR);
     return pvMc;
   }
 

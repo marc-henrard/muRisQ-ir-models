@@ -169,7 +169,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   @Test
   public void initialValues() {
     MulticurveEquivalent mce = PRICER_MC_1.multicurveEquivalent(SWAPTION_RESOLVED);
-    MulticurveEquivalentValues mceValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR, LMMHW);
+    MulticurveEquivalentValues mceValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR);
     assertThat(mceValues.getDiscountFactors()).isEqualTo(null);
     assertThat(mceValues.getIborRates()).isEqualTo(null);
     assertThat(mceValues.getOnRates().size()).isEqualTo(IBOR_DATES.size() - 1);
@@ -186,7 +186,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   public void evolve() {
     int nbPaths = 100;
     MulticurveEquivalent mce = PRICER_MC_1.multicurveEquivalent(SWAPTION_RESOLVED);
-    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR, LMMHW);
+    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR);
     RandomEngine engineComputed = new MersenneTwister64(0);
     NormalRandomNumberGenerator rndComputed =
         new NormalRandomNumberGenerator(0.0d, 1.0d, engineComputed);
@@ -213,7 +213,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   public void discounting() {
     int nbPaths = 100;
     MulticurveEquivalent mce = PRICER_MC_1.multicurveEquivalent(SWAPTION_RESOLVED);
-    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR, LMMHW);
+    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(mce, MULTICURVE_EUR);
     List<MulticurveEquivalentValues> valuesExpiry =
         PRICER_MC_1.evolve(initialValues, mce.getDecisionTime(), nbPaths);
     int nbFwdPeriods = LMMHW.getIborPeriodsCount();
@@ -241,10 +241,10 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   public void aggregation() {
     int nbPaths = 100;
     MulticurveEquivalent me = PRICER_MC_1.multicurveEquivalent(SWAPTION_RESOLVED);
-    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(me, MULTICURVE_EUR, LMMHW);
+    MulticurveEquivalentValues initialValues = PRICER_MC_1.initialValues(me, MULTICURVE_EUR);
     List<MulticurveEquivalentValues> valuesExpiry =
         PRICER_MC_1.evolve(initialValues, me.getDecisionTime(), nbPaths);
-    DoubleArray aggregationComputed = PRICER_MC_1.aggregation(SWAPTION_RESOLVED, me, valuesExpiry, LMMHW);
+    DoubleArray aggregationComputed = PRICER_MC_1.aggregation(SWAPTION_RESOLVED, me, valuesExpiry);
     // Local implementation
     double[] delta = LMMHW.getAccrualFactors().toArrayUnsafe();
     double[] beta = LMMHW.getMultiplicativeSpreads().toArrayUnsafe();
@@ -357,7 +357,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swap.getProduct()).build();
           ResolvedSwaption swaptionResolved = swaption.resolve(REF_DATA);
-          double pvLmm = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR, lmmHw);
+          double pvLmm = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR);
           CurrencyAmount pvHw =
               PRICER_SWAPTION_HW.presentValue(swaptionResolved, MULTICURVE_EUR, providerHw);
           double ivLmm = PRICER_SWAPTION_BACHELIER
@@ -422,7 +422,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
               .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
               .underlying(swap.getProduct()).build();
           ResolvedSwaption swaptionResolved = swaption.resolve(REF_DATA);
-          double pvLmm = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR, lmm);
+          double pvLmm = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR);
           CurrencyAmount pvApprox =
               PRICER_SWAPTION_LMM_APPROX.presentValue(swaptionResolved, MULTICURVE_EUR, lmm);
           double ivLmm = PRICER_SWAPTION_BACHELIER
