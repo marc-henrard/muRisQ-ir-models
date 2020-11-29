@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2015 - present by Marc Henrard.
+ * Copyright (C) 2020 - present by Marc Henrard.
  */
 package marc.henrard.murisq.pricer.montecarlo;
 
@@ -15,18 +15,18 @@ import com.opengamma.strata.product.ResolvedProduct;
 
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
-import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
+import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentSchedule;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
 
 /**
- * Generic Monte Carlo pricer for European options in the LMM with displaced diffusion.
+ * Generic Monte Carlo pricer for path dependent products in the LMM with displaced diffusion.
  *
  * @param <P> the type of product to be priced 
  * 
  * @author Marc Henrard
  */
-public interface LmmdddMonteCarloEuropeanPricer<P extends ResolvedProduct>
-  extends MonteCarloEuropeanPricer<P, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>{
+public interface LmmdddMonteCarloMultiDatePricer<P extends ResolvedProduct>
+    extends MonteCarloMultiDatesPricer<P, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>{
   
   /**
    * Returns the mechanism to compute the LMM rate evolution mechanism.
@@ -58,10 +58,10 @@ public interface LmmdddMonteCarloEuropeanPricer<P extends ResolvedProduct>
 
   @Override
   default public MulticurveEquivalentValues initialValues(
-      MulticurveEquivalent mce,
+      MulticurveEquivalentSchedule mce, 
       RatesProvider multicurve) {
-
-    // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods
+    
+    // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods, not instrument dependent
     DoubleArray iborTimes = getModel().getIborTimes();
     Currency ccy = getModel().getCurrency();
     DiscountFactors dsc = multicurve.discountFactors(ccy);
@@ -75,13 +75,13 @@ public interface LmmdddMonteCarloEuropeanPricer<P extends ResolvedProduct>
   }
 
   @Override
-  public default List<MulticurveEquivalentValues> evolve(
+  default public List<List<MulticurveEquivalentValues>> evolve(
       MulticurveEquivalentValues initialValues,
-      ZonedDateTime expiry,
-      int numberPaths) {
-
+      List<ZonedDateTime> expiries,
+      int numberSample) {
+    
     return getEvolution()
-        .evolveOneStep(expiry, initialValues, getModel(), getNumberGenerator(), numberPaths);
+        .evolveMultiSteps(expiries, initialValues, getModel(), getNumberGenerator(), numberSample);
   }
 
   /**
@@ -91,22 +91,25 @@ public interface LmmdddMonteCarloEuropeanPricer<P extends ResolvedProduct>
    * one at other dates are above one for positive rates.
    * 
    * @param model  the interest rate model
-   * @param valuesExpiry  the modeled values at expiry
-   * @return  the rebased discount factors, dimension: path x dates
+   * @param valuesExpiry  the modeled values at expiry, dimension: paths x expiries
+   * @return  the rebased discount factors, dimension: path x expiries x LMM dates
    */
-  default double[][] discounting(List<MulticurveEquivalentValues> valuesExpiry) {
+  default double[][][] discounting(List<List<MulticurveEquivalentValues>> valuesExpiries) {
 
+    int nbPaths = valuesExpiries.size();
+    int nbExpiries = valuesExpiries.get(0).size();
     int nbFwdPeriods = getModel().getIborPeriodsCount();
-    int nbPathsDsc = valuesExpiry.size();
     double[] delta = getModel().getAccrualFactors().toArrayUnsafe();
-    double[][] discounting = new double[nbPathsDsc][nbFwdPeriods + 1];
-    for (int looppath = 0; looppath < nbPathsDsc; looppath++) {
-      MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
-      double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
-      discounting[looppath][nbFwdPeriods] = 1.0;
-      for (int loopdsc = nbFwdPeriods - 1; loopdsc >= 0; loopdsc--) {
-        discounting[looppath][loopdsc] =
-            discounting[looppath][loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
+    double[][][] discounting = new double[nbPaths][nbExpiries][nbFwdPeriods + 1];
+    for (int looppath = 0; looppath < nbPaths; looppath++) {
+      for (int loopexp = 0; loopexp < nbExpiries; loopexp++) {
+        MulticurveEquivalentValues valuePath = valuesExpiries.get(looppath).get(loopexp);
+        double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
+        discounting[looppath][loopexp][nbFwdPeriods] = 1.0;
+        for (int loopdsc = nbFwdPeriods - 1; loopdsc >= 0; loopdsc--) {
+          discounting[looppath][loopexp][loopdsc] =
+              discounting[looppath][loopexp][loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
+        }
       }
     }
     return discounting;

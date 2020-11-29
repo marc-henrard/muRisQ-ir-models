@@ -161,15 +161,15 @@ public final class IborRatchetRateCalculation
     Function<LocalDate, IborIndexObservation> iborObservationFn = index.resolve(refData);
     // build accrual periods
     DoubleArray mainPrevious = coefficients.get(0).resolveValues(accrualSchedule);
-    ArgChecker.isTrue(mainPrevious.get(0) == 0.0, "main contribution of previous must be 0 for firt coupon");
+    ArgChecker.isTrue(mainPrevious.get(0) == 0.0, "main contribution of previous must be 0 for first coupon");
     DoubleArray mainIbor = coefficients.get(1).resolveValues(accrualSchedule);
     DoubleArray mainFixed = coefficients.get(2).resolveValues(accrualSchedule);
     DoubleArray floorPrevious = coefficients.get(3).resolveValues(accrualSchedule);
-    ArgChecker.isTrue(floorPrevious.get(0) == 0.0, "floor contribution of previous must be 0 for firt coupon");
+    ArgChecker.isTrue(floorPrevious.get(0) == 0.0, "floor contribution of previous must be 0 for first coupon");
     DoubleArray floorIbor = coefficients.get(4).resolveValues(accrualSchedule);
     DoubleArray floorFixed = coefficients.get(5).resolveValues(accrualSchedule);
     DoubleArray capPrevious = coefficients.get(6).resolveValues(accrualSchedule);
-    ArgChecker.isTrue(capPrevious.get(0) == 0.0, "cap contribution of previous must be 0 for firt coupon");
+    ArgChecker.isTrue(capPrevious.get(0) == 0.0, "cap contribution of previous must be 0 for first coupon");
     DoubleArray capIbor = coefficients.get(7).resolveValues(accrualSchedule);
     DoubleArray capFixed = coefficients.get(8).resolveValues(accrualSchedule);
     ImmutableList.Builder<RateAccrualPeriod> accrualPeriods = ImmutableList.builder();

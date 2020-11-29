@@ -173,7 +173,7 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
             .numberGenerator(rnd)
             .pathNumberBlock(10_000).build();
     double pvDsc = PRICER_LEG.presentValue(iborLeg, MULTICURVE_EUR).getAmount(); // 16499.39173511338
-    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
+    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR);
     // pvDsc: 16499.39173511338
     // Paths/pv: 1,000/17399.8187 (99ms); 10,000/xx ( ms) ; 100,000/xx ( ms)
     //           1,000,000/15946.9116 (7576 ms)

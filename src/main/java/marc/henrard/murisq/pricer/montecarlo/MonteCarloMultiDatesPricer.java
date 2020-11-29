@@ -70,7 +70,7 @@ public interface MonteCarloMultiDatesPricer<P extends ResolvedProduct, M extends
    * @param multicurve the multi-curve
    * @return the numeraire value
    */
-  abstract double getNumeraireValue(RatesProvider multicurve);
+  abstract double numeraireInitialValue(RatesProvider multicurve);
   
   /**
    * The initial values relevant for the model and the instrument.
@@ -82,8 +82,7 @@ public interface MonteCarloMultiDatesPricer<P extends ResolvedProduct, M extends
    */
   abstract MulticurveEquivalentValues initialValues(
       MulticurveEquivalentSchedule mce,
-      RatesProvider multicurve, 
-      M model);
+      RatesProvider multicurve);
   
   /**
    * Evolves the model up to the expiry date/time.
@@ -127,17 +126,16 @@ public interface MonteCarloMultiDatesPricer<P extends ResolvedProduct, M extends
    */
   default double presentValueDouble(
       P product, 
-      RatesProvider multicurve,
-      M model) {
+      RatesProvider multicurve) {
 
     MulticurveEquivalentSchedule mce = multicurveEquivalent(product);
-    MulticurveEquivalentValues initialValues = initialValues(mce, multicurve, model);
+    MulticurveEquivalentValues initialValues = initialValues(mce, multicurve);
     Triple<Integer, Integer, Integer> decomposition = decomposition(); // fullblocks, path block, residual
     double pv = 0.0;
     for (int loopblock = 0; loopblock < decomposition.getFirst(); loopblock++) {
       List<List<MulticurveEquivalentValues>> valuesExpiry =
           evolve(initialValues, mce.getDecisionTimes(), decomposition.getSecond());
-      double[][] aggregation = aggregation(mce, product, valuesExpiry, model);
+      double[][] aggregation = aggregation(mce, product, valuesExpiry, getModel());
       for (int looppath = 0; looppath < decomposition.getSecond(); looppath++) {
         pv += DoubleArray.ofUnsafe(aggregation[looppath]).sum();
       }
@@ -145,12 +143,12 @@ public interface MonteCarloMultiDatesPricer<P extends ResolvedProduct, M extends
     if (decomposition.getThird() > 0) { // Residual number of path if non zero.
       List<List<MulticurveEquivalentValues>> valuesExpiryResidual =
           evolve(initialValues, mce.getDecisionTimes(), decomposition.getThird());
-      double[][] aggregation = aggregation(mce, product, valuesExpiryResidual, model);
+      double[][] aggregation = aggregation(mce, product, valuesExpiryResidual, getModel());
       for (int looppath = 0; looppath < decomposition.getThird(); looppath++) {
         pv += DoubleArray.ofUnsafe(aggregation[looppath]).sum();
       }
     }
-    double initialNumeraireValue = getNumeraireValue(multicurve);
+    double initialNumeraireValue = numeraireInitialValue(multicurve);
     pv = pv /getNbPaths() * initialNumeraireValue;
     return pv;
   }

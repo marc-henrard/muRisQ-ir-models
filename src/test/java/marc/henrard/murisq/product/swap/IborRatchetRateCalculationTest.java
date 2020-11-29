@@ -67,19 +67,6 @@ public class IborRatchetRateCalculationTest {
     COEFFICIENTS.add(ValueSchedule.ALWAYS_0); // cap fixed.
   }
   
-//  private static final List<ValueSchedule> COEFFICIENTS_CAPPED = new ArrayList<>();
-//  static { // IBOR capped at 3% = IBOR - cap 3%
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // main previous 
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.of(1.0)); // main Ibor = IBOR with weight 1
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // main fixed, 
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // floor previous, 
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // floor Ibor, 
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.of(-100.0)); // floor fixed = no floor
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // cap previous
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.ALWAYS_0); // cap Ibor
-//    COEFFICIENTS_CAPPED.add(ValueSchedule.of(0.03)); // cap fixed.
-//  }
-  
   @Test
   public void createAccrualPeriods() {
     LocalDate startDate = LocalDate.of(2020, 2, 28);
@@ -167,7 +154,6 @@ public class IborRatchetRateCalculationTest {
       assertThat(ratePeriod.getAccrualPeriods().get(0)).isEqualTo(ratchetAccruals.get(loopperiod));
     }
   }
-
 
   @Test
   public void builder_null_index() {

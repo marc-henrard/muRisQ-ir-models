@@ -78,6 +78,30 @@ public final class LmmdddCmsSpreadPeriodMonteCarloPricer
     int nbIbor1 = iborLeg1.getPaymentPeriods().size();
     int nbPathsA = valuesExpiry.size();
     int nbDF = me.getDiscountFactorPayments().size(); // Last DF payment corresponds to the coupon payment date
+    int nbIbor = me.getIborComputations().size();
+    int[][] indicesLmm = cashfowIndices(me);
+    double[][] discounting = discounting(valuesExpiry);
+    double[][] swapRate = swapRate(
+        me, indicesLmm[0], indicesLmm[1], indicesLmm[2],
+        valuesExpiry, new int[] {0, nbFixed1, nbDF - 1}, new int[] {0, nbIbor1, nbIbor},
+        discounting);
+    // PV
+    double[] pv = new double[nbPathsA];
+    double[] payoffs = cmsSpread.payoff(swapRate[0], swapRate[1]);
+    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+      pv[looppath] = discounting[looppath][indicesLmm[0][nbDF - 1]] * payoffs[looppath];
+    }
+    return DoubleArray.ofUnsafe(pv);
+  }
+
+  /**
+   * The indices of the cash-flows of a multi-curve equivalent.
+   * 
+   * @param me  the multi-curve equivalent
+   * @return the associated indices, dimension: source x payment, source: fix, iborPayment, iborEffectiveDate
+   */
+  public int[][] cashfowIndices(MulticurveEquivalent me){
+    int nbDF = me.getDiscountFactorPayments().size();
     double[] fixTimes = new double[nbDF];
     for (int i = 0; i < nbDF; i++) {
       fixTimes[i] = model.getTimeMeasure()
@@ -95,44 +119,60 @@ public final class LmmdddCmsSpreadPeriodMonteCarloPricer
     }
     int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
     int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
-    double[][] discounting = discounting(model, valuesExpiry);
-    // Swap rates
-    double[][] swapRate = new double[2][nbPathsA];
-    for (int looppath = 0; looppath < nbPathsA; looppath++) {
+    return new int[][] {fixIndices, iborPaymentIndices, iborEffectiveIndices};
+  }
+  
+  /**
+   * The swap rates.
+   * 
+   * @param me  the multi-curve equivalent
+   * @param fixIndices  the indices associated to the fix payments
+   * @param iborPaymentIndices  the indices associated to the IBOR payments
+   * @param iborEffectiveIndices  the indices associated to the IBOR effective dates
+   * @param valuesExpiry  the Monter-Carlo values of the model quantities at the expiry date
+   * @param fixLimits  the limits of the fix payments indices associated to the different swaps
+   * @param iborLimits  the limits of the IBOR payments indices associated to the different swaps
+   * @param discounting  the discounting factors
+   * @return the swap rates, dimensions: swaps x paths
+   */
+  public double[][] swapRate(
+      MulticurveEquivalent me,
+      int[] fixIndices,
+      int[] iborPaymentIndices,
+      int[] iborEffectiveIndices,
+      List<MulticurveEquivalentValues> valuesExpiry,
+      int[] fixLimits, 
+      int[] iborLimits,
+      double[][] discounting){
+    
+    int nbSwaps = fixLimits.length - 1;
+    int nbPaths = valuesExpiry.size();
+    double[][] swapRate = new double[2][nbPaths];
+    for (int looppath = 0; looppath < nbPaths; looppath++) {
       MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
       double[] valueFwdPath = valuePath.getOnRates().toArrayUnsafe();
       double[] pvbp = new double[2]; // path value numeraire re-based
-      for (int i = 0; i < 2; i++) {
-        int istart = (i == 0) ? 0 : nbFixed1;
-        int iend = (i == 0) ? nbFixed1 : nbDF - 1;
-        for (int loopfix = istart; loopfix < iend; loopfix++) {
-          pvbp[i] += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
+      for (int loopswap = 0; loopswap < nbSwaps; loopswap++) {
+        for (int loopfix = fixLimits[loopswap]; loopfix < fixLimits[loopswap+1]; loopfix++) {
+          pvbp[loopswap] += me.getDiscountFactorPayments().get(loopfix).getPaymentAmount().getAmount() *
               discounting[looppath][fixIndices[loopfix]];
         }
       }
       double[] pvIborLeg = new double[2]; // path value numeraire re-based
-      for (int i = 0; i < 2; i++) {
-        int istart = (i == 0) ? 0 : nbIbor1;
-        int iend = (i == 0) ? nbIbor1 : nbIbor;
-        for (int loopibor = istart; loopibor < iend; loopibor++) {
+      for (int loopswap = 0; loopswap < nbSwaps; loopswap++) {
+        for (int loopibor = iborLimits[loopswap]; loopibor < iborLimits[loopswap+1]; loopibor++) {
           int ipay = iborPaymentIndices[loopibor];
           int ifwd = iborEffectiveIndices[loopibor];
           double iborRate = model.iborRateFromDscForwards(valueFwdPath[ifwd], ifwd);
-          pvIborLeg[i] += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
+          pvIborLeg[loopswap] += me.getIborPayments().get(loopibor).getPaymentAmount().getAmount() *
               iborRate * discounting[looppath][ipay];
         }
       }
-      for (int i = 0; i < 2; i++) {
-        swapRate[i][looppath] = -pvIborLeg[i] / pvbp[i];
+      for (int loopswap = 0; loopswap < nbSwaps; loopswap++) {
+        swapRate[loopswap][looppath] = -pvIborLeg[loopswap] / pvbp[loopswap];
       }
     }
-    // PV
-    double[] pv = new double[nbPathsA];
-    double[] payoffs = cmsSpread.payoff(swapRate[0], swapRate[1]);
-    for (int looppath = 0; looppath < nbPathsA; looppath++) {
-      pv[looppath] = discounting[looppath][fixIndices[nbDF - 1]] * payoffs[looppath];
-    }
-    return DoubleArray.ofUnsafe(pv);
+    return swapRate;
   }
 
   //------------------------- AUTOGENERATED START -------------------------

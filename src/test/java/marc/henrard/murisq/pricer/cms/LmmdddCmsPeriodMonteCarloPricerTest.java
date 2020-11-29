@@ -289,7 +289,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
             discounting[looppath][loopdsc + 1] * (1.0 + valueFwdPath[loopdsc] * delta[loopdsc]);
       }
     }
-    double[][] discountingComputed = pricer.discounting(lmmHw, valuesExpiry);
+    double[][] discountingComputed = pricer.discounting(valuesExpiry);
     for (int looppath = 0; looppath < nbPaths; looppath++) {
       for (int loopdsc = 0; loopdsc < nbFwdPeriods; loopdsc++) {
         assertThat(discountingComputed[looppath][loopdsc])
@@ -354,7 +354,7 @@ public class LmmdddCmsPeriodMonteCarloPricerTest {
       assertThat(iborEffectiveIndices[i]).isEqualTo(i);
     }
     // Swap Rate
-    double[][] discounting = pricer.discounting(lmmHw, valuesExpiry);
+    double[][] discounting = pricer.discounting(valuesExpiry);
     double[] swapRate = new double[nbPaths];
     for (int looppath = 0; looppath < nbPaths; looppath++) {
       MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);
