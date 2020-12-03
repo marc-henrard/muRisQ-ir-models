@@ -56,7 +56,7 @@ public class SingleCurrencyModelCapFloorProductPricerTest {
   private static final LocalDate VALUATION_DATE = MulticurveEur20151120DataSet.VALUATION_DATE;
   private static final BusinessDayAdjustment BUSINESS_ADJ = BusinessDayAdjustment.of(
       BusinessDayConventions.MODIFIED_FOLLOWING, EUTA);
-  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
 
   private static final DiscountingSwapLegPricer PRICER_SWAP_LEG = DiscountingSwapLegPricer.DEFAULT;
   private static final RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer PRICER_CAPLET_S_EX =

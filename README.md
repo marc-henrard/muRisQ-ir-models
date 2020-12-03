@@ -75,7 +75,11 @@ Explicit formula for implicit volatility.
 * Different formulas for variance and volatility in different setup
 * Pricing of European swaptions (physical settlement) with efficient explicit approximation and with numerical integration 2D.
 
-### 4. LIBOR/Forward Market Model
+### 4. Swaption with 2 collateral
+
+Pricing of swaptions when two collateral rates are used: one for the swaption itself up to a given date before expiry and one other from that date on, including for the delivered swap.
+
+### 5. LIBOR/Forward Market Model
 
 #### Description
 LIBOR or Forward Market Model (also called BGM - Brace/Gatarek/Musiela) with displaced diffusion and deterministic LIBOR/OIS spread. The model dynamic is on the forward associated to pseudo-discount factors in a multi-curve and collateral discounting approach. Multi-factor model.

@@ -78,7 +78,7 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
   private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/London");
   private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);
   
-  private static final ImmutableRatesProvider MULTICURVE_EUR = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  private static final ImmutableRatesProvider MULTICURVE_EUR = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* LMM parameters (HW-like) */
   private static final double MEAN_REVERTION = 0.02;
@@ -142,13 +142,14 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
   
   /* Tests */
   private static final Offset<Double> TOLERANCE_MC_1 = within(1.0E-1);
+  private static final boolean PRINT_DETAILS = false;
 
   /* Test Monte Carlo comparing Ibor leg with ratchet using trivial coefficients.
    * LMM model with Hull-White-like parameters */
   @Test
   public void hw_like_ratchet_ibor() {
-//    long start, end;
-//    start = System.currentTimeMillis();
+    long start, end;
+    start = System.currentTimeMillis();
     ResolvedSwapLeg ratchet = createRatchetSwapLeg(COEFFICIENTS_IBOR);
     ResolvedSwapLeg iborLeg = EUR_FIXED_1Y_EURIBOR_3M.getFloatingLeg()
         .toLeg(START_DATE, END_DATE, PayReceive.RECEIVE, NOTIONAL).resolve(REF_DATA);
@@ -174,13 +175,15 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
     double pvDsc = PRICER_LEG.presentValue(iborLeg, MULTICURVE_EUR).getAmount(); // 16499.39173511338
     double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
     // pvDsc: 16499.39173511338
-    // Paths/pv: 1,000/17874.34 (99ms); 10,000/17478.65 (281ms) ; 100,000/16463.94 (1516ms)
-    //           1,000,000/16421.27 (10491ms)
-//    end = System.currentTimeMillis();
-//    System.out.println(pvDsc);
-//    System.out.println(pvMc);
-//    System.out.println("Computation time: " + (end-start) + " ms.");
-    double pvPreviousRun = 17874.335430266827; // 1,000 paths
+    // Paths/pv: 1,000/17399.8187 (99ms); 10,000/xx ( ms) ; 100,000/xx ( ms)
+    //           1,000,000/15946.9116 (7576 ms)
+    end = System.currentTimeMillis();
+    if (PRINT_DETAILS) {
+      System.out.println(pvDsc);
+      System.out.println(pvMc);
+      System.out.println("Computation time: " + (end - start) + " ms.");
+    }
+    double pvPreviousRun = 17399.8187; // 1,000 paths
     assertThat(pvMc).isEqualTo(pvPreviousRun, TOLERANCE_MC_1);
     Offset<Double> toleranceMc = within(1.5E+4);
     assertThat(pvMc).isEqualTo(pvDsc, toleranceMc);
@@ -190,13 +193,13 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
    * LMM model with Hull-White-like parameters */
   @Test
   public void hw_like_ratchet_cap() {
-//    long start, end;
-//    start = System.currentTimeMillis();
+    long start, end;
+    start = System.currentTimeMillis();
+    int nbPaths = 1_000;
     ResolvedSwapLeg ratchet = createRatchetSwapLeg(COEFFICIENTS_CAP);
     ResolvedIborCapFloorLeg cap = capFloor(CAP_STRIKE);
     ResolvedSwapLeg iborLeg = EUR_FIXED_1Y_EURIBOR_3M.getFloatingLeg()
         .toLeg(START_DATE, END_DATE, PayReceive.RECEIVE, NOTIONAL).resolve(REF_DATA);
-    int nbPaths = 1_000;
     List<LocalDate> iborDates = new ArrayList<>();
     ImmutableList<SwapPaymentPeriod> ratchetPayments = ratchet.getPaymentPeriods();
     iborDates.add(ratchetPayments.get(0).getStartDate());
@@ -220,19 +223,20 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
     double pvIborLeg = PRICER_LEG.presentValue(iborLeg, MULTICURVE_EUR).getAmount(); // 16499.39173511338
     double pvCappedLeg = pvIborLeg - pvCapHw;
     double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
-    // pvCappedLeg: 8624.850337837279
-    // Paths/pv: 1,000/9532.05 (129ms); 10,000/9128.21 (319ms) ; 100,000/8515.52 (1512ms)
-    //           1,000,000/8455.73 (7919ms)
-//    System.out.println(pvCappedLeg);
-//    System.out.println(pvMc);
-//    end = System.currentTimeMillis();
-//    System.out.println("Computation time: " + (end - start) + " ms.");
-    double pvPreviousRun = 9532.0460; //
+    // pvCappedLeg: 8286.673686187685
+    // Paths/pv: 1,000/9202.8622 (69 ms); 10,000/8795.0606 (283 ms) ; 100,000/8178.8780 (1103 ms)
+    //           1,000,000/8118.5044 (7630 ms)
+    end = System.currentTimeMillis();
+    if (PRINT_DETAILS) {
+      System.out.println(pvCappedLeg);
+      System.out.println(pvMc);
+      System.out.println("Computation time: " + (end - start) + " ms.");
+    }
+    double pvPreviousRun = 9202.8622; //
     assertThat(pvMc).isEqualTo(pvPreviousRun, TOLERANCE_MC_1);
     Offset<Double> toleranceMc = within(1.0E+4);
     assertThat(pvMc).isEqualTo(pvCappedLeg, toleranceMc);
   }
-  
   
   /* Test Monte Carlo vs previous run. */
   @Test
@@ -258,9 +262,12 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
             .numberGenerator(rnd)
             .pathNumberBlock(10_000).build();
     double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
-    double pvMcPreviousRun = 7590.671659282815;
-    // Paths/pv: 1,000/7590.67 ; 10,000/7299.39 ; 100,000/6039.52
-    //           1,000,000/6008.84
+    double pvMcPreviousRun = 6955.7968;
+    // Paths/pv: 1,000/6955.7968 ; 10,000/xx ; 100,000/xx
+    //           1,000,000/xx
+    if (PRINT_DETAILS) {
+      System.out.println(pvMc);
+    }
     assertThat(pvMc).isEqualTo(pvMcPreviousRun, TOLERANCE_MC_1);
   }
   

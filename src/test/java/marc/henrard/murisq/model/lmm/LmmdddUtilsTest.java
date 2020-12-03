@@ -56,7 +56,7 @@ public class LmmdddUtilsTest {
 
   /* Market Data */
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   private static final LocalDate VALUATION_DATE = MULTICURVE_EUR.getValuationDate();
   private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/Brussels");
   private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);

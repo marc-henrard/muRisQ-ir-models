@@ -20,7 +20,6 @@ import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.basics.date.AdjustableDate;
@@ -29,14 +28,6 @@ import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.HolidayCalendar;
 import com.opengamma.strata.basics.date.Tenor;
 import com.opengamma.strata.collect.array.DoubleArray;
-import com.opengamma.strata.collect.io.ResourceLocator;
-import com.opengamma.strata.data.MarketData;
-import com.opengamma.strata.loader.csv.QuotesCsvLoader;
-import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
-import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
-import com.opengamma.strata.market.observable.QuoteId;
-import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParametersProvider;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
@@ -52,6 +43,7 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
 import marc.henrard.murisq.basics.time.ScaledSecondTime;
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.model.lmm.LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters;
 import marc.henrard.murisq.model.lmm.LmmdddExamplesUtils;
 
@@ -69,28 +61,9 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
   private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/London");
   private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);
 
-  /* Load and calibrate curves */
-  private static final String PATH_CONFIG = "src/test/resources/curve-config/";
-  private static final String FILE_QUOTES = "src/test/resources/quotes/quotes-20151120-eur.csv";
-
-  private static final ResourceLocator GROUPS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "groups-eur.csv");
-  private static final ResourceLocator SETTINGS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
-  private static final ResourceLocator NODES_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, RatesCurveGroupDefinition> GROUPS_CONFIG =
-      RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
-  private static final CurveGroupName GROUP_EUR = CurveGroupName.of("EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS");
-  private static final MarketData MARKET_DATA;
-  static {
-    ResourceLocator quotesResource = ResourceLocator.of(FILE_QUOTES);
-    ImmutableMap<QuoteId, Double> quotes = QuotesCsvLoader.load(VALUATION_DATE, quotesResource);
-    MARKET_DATA = MarketData.of(VALUATION_DATE, quotes);
-  }
-  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
+  /* Multi-curve */
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA, REF_DATA);
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* LMM parameters (HW-like) */
   private static final double MEAN_REVERTION = 0.02;

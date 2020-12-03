@@ -15,23 +15,14 @@ import java.time.ZonedDateTime;
 
 import org.testng.annotations.Test;
 
-import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.AdjustableDate;
 import com.opengamma.strata.basics.date.DayCount;
 import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.Tenor;
-import com.opengamma.strata.collect.io.ResourceLocator;
-import com.opengamma.strata.data.MarketData;
-import com.opengamma.strata.loader.csv.QuotesCsvLoader;
-import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
 import com.opengamma.strata.market.ValueType;
-import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
-import com.opengamma.strata.market.observable.QuoteId;
 import com.opengamma.strata.market.surface.ConstantSurface;
 import com.opengamma.strata.market.surface.DefaultSurfaceMetadata;
-import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.pricer.swaption.BlackSwaptionExpiryTenorVolatilities;
@@ -46,6 +37,7 @@ import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.dataset.RationalTwoFactorParameters20151120DataSet;
 import marc.henrard.murisq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 import marc.henrard.murisq.pricer.swaption.RationalTwoFactorSwaptionPhysicalProductSemiExplicitPricer;
@@ -70,34 +62,10 @@ public class RationalTwoFactorSwaptionPhysicalProductPricerTest {
   private static final DayCount DAYCOUNT_DEFAULT = DayCounts.ACT_365F;
 
   /* Load and calibrate curves */
-  private static final String PATH_CONFIG = "src/test/resources/curve-config/";
-  private static final String FILE_QUOTES = "src/test/resources/quotes/quotes-20151120-eur.csv";
-  private static final String FILE_QUOTES_POS = "src/test/resources/quotes/quotes-20151120-eur-positif.csv";
-
-  private static final ResourceLocator GROUPS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "groups-eur.csv");
-  private static final ResourceLocator SETTINGS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
-  private static final ResourceLocator NODES_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, RatesCurveGroupDefinition> GROUPS_CONFIG =
-      RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
-  private static final CurveGroupName GROUP_EUR = CurveGroupName.of("EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS");
-  private static final MarketData MARKET_DATA;
-  private static final MarketData MARKET_DATA_POS;
-  static {
-    ResourceLocator quotesResource = ResourceLocator.of(FILE_QUOTES);
-    ImmutableMap<QuoteId, Double> quotes = QuotesCsvLoader.load(VALUATION_DATE, quotesResource);
-    MARKET_DATA = MarketData.of(VALUATION_DATE, quotes);
-    ResourceLocator quotesResourcePos = ResourceLocator.of(FILE_QUOTES_POS);
-    ImmutableMap<QuoteId, Double> quotesPos = QuotesCsvLoader.load(VALUATION_DATE, quotesResourcePos);
-    MARKET_DATA_POS = MarketData.of(VALUATION_DATE, quotesPos);
-  }
-  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA, REF_DATA);
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   private static final ImmutableRatesProvider MULTICURVE_EUR_POS = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA_POS, REF_DATA);
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_POS_20151120;
 
   /* Rational model data */
   private static final RationalTwoFactorGenericParameters RATIONAL_2F = 

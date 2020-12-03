@@ -6,7 +6,8 @@ package marc.henrard.murisq.pricer.capfloor;
 import static com.opengamma.strata.basics.currency.Currency.EUR;
 import static com.opengamma.strata.basics.date.HolidayCalendarIds.EUTA;
 import static com.opengamma.strata.basics.index.IborIndices.EUR_EURIBOR_6M;
-import static org.testng.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,33 +15,26 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import org.testng.annotations.Test;
+import org.assertj.core.data.Offset;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.date.DayCount;
 import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.HolidayCalendar;
-import com.opengamma.strata.collect.io.ResourceLocator;
-import com.opengamma.strata.data.MarketData;
-import com.opengamma.strata.loader.csv.QuotesCsvLoader;
-import com.opengamma.strata.loader.csv.RatesCalibrationCsvLoader;
 import com.opengamma.strata.market.ValueType;
-import com.opengamma.strata.market.curve.CurveGroupName;
-import com.opengamma.strata.market.curve.RatesCurveGroupDefinition;
-import com.opengamma.strata.market.observable.QuoteId;
 import com.opengamma.strata.market.surface.ConstantSurface;
 import com.opengamma.strata.market.surface.DefaultSurfaceMetadata;
 import com.opengamma.strata.pricer.capfloor.BlackIborCapletFloorletExpiryStrikeVolatilities;
 import com.opengamma.strata.pricer.capfloor.BlackIborCapletFloorletPeriodPricer;
 import com.opengamma.strata.pricer.capfloor.NormalIborCapletFloorletExpiryStrikeVolatilities;
 import com.opengamma.strata.pricer.capfloor.NormalIborCapletFloorletPeriodPricer;
-import com.opengamma.strata.pricer.curve.RatesCurveCalibrator;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod;
 import com.opengamma.strata.product.capfloor.IborCapletFloorletPeriod.Builder;
 import com.opengamma.strata.product.rate.IborRateComputation;
 
+import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.dataset.RationalTwoFactorParameters20151120DataSet;
 import marc.henrard.murisq.model.rationalmulticurve.RationalTwoFactorGenericParameters;
 import marc.henrard.murisq.pricer.capfloor.RationalTwoFactorCapletFloorletPeriodSemiExplicitPricer;
@@ -50,7 +44,6 @@ import marc.henrard.murisq.pricer.capfloor.RationalTwoFactorCapletFloorletPeriod
  * 
  * @author Marc Henrard
  */
-@Test
 public class RationalTwoFactorCapletFloorletPeriodPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
@@ -64,34 +57,10 @@ public class RationalTwoFactorCapletFloorletPeriodPricerTest {
   private static final HolidayCalendar EUTA_IMPL = REF_DATA.findValue(EUTA).get();
 
   /* Load and calibrate curves */
-  private static final String PATH_CONFIG = "src/test/resources/curve-config/";
-  private static final String FILE_QUOTES = "src/test/resources/quotes/quotes-20151120-eur.csv";
-  private static final String FILE_QUOTES_POS = "src/test/resources/quotes/quotes-20151120-eur-positif.csv";
-
-  private static final ResourceLocator GROUPS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "groups-eur.csv");
-  private static final ResourceLocator SETTINGS_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "settings-eur.csv");
-  private static final ResourceLocator NODES_RESOURCE =
-      ResourceLocator.of(ResourceLocator.FILE_URL_PREFIX + PATH_CONFIG + "nodes-eur.csv");
-  private static final ImmutableMap<CurveGroupName, RatesCurveGroupDefinition> GROUPS_CONFIG =
-      RatesCalibrationCsvLoader.load(GROUPS_RESOURCE, SETTINGS_RESOURCE, NODES_RESOURCE);
-  private static final CurveGroupName GROUP_EUR = CurveGroupName.of("EUR-DSCONOIS-EURIBOR3MIRS-EURIBOR6MIRS");
-  private static final MarketData MARKET_DATA;
-  private static final MarketData MARKET_DATA_POS;
-  static {
-    ResourceLocator quotesResource = ResourceLocator.of(FILE_QUOTES);
-    ImmutableMap<QuoteId, Double> quotes = QuotesCsvLoader.load(VALUATION_DATE, quotesResource);
-    MARKET_DATA = MarketData.of(VALUATION_DATE, quotes);
-    ResourceLocator quotesResourcePos = ResourceLocator.of(FILE_QUOTES_POS);
-    ImmutableMap<QuoteId, Double> quotesPos = QuotesCsvLoader.load(VALUATION_DATE, quotesResourcePos);
-    MARKET_DATA_POS = MarketData.of(VALUATION_DATE, quotesPos);
-  }
-  private static final RatesCurveCalibrator CALIBRATOR = RatesCurveCalibrator.standard();
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA, REF_DATA);
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   private static final ImmutableRatesProvider MULTICURVE_EUR_POS = 
-      CALIBRATOR.calibrate(GROUPS_CONFIG.get(GROUP_EUR), MARKET_DATA_POS, REF_DATA);
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_POS_20151120;
 
   /* Rational model data */
   private static final RationalTwoFactorGenericParameters RATIONAL_2F = 
@@ -103,7 +72,7 @@ public class RationalTwoFactorCapletFloorletPeriodPricerTest {
   private static final int NB_EXPIRIES = EXPIRIES_PER.length;
   private static final double[] STRIKES_BACHELIER = new double[] {-0.0025, 0.0100, 0.0200};
   private static final int NB_STRIKES_BACHELIER = STRIKES_BACHELIER.length;
-  private static final double[] STRIKES_BLACK = new double[] {0.0200, 0.0300, 0.0400};
+  private static final double[] STRIKES_BLACK = new double[] {0.0250, 0.0300, 0.0400};
   private static final int NB_STRIKES_BLACK = STRIKES_BLACK.length;
   private static final double NOTIONAL = 100_000_000.0d;
   
@@ -114,15 +83,20 @@ public class RationalTwoFactorCapletFloorletPeriodPricerTest {
       BlackIborCapletFloorletPeriodPricer.DEFAULT;
   private static final NormalIborCapletFloorletPeriodPricer PRICER_CAP_BACHELIER = 
       NormalIborCapletFloorletPeriodPricer.DEFAULT;
-  
-  private static final double TOLERANCE_PV = 1.0E-2;
-  private static final double TOLERANCE_IV = 1.0E-6;
+
+  private static final Offset<Double> TOLERANCE_PV = offset(1.0E-2);
+  private static final Offset<Double> TOLERANCE_IV = offset(1.0E-6);
+  private static final boolean PRINT_DETAILS = false;
   
   /* Test the implied volatility for the Black/log-normal model. 
    * Data is artificially high to have positive strikes and forwards. */
+  @Test
   public void black() {
     for (int i = 0; i < NB_EXPIRIES; i++) {
       for (int k = 0; k < NB_STRIKES_BLACK; k++) {  // Removed first moneyness as it has negative strike
+        if(PRINT_DETAILS) {
+          System.out.println(i + " - " + k);
+        }
         LocalDate fixingDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(EXPIRIES_PER[i]));
         IborRateComputation comp = IborRateComputation.of(EUR_EURIBOR_6M, fixingDate, REF_DATA);
         IborCapletFloorletPeriod capletLong = capletFloorlet(NOTIONAL, comp, STRIKES_BLACK[k], true);
@@ -141,28 +115,29 @@ public class RationalTwoFactorCapletFloorletPeriodPricerTest {
                     iv));
         double pvBachelier =
             PRICER_CAP_BLACK.presentValue(capletLong, MULTICURVE_EUR_POS, volatilities).getAmount();
-        assertEquals(pvRational, pvBachelier, TOLERANCE_PV);
+        assertThat(pvRational).isEqualTo(pvBachelier, TOLERANCE_PV);
         /* Short caplet. */
         IborCapletFloorletPeriod capletShort = capletFloorlet(-NOTIONAL, comp, STRIKES_BLACK[k], true);
         double iv2 = PRICER_CAP_S_EX
             .impliedVolatilityBlack(capletShort, MULTICURVE_EUR_POS, RATIONAL_2F);
-        assertEquals(iv, iv2, TOLERANCE_IV);
+        assertThat(iv).isEqualTo(iv2, TOLERANCE_IV);
         /* Long floorlet. */
         IborCapletFloorletPeriod floorletLong = capletFloorlet(NOTIONAL, comp, STRIKES_BLACK[k], false);
         double iv3 = PRICER_CAP_S_EX
             .impliedVolatilityBlack(floorletLong, MULTICURVE_EUR_POS, RATIONAL_2F);
-        assertEquals(iv, iv3, TOLERANCE_IV);
+        assertThat(iv).isEqualTo(iv3, TOLERANCE_IV);
         /* Short floorlet. */
         IborCapletFloorletPeriod floorletShort = capletFloorlet(-NOTIONAL, comp, STRIKES_BLACK[k], false);
         double iv4 = PRICER_CAP_S_EX
             .impliedVolatilityBlack(floorletShort, MULTICURVE_EUR_POS, RATIONAL_2F);
-        assertEquals(iv, iv4, TOLERANCE_IV);
+        assertThat(iv).isEqualTo(iv4, TOLERANCE_IV);
       }
     }
   }
   
   /* Test the implied volatility for the Bachelier/normal model. 
    * Data is artificially high to have positive strikes and forwards. */
+  @Test
   public void bachelier() {
     for (int i = 0; i < NB_EXPIRIES; i++) {
       int kStart = 0;
@@ -188,22 +163,22 @@ public class RationalTwoFactorCapletFloorletPeriodPricerTest {
                     iv));
         double pvBachelier =
             PRICER_CAP_BACHELIER.presentValue(capletLong, MULTICURVE_EUR, volatilities).getAmount();
-        assertEquals(pvRational, pvBachelier, TOLERANCE_PV);
+        assertThat(pvRational).isCloseTo(pvBachelier, TOLERANCE_PV);
         /* Short caplet. */
         IborCapletFloorletPeriod capletShort = capletFloorlet(-NOTIONAL, comp, STRIKES_BACHELIER[k], true);
         double iv2 = PRICER_CAP_S_EX
             .impliedVolatilityBachelier(capletShort, MULTICURVE_EUR, RATIONAL_2F);
-        assertEquals(iv, iv2, TOLERANCE_IV);
+        assertThat(iv).isCloseTo(iv2, TOLERANCE_IV);
         /* Long floorlet. */
         IborCapletFloorletPeriod floorletLong = capletFloorlet(NOTIONAL, comp, STRIKES_BACHELIER[k], false);
         double iv3 = PRICER_CAP_S_EX
             .impliedVolatilityBachelier(floorletLong, MULTICURVE_EUR, RATIONAL_2F);
-        assertEquals(iv, iv3, TOLERANCE_IV);
+        assertThat(iv).isCloseTo(iv3, TOLERANCE_IV);
         /* Short floorlet. */
         IborCapletFloorletPeriod floorletShort = capletFloorlet(-NOTIONAL, comp, STRIKES_BACHELIER[k], false);
         double iv4 = PRICER_CAP_S_EX
             .impliedVolatilityBachelier(floorletShort, MULTICURVE_EUR, RATIONAL_2F);
-        assertEquals(iv, iv4, TOLERANCE_IV);
+        assertThat(iv).isCloseTo(iv4, TOLERANCE_IV);
       }
     }
   }

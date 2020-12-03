@@ -77,7 +77,7 @@ public class RationalTwoFactorCapletFloorletPeriodSemiExplicitNiPricerTest {
   private static final double NOTIONAL = 100_000_000.0d;
 
   /* Load and calibrate curves */
-  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  public static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* Rational model data */
   public static final LocalTime LOCAL_TIME = LocalTime.of(9, 29);

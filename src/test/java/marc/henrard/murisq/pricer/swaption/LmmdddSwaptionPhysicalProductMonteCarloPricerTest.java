@@ -78,7 +78,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
 
   /* Market Data */
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
 
   /* Swaption description */
   private static final Period EXPIRY = Period.ofMonths(60);

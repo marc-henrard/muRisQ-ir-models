@@ -61,7 +61,7 @@ public class G2ppSwaptionPhysicalProductExplicitApproxPricerTest {
   private static final ZoneId VALUATION_ZONE = ZoneId.of("Europe/London");
   private static final LocalTime VALUATION_TIME = LocalTime.of(10, 29);
   private static final ImmutableRatesProvider MULTICURVE_EUR = 
-      MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+      MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* G2++ parameters */
   private static final Currency CURRENCY = Currency.EUR;

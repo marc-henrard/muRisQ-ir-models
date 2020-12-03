@@ -49,7 +49,7 @@ public class MonteCarloEuropeanPricerTest {
   private static final LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters LMMHW = 
       LmmdddExamplesUtils.
       lmmHw(MEAN_REVERTION, HW_SIGMA, IBOR_DATES, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
-          MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120,
+          MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120,
           VALUATION_ZONE, VALUATION_TIME, REF_DATA);
   private static final RandomEngine ENGINE = new MersenneTwister64(0);
   private static final NormalRandomNumberGenerator RND = 
