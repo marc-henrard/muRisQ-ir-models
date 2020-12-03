@@ -4,15 +4,16 @@
 package marc.henrard.murisq.pricer.swap;
 
 import static com.opengamma.strata.basics.currency.Currency.EUR;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.function.Function;
 
-import org.testng.annotations.Test;
+import org.assertj.core.data.Offset;
+import org.junit.jupiter.api.Test;
 
 import com.opengamma.strata.basics.ReferenceData;
 import com.opengamma.strata.basics.currency.CurrencyAmount;
@@ -41,7 +42,6 @@ import marc.henrard.murisq.pricer.swap.AdjustedDiscountingRatePaymentPeriodPrice
  * 
  * @author Marc Henrard
  */
-@Test
 public class AdjustedDiscountingRatePaymentPeriodPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
@@ -132,10 +132,11 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
       .currency(INDEX.getCurrency()).build();
   
   /* Test */
-  private static final double TOLERANCE_PV_0 = 1.0E-6;
+  private static final Offset<Double> TOLERANCE_PV_0 = within(1.0E-6);
   private static final double TOLERANCE_DELTA = 1.0E+4; // 1 EUR/bps
 
   /* The forecast value v a local implementation */
+  @Test
   public void forecast_value() {
     double forecastComputed = PRICER_PERIOD_ADJ.forecastValue(PERIOD, MULTICURVE);
     double onFwd = MULTICURVE.overnightIndexRates(INDEX)
@@ -149,19 +150,21 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
     double delta = INDEX.getDayCount().relativeYearFraction(START_DATE, END_DATE);
     double fwdAdjusted = onFwd + p0t0 / p0t1 * (expGamma - 1.0d) / delta;
     double forecastValue = fwdAdjusted * ACCRUAL.getYearFraction() * NOTIONAL;
-    assertEquals(forecastComputed, forecastValue, TOLERANCE_PV_0);
+    assertThat(forecastComputed).isEqualTo(forecastValue, TOLERANCE_PV_0);
   }
 
   /* The forecast value v a local implementation. Value fixed but not paid yet. */
+  @Test
   public void forecast_value_fixed() {
     double forecastComputed = PRICER_PERIOD_ADJ.forecastValue(PERIOD_FIXED, MULTICURVE_TS);
     double onFwd = MULTICURVE_TS.overnightIndexRates(INDEX)
         .rate(OvernightIndexObservation.of(INDEX, START_DATE_ON_FIXED, REF_DATA));
     double forecastValue = onFwd * ACCRUAL_FIXED.getYearFraction() * NOTIONAL;
-    assertEquals(forecastComputed, forecastValue, TOLERANCE_PV_0);
+    assertThat(forecastComputed).isEqualTo(forecastValue, TOLERANCE_PV_0);
   }
 
   /* The forecast value v a local implementation */
+  @Test
   public void forecast_value_spread() {
     double forecastComputed = PRICER_PERIOD_ADJ.forecastValue(PERIOD_SPREAD, MULTICURVE);
     double onFwd = MULTICURVE.overnightIndexRates(INDEX)
@@ -175,49 +178,54 @@ public class AdjustedDiscountingRatePaymentPeriodPricerTest {
     double delta = INDEX.getDayCount().relativeYearFraction(START_DATE, END_DATE);
     double fwdAdjusted = onFwd + p0t0 / p0t1 * (expGamma - 1.0d) / delta;
     double forecastValue = (fwdAdjusted + SPREAD) * ACCRUAL.getYearFraction() * NOTIONAL;
-    assertEquals(forecastComputed, forecastValue, TOLERANCE_PV_0);
+    assertThat(forecastComputed).isEqualTo(forecastValue, TOLERANCE_PV_0);
   }
 
   /* The present value v a forecast value */
+  @Test
   public void present_value() {
     double forecastComputed = PRICER_PERIOD_ADJ.forecastValue(PERIOD, MULTICURVE);
     double pvComputed = PRICER_PERIOD_ADJ.presentValue(PERIOD, MULTICURVE);
     double pvExpected = MULTICURVE.discountFactor(EUR, PAYMENT_DATE) * forecastComputed;
-    assertEquals(pvComputed, pvExpected, TOLERANCE_PV_0);
+    assertThat(pvComputed).isEqualTo(pvExpected, TOLERANCE_PV_0);
   }
 
   /* PV adjusted with 0 volatility v PV discounting */
+  @Test
   public void pv_0_vol() {
     double pvComputed = PRICER_PERIOD_ADJ_0.presentValue(PERIOD, MULTICURVE);
     double pvDiscounting = PRICER_PERIOD_DISCOUNTING.presentValue(PERIOD, MULTICURVE);
-    assertEquals(pvComputed, pvDiscounting, TOLERANCE_PV_0);
+    assertThat(pvComputed).isEqualTo(pvDiscounting, TOLERANCE_PV_0);
   }
 
   /* PV sensitivity by finite difference */
+  @Test
   public void pv_sensitivity() {
     PointSensitivityBuilder ptsComputed = PRICER_PERIOD_ADJ.presentValueSensitivity(PERIOD, MULTICURVE);
     CurrencyParameterSensitivities ps = MULTICURVE.parameterSensitivity(ptsComputed.build());
     Function<ImmutableRatesProvider, CurrencyAmount> valueFn =
         (p) -> CurrencyAmount.of(EUR, PRICER_PERIOD_ADJ.presentValue(PERIOD, p));
     CurrencyParameterSensitivities psFd = FD.sensitivity(MULTICURVE, valueFn);
-    assertTrue(ps.equalWithTolerance(psFd, TOLERANCE_DELTA));
+    assertThat(ps.equalWithTolerance(psFd, TOLERANCE_DELTA)).isTrue();
   }
 
   /* forecast sensitivity by finite difference */
+  @Test
   public void forecast_value_sensitivity() {
     PointSensitivityBuilder ptsComputed = PRICER_PERIOD_ADJ.forecastValueSensitivity(PERIOD, MULTICURVE);
     CurrencyParameterSensitivities ps = MULTICURVE.parameterSensitivity(ptsComputed.build());
     Function<ImmutableRatesProvider, CurrencyAmount> valueFn =
         (p) -> CurrencyAmount.of(EUR, PRICER_PERIOD_ADJ.forecastValue(PERIOD, p));
     CurrencyParameterSensitivities psFd = FD.sensitivity(MULTICURVE, valueFn);
-    assertTrue(ps.equalWithTolerance(psFd, TOLERANCE_DELTA));
+    assertThat(ps.equalWithTolerance(psFd, TOLERANCE_DELTA)).isTrue();
   }
 
   /* PVBP same as for discounting */
+  @Test
   public void pvbp() {
     double pvbpComputed = PRICER_PERIOD_ADJ_0.pvbp(PERIOD, MULTICURVE);
     double pvbpDiscounting = PRICER_PERIOD_DISCOUNTING.pvbp(PERIOD, MULTICURVE);
-    assertEquals(pvbpComputed, pvbpDiscounting, TOLERANCE_PV_0);
+    assertThat(pvbpComputed).isEqualTo(pvbpDiscounting, TOLERANCE_PV_0);
   }
   
 }

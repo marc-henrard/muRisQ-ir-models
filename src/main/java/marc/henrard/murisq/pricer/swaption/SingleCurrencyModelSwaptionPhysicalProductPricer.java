@@ -41,7 +41,7 @@ public abstract class SingleCurrencyModelSwaptionPhysicalProductPricer {
       DiscountingSwapProductPricer.DEFAULT;
   
   /**
-   * Computes the present value of a swaption in the rational model.
+   * Computes the present value of a swaption in a given model.
    * <p>
    * The result is expressed using the currency of the swaption.
    * 
