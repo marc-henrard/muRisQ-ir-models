@@ -79,7 +79,7 @@ public class HullWhiteCmsPeriodExplicitPricerTest {
   private static final double NOTIONAL = 100_000_000.0d;
 
   /* Load and calibrate curves */
-  private static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  private static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* Constants */
   private static final Offset<Double> TOLERANCE_PV = offset(2.0E+1); // Approximation order 3

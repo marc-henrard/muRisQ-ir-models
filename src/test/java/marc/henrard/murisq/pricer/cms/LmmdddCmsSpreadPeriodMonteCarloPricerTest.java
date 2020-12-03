@@ -68,7 +68,7 @@ public class LmmdddCmsSpreadPeriodMonteCarloPricerTest {
   private static final HolidayCalendar EUTA_IMPL = REF_DATA.getValue(EUR_EURIBOR_6M.getFixingCalendar());
 
   /* Market Data */
-  private static final ImmutableRatesProvider MULTICURVE_EUR = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  private static final ImmutableRatesProvider MULTICURVE_EUR = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   
   /* Descriptions of caplets/floorlets */
   private static final CmsPeriodType[] TYPES = 

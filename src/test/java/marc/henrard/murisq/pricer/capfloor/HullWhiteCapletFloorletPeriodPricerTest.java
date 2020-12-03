@@ -97,7 +97,7 @@ public class HullWhiteCapletFloorletPeriodPricerTest {
   private static final double NOTIONAL = 100_000_000.0d;
 
   /* Load and calibrate curves */
-  private static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_20151120;
+  private static final ImmutableRatesProvider MULTICURVE = MulticurveEur20151120DataSet.MULTICURVE_EUR_EONIA_20151120;
   private static final RatesFiniteDifferenceSensitivityCalculator FDC = 
       new RatesFiniteDifferenceSensitivityCalculator(1.0E-6);
   

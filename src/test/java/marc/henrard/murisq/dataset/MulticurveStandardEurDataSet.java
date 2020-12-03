@@ -33,7 +33,7 @@ public class MulticurveStandardEurDataSet {
   private static final String PATH_CONFIG = "src/test/resources/curve-config/";
   private static final String PATH_QUOTES = "src/test/resources/quotes/";
 
-  private static final String CURVE_GROUP_STD_NAME_STR = "EUR-DSCONOIS-E3MIRS-E6MIRS";
+  private static final String CURVE_GROUP_STD_NAME_STR = "EUR-DSCEONIAOIS-E3MIRS-E6MIRS";
   private static final CurveGroupName CURVE_GROUP_STD_NAME = CurveGroupName.of(CURVE_GROUP_STD_NAME_STR);
   private static final ResourceLocator GROUPS_STD_FILE = ResourceLocator.of( 
       PATH_CONFIG + CURVE_GROUP_STD_NAME_STR +"/" + CURVE_GROUP_STD_NAME_STR + "-group.csv");
