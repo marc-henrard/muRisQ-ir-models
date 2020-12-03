@@ -28,9 +28,13 @@ import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.HolidayCalendar;
 import com.opengamma.strata.basics.date.Tenor;
 import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.collect.tuple.Pair;
+import com.opengamma.strata.market.param.CurrencyParameterSensitivities;
+import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParametersProvider;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
+import com.opengamma.strata.pricer.sensitivity.RatesFiniteDifferenceSensitivityCalculator;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.pricer.swaption.HullWhiteSwaptionPhysicalProductPricer;
 import com.opengamma.strata.product.common.BuySell;
@@ -87,10 +91,13 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
       HullWhiteSwaptionPhysicalProductPricer.DEFAULT;
   private static final NormalSwaptionPhysicalProductPricer2 PRICER_SWAPTION_BACHELIER =
       NormalSwaptionPhysicalProductPricer2.DEFAULT;
+  private static final RatesFiniteDifferenceSensitivityCalculator FD_CALC =
+      new RatesFiniteDifferenceSensitivityCalculator(1.0E-7); // Better precision
 
   /* Tests */
   private static final Offset<Double> TOLERANCE_APPROX = within(1.0E+1);
   private static final Offset<Double> TOLERANCE_APPROX_IV = within(2.0E-6); // Implied volatility withing 0.02 bps
+  private static final double TOLERANCE_PV01 = 5.0E+1;
   private static final boolean PRINT_DETAILS = false;
   
   /* Test v Hull-White model 
@@ -147,6 +154,65 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
               + ", " + ivApprox + ", " + ivHw + ", " + (ivHw-ivApprox));
           }
           assertThat(ivApprox).isEqualTo(ivHw, TOLERANCE_APPROX_IV); // Compare implied volatilities
+        } // end loopmoney
+      } // end looptenor
+    } // end loopexp
+  }
+
+  /* Test AD rate sensitivities V Finite difference. */
+  @Test
+  public void sensitivity_hw_like() {
+    Period[] expiries = new Period[] {Period.ofMonths(6), Period.ofMonths(12), Period.ofMonths(60)};
+    Tenor[] tenors = new Tenor[] {Tenor.TENOR_1Y, Tenor.TENOR_10Y};
+    double[] moneyness = new double[] {-0.0050, 0, 0.0100};
+    for (int loopexp = 0; loopexp < expiries.length; loopexp++) {
+      LocalDate expiryDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(expiries[loopexp]));
+      ResolvedSwapTrade swapMax = EUR_FIXED_1Y_EURIBOR_3M
+          .createTrade(expiryDate, tenors[tenors.length - 1], BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
+      List<LocalDate> iborDates = new ArrayList<>();
+      ImmutableList<SwapPaymentPeriod> iborLeg = swapMax.getProduct().getLegs().get(1).getPaymentPeriods();
+      iborDates.add(iborLeg.get(0).getStartDate());
+      for (SwapPaymentPeriod period : iborLeg) {
+        iborDates.add(period.getEndDate());
+      }
+      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmHw =
+          LmmdddExamplesUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
+              EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
+              VALUATION_ZONE, VALUATION_TIME, REF_DATA);
+      for (int looptenor = 0; looptenor < tenors.length; looptenor++) {
+        ResolvedSwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_3M
+            .createTrade(expiryDate, tenors[looptenor], BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
+        double parRate = PRICER_SWAP.parRate(swap0.getProduct(), MULTICURVE_EUR);
+        for (int loopmoney = 0; loopmoney < moneyness.length; loopmoney++) {
+          SwapTrade swap = EUR_FIXED_1Y_EURIBOR_3M
+              .createTrade(expiryDate,
+                  tenors[looptenor],
+                  (loopmoney == 0) ? BuySell.BUY : BuySell.SELL,
+                  NOTIONAL,
+                  parRate + moneyness[loopmoney],
+                  REF_DATA);
+          Swaption swaption = Swaption.builder()
+              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
+              .longShort((loopexp == 1) ? LongShort.LONG : LongShort.SHORT)
+              .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
+              .underlying(swap.getProduct()).build();
+          ResolvedSwaption swaptionResolved = swaption.resolve(REF_DATA);
+          Pair<CurrencyAmount, PointSensitivityBuilder> pvPtsComputed = PRICER_SWAPTION_LMM_APPROX
+              .presentValueSensitivityRatesStickyModel(swaptionResolved, MULTICURVE_EUR, lmmHw);
+          CurrencyAmount pvComputed = pvPtsComputed.getFirst();
+          CurrencyAmount pvApprox =
+              PRICER_SWAPTION_LMM_APPROX.presentValue(swaptionResolved, MULTICURVE_EUR, lmmHw);
+          assertThat(pvApprox.getCurrency()).isEqualTo(pvComputed.getCurrency());
+          assertThat(pvApprox.getAmount()).isEqualTo(pvComputed.getAmount(), TOLERANCE_APPROX);
+
+          CurrencyParameterSensitivities psAd = MULTICURVE_EUR.parameterSensitivity(pvPtsComputed.getSecond().build());
+          CurrencyParameterSensitivities psFd = FD_CALC.sensitivity(MULTICURVE_EUR,
+              (m) -> PRICER_SWAPTION_LMM_APPROX.presentValue(swaptionResolved, m, lmmHw));
+          if (PRINT_DETAILS) {
+            System.out.println("AD: " + psAd);
+            System.out.println(psFd);
+          }
+          assertThat(psAd.equalWithTolerance(psFd, TOLERANCE_PV01)).isTrue();
         } // end loopmoney
       } // end looptenor
     } // end loopexp
@@ -233,6 +299,93 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
 //      System.out.println("HW computation time: " + (end - start) + " ms. (" +
 //          (nbRep * expiries.length * tenors.length * moneyness.length) + " computations) " + testHW);
 //    }
+//  }
+
+////Test performance. Does not run in the standard unit test.
+//  @Test
+//  public void performance_sensi() {
+//    long start, end;
+//    int nbRep = 250;
+//    int nbRep2 = 10;
+//    Period[] expiries = new Period[] {Period.ofMonths(6), Period.ofMonths(12), Period.ofMonths(60)};
+//    Tenor[] tenors = new Tenor[] {Tenor.TENOR_1Y, Tenor.TENOR_10Y};
+//    double[] moneyness = new double[] {-0.0050, 0, 0.0100};
+//    // Create instruments
+//    ResolvedSwaption[][][] swaptionsResolved = new ResolvedSwaption[expiries.length][tenors.length][moneyness.length];
+//    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters[] lmmHw =
+//        new LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters[expiries.length];
+//    for (int loopexp = 0; loopexp < expiries.length; loopexp++) {
+//      LocalDate expiryDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(expiries[loopexp]));
+//      ResolvedSwapTrade swapMax = EUR_FIXED_1Y_EURIBOR_3M
+//          .createTrade(expiryDate, tenors[tenors.length - 1], BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
+//      List<LocalDate> iborDates = new ArrayList<>();
+//      ImmutableList<SwapPaymentPeriod> iborLeg = swapMax.getProduct().getLegs().get(1).getPaymentPeriods();
+//      iborDates.add(iborLeg.get(0).getStartDate());
+//      for (SwapPaymentPeriod period : iborLeg) {
+//        iborDates.add(period.getEndDate());
+//      }
+//      lmmHw[loopexp] = LmmdddExamplesUtils.lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates,
+//          EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, MULTICURVE_EUR,
+//          VALUATION_ZONE, VALUATION_TIME, REF_DATA);
+//      for (int looptenor = 0; looptenor < tenors.length; looptenor++) {
+//        ResolvedSwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_3M
+//            .createTrade(expiryDate, tenors[looptenor], BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
+//        double parRate = PRICER_SWAP.parRate(swap0.getProduct(), MULTICURVE_EUR);
+//        for (int loopmoney = 0; loopmoney < moneyness.length; loopmoney++) {
+//          SwapTrade swap = EUR_FIXED_1Y_EURIBOR_3M
+//              .createTrade(expiryDate, tenors[looptenor], BuySell.BUY, NOTIONAL, parRate + moneyness[loopmoney],
+//                  REF_DATA);
+//          Swaption swaption = Swaption.builder()
+//              .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
+//              .longShort(LongShort.LONG)
+//              .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
+//              .underlying(swap.getProduct()).build();
+//          swaptionsResolved[loopexp][looptenor][loopmoney] = swaption.resolve(REF_DATA);
+//        } // end loopmoney
+//      } // end looptenor
+//    } // end loopexp
+//
+//    // PV
+//    for (int j = 0; j < nbRep2; j++) {
+//      start = System.currentTimeMillis();
+//      double testLmm = 0.0;
+//      for (int i = 0; i < nbRep; i++) {
+//        for (int loopexp = 0; loopexp < expiries.length; loopexp++) {
+//          for (int looptenor = 0; looptenor < tenors.length; looptenor++) {
+//            for (int loopmoney = 0; loopmoney < moneyness.length; loopmoney++) {
+//              CurrencyAmount pvApprox = PRICER_SWAPTION_LMM_APPROX
+//                  .presentValue(swaptionsResolved[loopexp][looptenor][loopmoney], MULTICURVE_EUR, lmmHw[loopexp]);
+//              testLmm += pvApprox.getAmount();
+//            } // end loopmoney
+//          } // end looptenor
+//        } // end loopexp
+//      }
+//      end = System.currentTimeMillis();
+//      System.out.println("LMM PV computation time: " + (end - start) + " ms. (" +
+//          (nbRep * expiries.length * tenors.length * moneyness.length) + " computations) " + testLmm);
+//
+//      // PV + sensi
+//      start = System.currentTimeMillis();
+//      double testHW = 0.0;
+//      for (int i = 0; i < nbRep; i++) {
+//        for (int loopexp = 0; loopexp < expiries.length; loopexp++) {
+//          for (int looptenor = 0; looptenor < tenors.length; looptenor++) {
+//            for (int loopmoney = 0; loopmoney < moneyness.length; loopmoney++) {
+//              Pair<CurrencyAmount, PointSensitivityBuilder> pvPts = PRICER_SWAPTION_LMM_APPROX
+//                  .presentValueSensitivityRatesStickyModel(
+//                      swaptionsResolved[loopexp][looptenor][loopmoney], MULTICURVE_EUR, lmmHw[loopexp]);
+//              CurrencyParameterSensitivities psAd = 
+//                  MULTICURVE_EUR.parameterSensitivity(pvPts.getSecond().build());
+//              testHW += psAd.getSensitivities().get(0).getSensitivity().get(0);
+//            } // end loopmoney
+//          } // end looptenor
+//        } // end loopexp
+//      }
+//      end = System.currentTimeMillis();
+//      System.out.println("LMM PV + PV01 computation time: " + (end - start) + " ms. (" +
+//          (nbRep * expiries.length * tenors.length * moneyness.length) + " computations) " + testHW);
+//    }
+//    // Ratio Time(PV + PV01) / Time(PV) ~ 3.75 to 4.00
 //  }
   
   // TODO: Compare to MC for LMM with different displacement and multi-factors
