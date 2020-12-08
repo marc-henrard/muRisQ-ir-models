@@ -222,7 +222,7 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
     double pvCapHw = PRICER_CAP_LEG_HW.presentValue(cap, MULTICURVE_EUR, HW_PROVIDER).getAmount(); // 7874.5413972761
     double pvIborLeg = PRICER_LEG.presentValue(iborLeg, MULTICURVE_EUR).getAmount(); // 16499.39173511338
     double pvCappedLeg = pvIborLeg - pvCapHw;
-    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
+    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR);
     // pvCappedLeg: 8286.673686187685
     // Paths/pv: 1,000/9202.8622 (69 ms); 10,000/8795.0606 (283 ms) ; 100,000/8178.8780 (1103 ms)
     //           1,000,000/8118.5044 (7630 ms)
@@ -261,7 +261,7 @@ public class LmmdddRatchetProductMonteCarloPricerTest {
             .nbPaths(nbPaths)
             .numberGenerator(rnd)
             .pathNumberBlock(10_000).build();
-    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR, lmmHw);
+    double pvMc = pricerLmmMc.presentValueDouble(ResolvedSwap.of(ratchet), MULTICURVE_EUR);
     double pvMcPreviousRun = 6955.7968;
     // Paths/pv: 1,000/6955.7968 ; 10,000/xx ; 100,000/xx
     //           1,000,000/xx
