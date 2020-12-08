@@ -105,8 +105,8 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
   @Test
   public void hw_like() {
     Period[] expiries = new Period[] {Period.ofMonths(6), Period.ofMonths(12), Period.ofMonths(60)};
-    Tenor[] tenors = new Tenor[] {Tenor.TENOR_1Y, Tenor.TENOR_10Y};
-    double[] moneyness = new double[] {-0.0050, 0, 0.0100};
+    Tenor[] tenors = new Tenor[] {Tenor.TENOR_2Y, Tenor.TENOR_10Y, Tenor.TENOR_30Y};
+    double[] moneyness = new double[] {-0.0100,-0.0050, 0, 0.0050, 0.0100};
     for (int loopexp = 0; loopexp < expiries.length; loopexp++) {
       LocalDate expiryDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(expiries[loopexp]));
       ResolvedSwapTrade swapMax = EUR_FIXED_1Y_EURIBOR_3M

@@ -4,7 +4,6 @@
 package marc.henrard.murisq.pricer.exotic;
 
 import java.io.Serializable;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +12,9 @@ import org.joda.beans.gen.BeanDefinition;
 import org.joda.beans.gen.PropertyDefinition;
 
 import com.google.common.collect.ImmutableList;
-import com.opengamma.strata.basics.currency.Currency;
 import com.opengamma.strata.basics.currency.Payment;
 import com.opengamma.strata.collect.ArgChecker;
-import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.math.impl.random.RandomNumberGenerator;
-import com.opengamma.strata.pricer.DiscountFactors;
-import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.rate.IborRateComputation;
 import com.opengamma.strata.product.swap.NotionalExchange;
 import com.opengamma.strata.product.swap.RateAccrualPeriod;
@@ -34,7 +29,7 @@ import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentSchedule;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
-import marc.henrard.murisq.pricer.montecarlo.MonteCarloMultiDatesPricer;
+import marc.henrard.murisq.pricer.montecarlo.LmmdddMonteCarloMultiDatePricer;
 import marc.henrard.murisq.product.rate.IborRatchetRateComputation;
 
 import java.util.Map;
@@ -55,8 +50,7 @@ import org.joda.beans.impl.direct.DirectMetaPropertyMap;
  */
 @BeanDefinition
 public final class LmmdddRatchetProductMonteCarloPricer 
-    implements MonteCarloMultiDatesPricer<ResolvedSwap, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>, 
-    ImmutableBean, Serializable {
+    implements LmmdddMonteCarloMultiDatePricer<ResolvedSwap>, ImmutableBean, Serializable {
 
   /** The number of paths */
   @PropertyDefinition
@@ -107,43 +101,6 @@ public final class LmmdddRatchetProductMonteCarloPricer
               ImmutableList.of()));
     }
     return MulticurveEquivalentSchedule.of(schedules);
-  }
-
-  @Override
-  public double getNumeraireValue(RatesProvider multicurve) {
-    // The pseudo-numeraire is the pseudo-discount factor on the last model date.
-    DoubleArray iborTimes = model.getIborTimes();
-    double numeraireTime = iborTimes.get(iborTimes.size() - 1);
-    // Curve and model time measure must be compatible
-    return multicurve.discountFactors(model.getCurrency()).discountFactor(numeraireTime);
-  }
-
-  @Override
-  public MulticurveEquivalentValues initialValues(
-      MulticurveEquivalentSchedule mce, 
-      RatesProvider multicurve,
-      LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters model) {
-    
-    // Model is on dsc forward rate, i.e. DSC forward on LIBOR periods, not instrument dependent
-    DoubleArray iborTimes = model.getIborTimes();
-    Currency ccy = model.getCurrency();
-    DiscountFactors dsc = multicurve.discountFactors(ccy);
-    double[] fwdDsc = new double[iborTimes.size() - 1];
-    for (int i = 0; i < iborTimes.size() - 1; i++) {
-      fwdDsc[i] = (dsc.discountFactor(iborTimes.get(i)) / dsc.discountFactor(iborTimes.get(i + 1)) - 1.0d) /
-          model.getAccrualFactors().get(i);
-    }
-    // The forward rates are stored in ON equivalent values
-    return MulticurveEquivalentValues.builder().onRates(DoubleArray.ofUnsafe(fwdDsc)).build();
-  }
-
-  @Override
-  public List<List<MulticurveEquivalentValues>> evolve(
-      MulticurveEquivalentValues initialValues,
-      List<ZonedDateTime> expiries,
-      int numberSample) {
-    
-    return evolution.evolveMultiSteps(expiries, initialValues, model, numberGenerator, numberSample);
   }
 
   @Override

@@ -23,7 +23,7 @@ import marc.henrard.murisq.model.lmm.LiborMarketModelMonteCarloEvolution;
 import marc.henrard.murisq.pricer.decomposition.MulticurveDecisionScheduleCalculator;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalent;
 import marc.henrard.murisq.pricer.decomposition.MulticurveEquivalentValues;
-import marc.henrard.murisq.pricer.montecarlo.MonteCarloEuropeanPricer;
+import marc.henrard.murisq.pricer.montecarlo.LmmdddMonteCarloEuropeanPricer;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -44,8 +44,7 @@ import org.joda.beans.impl.direct.DirectMetaPropertyMap;
  */
 @BeanDefinition
 public final class LmmdddSwaptionPhysicalProductMonteCarloPricer 
-    implements MonteCarloEuropeanPricer<ResolvedSwaption, LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters>, 
-    ImmutableBean, Serializable {
+    implements LmmdddMonteCarloEuropeanPricer<ResolvedSwaption>, ImmutableBean, Serializable {
 
   /** The number of paths */
   @PropertyDefinition
@@ -136,7 +135,7 @@ public final class LmmdddSwaptionPhysicalProductMonteCarloPricer
     }
     int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
     int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
-    double[][] discounting = discounting(model, valuesExpiry);
+    double[][] discounting = discounting(valuesExpiry);
     double[] pv = new double[nbPathsA];
     for (int looppath = 0; looppath < nbPathsA; looppath++) {
       MulticurveEquivalentValues valuePath = valuesExpiry.get(looppath);

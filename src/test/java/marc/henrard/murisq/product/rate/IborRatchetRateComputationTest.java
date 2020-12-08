@@ -19,7 +19,6 @@ import com.opengamma.strata.collect.array.DoubleArray;
  * Tests {@link IborRatchetRateComputation}.
  * 
  * @author Marc Henrard
- *
  */
 public class IborRatchetRateComputationTest {
 

@@ -90,7 +90,7 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
     int[] iborPaymentIndices = model.getIborTimeIndex(iborPaymentTimes);
     int[] iborEffectiveIndices = model.getIborTimeIndex(iborEffectiveTimes);
     
-    double[][] discounting = discounting(model, valuesExpiry);
+    double[][] discounting = discounting(valuesExpiry);
     // Swap rate
     double[] swapRate =  new double[nbPathsA];
     for (int looppath = 0; looppath < nbPathsA; looppath++) {

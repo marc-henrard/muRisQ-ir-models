@@ -210,6 +210,13 @@ public final class LiborMarketModelDisplacedDiffusionDeterministicSpreadParamete
     return currency;
   }
   
+  /**
+   * Returns the IBOR rate on a given period for a given pseudo-discounting curve forward.
+   * 
+   * @param dscForward  the forward on the pseudo-discounting curve
+   * @param index  the index of the IBOR rate
+   * @return the IBOR rate
+   */
   public double iborRateFromDscForwards(double dscForward, int index) {
     double iborRate = (multiplicativeSpreads.get(index) * (1 + accrualFactors.get(index) * dscForward) - 1.0d) 
         / accrualFactors.get(index);
