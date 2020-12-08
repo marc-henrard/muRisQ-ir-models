@@ -95,8 +95,8 @@ public class LmmdddSwaptionPhysicalProductExplicitApproxPricerTest {
       new RatesFiniteDifferenceSensitivityCalculator(1.0E-7); // Better precision
 
   /* Tests */
-  private static final Offset<Double> TOLERANCE_APPROX = within(1.0E+1);
-  private static final Offset<Double> TOLERANCE_APPROX_IV = within(2.0E-6); // Implied volatility withing 0.02 bps
+  private static final Offset<Double> TOLERANCE_APPROX = within(1.5E+2);
+  private static final Offset<Double> TOLERANCE_APPROX_IV = within(8.0E-6); // Implied volatility withing 0.06 bps
   private static final double TOLERANCE_PV01 = 5.0E+1;
   private static final boolean PRINT_DETAILS = false;
   

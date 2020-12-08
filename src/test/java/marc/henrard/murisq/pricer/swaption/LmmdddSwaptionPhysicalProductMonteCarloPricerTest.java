@@ -155,7 +155,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   private static final Offset<Double> TOLERANCE_DF = within(1.0E-12);
   private static final Offset<Double> TOLERANCE_RATE = within(1.0E-12);
   private static final Offset<Double> TOLERANCE_PV_EXACT = within(1.0E-12);
-  private static final boolean PRINT_DETAILS = true;
+  private static final boolean PRINT_DETAILS = false;
   
   /* Multi-curve equivalent for the underlying swap */
   @Test
@@ -386,7 +386,7 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
   @Test
   public void comparison_2factor() {
     Offset<Double> toleranceIv = within(6.3E-4); 
-    int nbPaths = 5_000_000;
+    int nbPaths = 10_000;
     // nbPaths/error 10,000: ~6.3E-4 / 100,000: ~1.6E-4 / 1,000,000: ~8.3E-5 / 2,000,000: ~7.8E-5
     DayCount dayCountHw = DayCounts.ACT_365F;
     Period[] expiries = new Period[] {Period.ofMonths(6), Period.ofMonths(12), Period.ofMonths(60)};
@@ -469,70 +469,70 @@ public class LmmdddSwaptionPhysicalProductMonteCarloPricerTest {
 
   /* Many runs with a given number of paths to analyze the distribution of PV */
 //  @Ignore 
-  @Test
-  public void distribution_pv_hw1() {
-    int nbPaths = 500_000;
-    int nbRep = 20;
-    
-    double moneyness = 0.0100;
-    Tenor tenor = Tenor.TENOR_10Y;
-    Period expiry = Period.ofMonths(6);
-    LocalDate expiryDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(expiry));
-    ResolvedSwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_3M
-        .createTrade(expiryDate, tenor, BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
-    double parRate = PRICER_SWAP.parRate(swap0.getProduct(), MULTICURVE_EUR);
-    SwapTrade swap = EUR_FIXED_1Y_EURIBOR_3M
-        .createTrade(expiryDate, tenor, BuySell.BUY, NOTIONAL, parRate + moneyness, REF_DATA);
-    Swaption swaption = Swaption.builder()
-        .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
-        .longShort(LongShort.LONG)
-        .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
-        .underlying(swap.getProduct()).build();
-    ResolvedSwaption swaptionResolved = swaption.resolve(REF_DATA);
-    
-    List<LocalDate> iborDates = new ArrayList<>();
-      ResolvedSwapLeg leg = swaptionResolved.getUnderlying().getLegs().get(1);
-      iborDates.add(leg.getPaymentPeriods().get(0).getStartDate());
-      for (int i = 0; i < leg.getPaymentPeriods().size(); i++) {
-        iborDates.add(leg.getPaymentPeriods().get(i).getPaymentDate());
-      }
-    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmhw = 
-        LmmdddExamplesUtils.
-        lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
-            MULTICURVE_EUR, VALUATION_ZONE, VALUATION_TIME, REF_DATA);
-
-    DayCount dayCountHw = DayCounts.ACT_365F;
-    CurrencyAmount pvApprox =
-        PRICER_SWAPTION_LMM_APPROX.presentValue(swaptionResolved, MULTICURVE_EUR, lmmhw);
-    double ivApprox = PRICER_SWAPTION_BACHELIER
-        .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pvApprox.getAmount());
-    System.out.println("Exact: " + ivApprox);
-//    CurrencyAmount pvHw =
-//        PRICER_SWAPTION_HW.presentValue(swaptionResolved, MULTICURVE_EUR, PROVIDER_HW);
-//    double ivHw = PRICER_SWAPTION_BACHELIER
-//        .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pvHw.getAmount());
-//    System.out.println(ivHw);
-
-    long start, end;
-    LmmdddSwaptionPhysicalProductMonteCarloPricer pricer = 
-        LmmdddSwaptionPhysicalProductMonteCarloPricer.builder()
-        .evolution(EVOLUTION)
-        .model(lmmhw)
-        .numberGenerator(RND)
-        .nbPaths(nbPaths)
-        .pathNumberBlock(PATHSPERBLOCK)
-        .build();
-    start = System.currentTimeMillis();
-    double[] iv = new double[nbRep];
-    for (int i = 0; i < nbRep; i++) {
-      double pv = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR);
-      iv[i] = PRICER_SWAPTION_BACHELIER
-          .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pv);
-      System.out.println(iv[i]);
-    }
-    System.out.println("Average: " + DoubleArray.ofUnsafe(iv).sum() / nbRep);
-    end = System.currentTimeMillis();
-    System.out.println("LMM computation time: " + (end - start) + " ms.");
-  }
+//  @Test
+//  public void distribution_pv_hw1() {
+//    int nbPaths = 500_000;
+//    int nbRep = 20;
+//    
+//    double moneyness = 0.0100;
+//    Tenor tenor = Tenor.TENOR_10Y;
+//    Period expiry = Period.ofMonths(6);
+//    LocalDate expiryDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(expiry));
+//    ResolvedSwapTrade swap0 = EUR_FIXED_1Y_EURIBOR_3M
+//        .createTrade(expiryDate, tenor, BuySell.BUY, NOTIONAL, 0.0d, REF_DATA).resolve(REF_DATA);
+//    double parRate = PRICER_SWAP.parRate(swap0.getProduct(), MULTICURVE_EUR);
+//    SwapTrade swap = EUR_FIXED_1Y_EURIBOR_3M
+//        .createTrade(expiryDate, tenor, BuySell.BUY, NOTIONAL, parRate + moneyness, REF_DATA);
+//    Swaption swaption = Swaption.builder()
+//        .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(VALUATION_TIME).expiryZone(VALUATION_ZONE)
+//        .longShort(LongShort.LONG)
+//        .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
+//        .underlying(swap.getProduct()).build();
+//    ResolvedSwaption swaptionResolved = swaption.resolve(REF_DATA);
+//    
+//    List<LocalDate> iborDates = new ArrayList<>();
+//      ResolvedSwapLeg leg = swaptionResolved.getUnderlying().getLegs().get(1);
+//      iborDates.add(leg.getPaymentPeriods().get(0).getStartDate());
+//      for (int i = 0; i < leg.getPaymentPeriods().size(); i++) {
+//        iborDates.add(leg.getPaymentPeriods().get(i).getPaymentDate());
+//      }
+//    LiborMarketModelDisplacedDiffusionDeterministicSpreadParameters lmmhw = 
+//        LmmdddExamplesUtils.
+//        lmmHw(MEAN_REVERTION, HW_SIGMA, iborDates, EUR_EONIA, EUR_EURIBOR_3M, ScaledSecondTime.DEFAULT, 
+//            MULTICURVE_EUR, VALUATION_ZONE, VALUATION_TIME, REF_DATA);
+//
+//    DayCount dayCountHw = DayCounts.ACT_365F;
+//    CurrencyAmount pvApprox =
+//        PRICER_SWAPTION_LMM_APPROX.presentValue(swaptionResolved, MULTICURVE_EUR, lmmhw);
+//    double ivApprox = PRICER_SWAPTION_BACHELIER
+//        .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pvApprox.getAmount());
+//    System.out.println("Exact: " + ivApprox);
+////    CurrencyAmount pvHw =
+////        PRICER_SWAPTION_HW.presentValue(swaptionResolved, MULTICURVE_EUR, PROVIDER_HW);
+////    double ivHw = PRICER_SWAPTION_BACHELIER
+////        .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pvHw.getAmount());
+////    System.out.println(ivHw);
+//
+//    long start, end;
+//    LmmdddSwaptionPhysicalProductMonteCarloPricer pricer = 
+//        LmmdddSwaptionPhysicalProductMonteCarloPricer.builder()
+//        .evolution(EVOLUTION)
+//        .model(lmmhw)
+//        .numberGenerator(RND)
+//        .nbPaths(nbPaths)
+//        .pathNumberBlock(PATHSPERBLOCK)
+//        .build();
+//    start = System.currentTimeMillis();
+//    double[] iv = new double[nbRep];
+//    for (int i = 0; i < nbRep; i++) {
+//      double pv = pricer.presentValueDouble(swaptionResolved, MULTICURVE_EUR);
+//      iv[i] = PRICER_SWAPTION_BACHELIER
+//          .impliedVolatilityFromPresentValue(swaptionResolved, MULTICURVE_EUR, dayCountHw, pv);
+//      System.out.println(iv[i]);
+//    }
+//    System.out.println("Average: " + DoubleArray.ofUnsafe(iv).sum() / nbRep);
+//    end = System.currentTimeMillis();
+//    System.out.println("LMM computation time: " + (end - start) + " ms.");
+//  }
 
 }
