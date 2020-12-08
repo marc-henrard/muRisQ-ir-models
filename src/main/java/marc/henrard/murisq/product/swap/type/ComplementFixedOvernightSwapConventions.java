@@ -35,7 +35,7 @@ public final class ComplementFixedOvernightSwapConventions {
    * Both legs pay once at the end and use day count 'Act/360'.
    * The spot date offset is 2 days and the payment date offset is 1 day.
    */
-  public static final FixedOvernightSwapConvention EUR_FIXED_TERM_EONIA_OIS =
+  public static final FixedOvernightSwapConvention EUR_FIXED_TERM_ESTR_OIS =
       makeConvention("EUR-FIXED-TERM-ESTR-OIS", EUR_ESTR, ACT_360, TERM, 1, 2);
 
   /**
@@ -44,7 +44,7 @@ public final class ComplementFixedOvernightSwapConventions {
    * Both legs pay annually and use day count 'Act/360'.
    * The spot date offset is 2 days and the payment date offset is 1 day.
    */
-  public static final FixedOvernightSwapConvention EUR_FIXED_1Y_EONIA_OIS =
+  public static final FixedOvernightSwapConvention EUR_FIXED_1Y_ESTR_OIS =
       makeConvention("EUR-FIXED-1Y-ESTR-OIS", EUR_ESTR, ACT_360, P12M, 1, 2);
 
 

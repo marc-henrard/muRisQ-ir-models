@@ -25,7 +25,6 @@ import com.opengamma.strata.product.swap.type.ImmutableFixedIborSwapConvention;
 public class ComplementFixedIborSwapConventions {
 
   private static final HolidayCalendarId GBLO_USNY = GBLO.combinedWith(USNY);
-  private static final HolidayCalendarId EUTA_USNY = EUTA.combinedWith(USNY);
   
   /**
    * USD fixed (SA Bond) vs LIBOR 1M.
@@ -42,7 +41,7 @@ public class ComplementFixedIborSwapConventions {
   public static final FixedIborSwapConvention EUR_FIXED_1Y_ACT360_EURIBOR_6M =
       ImmutableFixedIborSwapConvention.of(
           "EUR-FIXED-1Y-ACT360-EURIBOR-6M",
-          FixedRateSwapLegConvention.of(EUR, ACT_360, P12M, BusinessDayAdjustment.of(MODIFIED_FOLLOWING, EUTA_USNY)),
+          FixedRateSwapLegConvention.of(EUR, ACT_360, P12M, BusinessDayAdjustment.of(MODIFIED_FOLLOWING, EUTA)),
           IborRateSwapLegConvention.of(IborIndices.EUR_EURIBOR_6M));
   
   /**
@@ -51,7 +50,7 @@ public class ComplementFixedIborSwapConventions {
   public static final FixedIborSwapConvention EUR_FIXED_1Y_ACT360_EURIBOR_3M =
       ImmutableFixedIborSwapConvention.of(
           "EUR-FIXED-1Y-ACT360-EURIBOR-3M",
-          FixedRateSwapLegConvention.of(EUR, ACT_360, P12M, BusinessDayAdjustment.of(MODIFIED_FOLLOWING, EUTA_USNY)),
+          FixedRateSwapLegConvention.of(EUR, ACT_360, P12M, BusinessDayAdjustment.of(MODIFIED_FOLLOWING, EUTA)),
           IborRateSwapLegConvention.of(IborIndices.EUR_EURIBOR_3M));
 
 }
