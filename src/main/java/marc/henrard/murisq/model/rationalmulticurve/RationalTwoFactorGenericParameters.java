@@ -493,17 +493,17 @@ public final class RationalTwoFactorGenericParameters
   public String toString() {
     StringBuilder buf = new StringBuilder(416);
     buf.append("RationalTwoFactorGenericParameters{");
-    buf.append("currency").append('=').append(currency).append(',').append(' ');
-    buf.append("a1").append('=').append(a1).append(',').append(' ');
-    buf.append("a2").append('=').append(a2).append(',').append(' ');
-    buf.append("correlation").append('=').append(correlation).append(',').append(' ');
-    buf.append("b0").append('=').append(b0).append(',').append(' ');
-    buf.append("listIndices").append('=').append(listIndices).append(',').append(' ');
-    buf.append("b1").append('=').append(b1).append(',').append(' ');
-    buf.append("b2").append('=').append(b2).append(',').append(' ');
-    buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
-    buf.append("valuationDate").append('=').append(valuationDate).append(',').append(' ');
-    buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
+    buf.append("currency").append('=').append(JodaBeanUtils.toString(currency)).append(',').append(' ');
+    buf.append("a1").append('=').append(JodaBeanUtils.toString(a1)).append(',').append(' ');
+    buf.append("a2").append('=').append(JodaBeanUtils.toString(a2)).append(',').append(' ');
+    buf.append("correlation").append('=').append(JodaBeanUtils.toString(correlation)).append(',').append(' ');
+    buf.append("b0").append('=').append(JodaBeanUtils.toString(b0)).append(',').append(' ');
+    buf.append("listIndices").append('=').append(JodaBeanUtils.toString(listIndices)).append(',').append(' ');
+    buf.append("b1").append('=').append(JodaBeanUtils.toString(b1)).append(',').append(' ');
+    buf.append("b2").append('=').append(JodaBeanUtils.toString(b2)).append(',').append(' ');
+    buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
+    buf.append("valuationDate").append('=').append(JodaBeanUtils.toString(valuationDate)).append(',').append(' ');
+    buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');
     buf.append("valuationZone").append('=').append(JodaBeanUtils.toString(valuationZone));
     buf.append('}');
     return buf.toString();

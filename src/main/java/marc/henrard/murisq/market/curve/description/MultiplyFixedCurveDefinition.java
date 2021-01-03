@@ -185,7 +185,7 @@ public final class MultiplyFixedCurveDefinition
   public String toString() {
     StringBuilder buf = new StringBuilder(96);
     buf.append("MultiplyFixedCurveDefinition{");
-    buf.append("fixedCurve").append('=').append(fixedCurve).append(',').append(' ');
+    buf.append("fixedCurve").append('=').append(JodaBeanUtils.toString(fixedCurve)).append(',').append(' ');
     buf.append("spreadCurveDefinition").append('=').append(JodaBeanUtils.toString(spreadCurveDefinition));
     buf.append('}');
     return buf.toString();

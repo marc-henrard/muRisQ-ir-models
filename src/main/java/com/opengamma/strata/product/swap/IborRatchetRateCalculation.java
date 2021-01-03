@@ -360,9 +360,9 @@ public final class IborRatchetRateCalculation
   public String toString() {
     StringBuilder buf = new StringBuilder(160);
     buf.append("IborRatchetRateCalculation{");
-    buf.append("dayCount").append('=').append(dayCount).append(',').append(' ');
-    buf.append("index").append('=').append(index).append(',').append(' ');
-    buf.append("fixingDateOffset").append('=').append(fixingDateOffset).append(',').append(' ');
+    buf.append("dayCount").append('=').append(JodaBeanUtils.toString(dayCount)).append(',').append(' ');
+    buf.append("index").append('=').append(JodaBeanUtils.toString(index)).append(',').append(' ');
+    buf.append("fixingDateOffset").append('=').append(JodaBeanUtils.toString(fixingDateOffset)).append(',').append(' ');
     buf.append("coefficients").append('=').append(JodaBeanUtils.toString(coefficients));
     buf.append('}');
     return buf.toString();

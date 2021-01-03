@@ -333,11 +333,11 @@ public final class RationalTwoFactor2HWShapePlusCstTemplate
   public String toString() {
     StringBuilder buf = new StringBuilder(224);
     buf.append("RationalTwoFactor2HWShapePlusCstTemplate{");
-    buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
-    buf.append("discountFactors").append('=').append(discountFactors).append(',').append(' ');
-    buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
-    buf.append("valuationZone").append('=').append(valuationZone).append(',').append(' ');
-    buf.append("initialGuess").append('=').append(initialGuess).append(',').append(' ');
+    buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
+    buf.append("discountFactors").append('=').append(JodaBeanUtils.toString(discountFactors)).append(',').append(' ');
+    buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');
+    buf.append("valuationZone").append('=').append(JodaBeanUtils.toString(valuationZone)).append(',').append(' ');
+    buf.append("initialGuess").append('=').append(JodaBeanUtils.toString(initialGuess)).append(',').append(' ');
     buf.append("fixed").append('=').append(JodaBeanUtils.toString(fixed));
     buf.append('}');
     return buf.toString();

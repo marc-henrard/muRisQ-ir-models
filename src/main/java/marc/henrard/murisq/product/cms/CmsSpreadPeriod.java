@@ -516,17 +516,17 @@ public final class CmsSpreadPeriod
   public String toString() {
     StringBuilder buf = new StringBuilder(416);
     buf.append("CmsSpreadPeriod{");
-    buf.append("notional").append('=').append(notional).append(',').append(' ');
-    buf.append("startDate").append('=').append(startDate).append(',').append(' ');
-    buf.append("endDate").append('=').append(endDate).append(',').append(' ');
-    buf.append("yearFraction").append('=').append(yearFraction).append(',').append(' ');
-    buf.append("paymentDate").append('=').append(paymentDate).append(',').append(' ');
-    buf.append("fixingDate").append('=').append(fixingDate).append(',').append(' ');
-    buf.append("caplet").append('=').append(caplet).append(',').append(' ');
-    buf.append("floorlet").append('=').append(floorlet).append(',').append(' ');
-    buf.append("weight1").append('=').append(weight1).append(',').append(' ');
-    buf.append("index1").append('=').append(index1).append(',').append(' ');
-    buf.append("weight2").append('=').append(weight2).append(',').append(' ');
+    buf.append("notional").append('=').append(JodaBeanUtils.toString(notional)).append(',').append(' ');
+    buf.append("startDate").append('=').append(JodaBeanUtils.toString(startDate)).append(',').append(' ');
+    buf.append("endDate").append('=').append(JodaBeanUtils.toString(endDate)).append(',').append(' ');
+    buf.append("yearFraction").append('=').append(JodaBeanUtils.toString(yearFraction)).append(',').append(' ');
+    buf.append("paymentDate").append('=').append(JodaBeanUtils.toString(paymentDate)).append(',').append(' ');
+    buf.append("fixingDate").append('=').append(JodaBeanUtils.toString(fixingDate)).append(',').append(' ');
+    buf.append("caplet").append('=').append(JodaBeanUtils.toString(caplet)).append(',').append(' ');
+    buf.append("floorlet").append('=').append(JodaBeanUtils.toString(floorlet)).append(',').append(' ');
+    buf.append("weight1").append('=').append(JodaBeanUtils.toString(weight1)).append(',').append(' ');
+    buf.append("index1").append('=').append(JodaBeanUtils.toString(index1)).append(',').append(' ');
+    buf.append("weight2").append('=').append(JodaBeanUtils.toString(weight2)).append(',').append(' ');
     buf.append("index2").append('=').append(JodaBeanUtils.toString(index2));
     buf.append('}');
     return buf.toString();

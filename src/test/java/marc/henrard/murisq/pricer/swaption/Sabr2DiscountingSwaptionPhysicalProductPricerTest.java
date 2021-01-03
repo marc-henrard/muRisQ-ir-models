@@ -114,7 +114,7 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
         double df2 = MULTICURVE_ESTR.discountFactor(CCY, switchDate);
         CurrencyAmount pv2Expected = pv1.multipliedBy(df1 / df2);
         pv2Computed[loopShortLong] = PRICER_SWPT_SABR_2
-            .presentValue(swaptionResolved, MULTICURVE_ESTR, switchDate, DISCOUNTING_BEFORE_SWITCH, SABR);
+            .presentValue(swaptionResolved, DISCOUNTING_BEFORE_SWITCH, switchDate, MULTICURVE_ESTR, SABR);
         assertThat(pv2Computed[loopShortLong].getCurrency()).isEqualTo(CCY);
         assertThat(pv2Computed[loopShortLong].getAmount()).isEqualTo(pv2Expected.getAmount(), TOLERANCE_PV);
       }
@@ -147,7 +147,7 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
             .underlying(swap.getProduct()).build();
         ResolvedSwaption swaptionResolved = swaptionPayLong.resolve(REF_DATA);
         CurrencyAmount pv = PRICER_SWPT_SABR_2
-            .presentValue(swaptionResolved, MULTICURVE_ESTR, switchDate, DISCOUNTING_BEFORE_SWITCH, SABR);
+            .presentValue(swaptionResolved, DISCOUNTING_BEFORE_SWITCH, switchDate, MULTICURVE_ESTR, SABR);
         Triple<CurrencyAmount, PointSensitivityBuilder, PointSensitivityBuilder> pvPv01 = PRICER_SWPT_SABR_2
             .presentValueSensitivityRatesStickyModel(
                 swaptionResolved, DISCOUNTING_BEFORE_SWITCH, switchDate, MULTICURVE_ESTR, SABR);
@@ -163,10 +163,10 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
         CurrencyParameterSensitivities sensiComputed = sensiEoniaComputed.combinedWith(sensiEstrComputed);
         CurrencyParameterSensitivities sensiEstrFd = 
             FD_CALC.sensitivity(MULTICURVE_ESTR, m -> PRICER_SWPT_SABR_2
-            .presentValue(swaptionResolved, m, switchDate, DISCOUNTING_BEFORE_SWITCH, SABR));
+            .presentValue(swaptionResolved, DISCOUNTING_BEFORE_SWITCH, switchDate, m, SABR));
         CurrencyParameterSensitivities sensiEoniaFd = 
             FD_CALC.sensitivity(MULTICURVE_EONIA, m -> PRICER_SWPT_SABR_2
-            .presentValue(swaptionResolved, MULTICURVE_ESTR, switchDate, m.discountFactors(CCY), SABR));
+            .presentValue(swaptionResolved, m.discountFactors(CCY), switchDate, MULTICURVE_ESTR, SABR));
         CurrencyParameterSensitivities sensiFd = sensiEoniaFd.combinedWith(sensiEstrFd);
         assertThat(sensiComputed.equalWithTolerance(sensiFd, TOLERANCE_PV01)).isTrue();
       }

@@ -28,7 +28,7 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
   }
 
   /**
-   * Calculates the volatility of the (zero-coupon) bond scaled by the cash account
+   * Calculates the volatility of the (zero-coupon) bond scaled by the collateral account
    * numeraire, i.e. alpha, for a given period.
    * 
    * @param parameters  the Hull-White model parameters
@@ -323,12 +323,12 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
    * required parameters sets.
    * <p>
    * Correspond to the computation of the integral
-   *    \int_0^min(t1,t2) \nu_1(s,u_1) \nu_2(s,u_2) ds
-   * where t1 = endIntegralTime1, t1 = endIntegralTime2
+   *    \int_t0^t1 \nu_1(s,u_1) \nu_2(s,u_2) ds
+   * where t0 = startIntegralTime, t1 = endIntegralTime
    * 
    * @param parameters  the Hull-White model parameters
-   * @param endIntegralTime1 the end time for the first factor diffusion
-   * @param endTime2 the end time for the second factor diffusion
+   * @param startIntegralTime the end time for the first factor diffusion
+   * @param endIntegralTime the end time for the second factor diffusion
    * @param u1 the maturity of the first factor
    * @param u2 the maturity of the second factor
    * @return the covariance
@@ -336,23 +336,26 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
   public double varianceCrossTermCashAccount(
       HullWhiteOneFactorPiecewiseConstantParameters parameters1, 
       HullWhiteOneFactorPiecewiseConstantParameters parameters2, 
-      double endIntegralTime1,
-      double endIntegralTime2,
+      double startIntegralTime,
+      double endIntegralTime,
       double u1,
       double u2) {
     
     double kappa1 = parameters1.getMeanReversion();
     double kappa2 = parameters2.getMeanReversion();
-    double endIntegralTime = Math.min(endIntegralTime1, endIntegralTime2);
-    int indexEnd = Math.abs(Arrays.binarySearch(parameters1.getVolatilityTime().toArrayUnsafe(), endIntegralTime) + 1);
-    // Period in which the time endIntegralTime is; volatilityTime.get(i-1) <= endIntegralTime < volatilityTime.get(i);
-    double[] s = new double[indexEnd + 1];
-    System.arraycopy(parameters1.getVolatilityTime().toArrayUnsafe(), 0, s, 0, indexEnd);
-    s[indexEnd] = endIntegralTime;
-    double[] expa1s = new double[indexEnd + 1];
-    double[] expa2s = new double[indexEnd + 1];
-    double[] expa1a2s = new double[indexEnd + 1];
-    for (int loopperiod = 0; loopperiod < indexEnd + 1; loopperiod++) {
+    int indexStart = Math.abs(Arrays.binarySearch(parameters1.getVolatilityTime().toArray(), startIntegralTime) + 1);
+    // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters1.getVolatilityTime().toArray(), endIntegralTime) + 1);
+    // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startIntegralTime;
+    System.arraycopy(parameters1.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endIntegralTime;
+    double[] expa1s = new double[sLen + 1];
+    double[] expa2s = new double[sLen + 1];
+    double[] expa1a2s = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
       expa1s[loopperiod] = Math.exp(kappa1 * s[loopperiod]);
       expa2s[loopperiod] = Math.exp(kappa2 * s[loopperiod]);
       expa1a2s[loopperiod] = Math.exp((kappa1 + kappa2) * s[loopperiod]);
@@ -362,8 +365,9 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
     double term3 = 0.0d;
     double term4 = 0.0d;
     double factor1 = 1.0d / (kappa1 * kappa2);
-    for (int loopperiod = 0; loopperiod < indexEnd; loopperiod++) {
-      double eta12 = parameters1.getVolatility().get(loopperiod) * parameters2.getVolatility().get(loopperiod);
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      double eta12 = parameters1.getVolatility().get(loopperiod + indexStart - 1) 
+          * parameters2.getVolatility().get(loopperiod + indexStart - 1);
       term1 += eta12 * (s[loopperiod + 1] - s[loopperiod]);
       term2 += eta12 * (expa1s[loopperiod + 1] - expa1s[loopperiod]);
       term3 += eta12 * (expa2s[loopperiod + 1] - expa2s[loopperiod]);
@@ -376,7 +380,6 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
   }
   
   /**
-   * 
    * Computes the covariances for rates on with a HW model parameters and a constant volatility factor.
    * Does not include the correlation between Brownian motions.
    * <p>
@@ -391,24 +394,29 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
    */
   public double varianceCrossTermConstantVolCashAccount(
       HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double startIntegralTime,
       double endIntegralTime,
       double u1) {
     
     double kappa = parameters.getMeanReversion();
-    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArrayUnsafe(), endIntegralTime) + 1);
-    // Period in which the time endIntegralTime is; volatilityTime.get(i-1) <= endIntegralTime < volatilityTime.get(i);
-    double[] s = new double[indexEnd + 1];
-    System.arraycopy(parameters.getVolatilityTime().toArrayUnsafe(), 0, s, 0, indexEnd);
-    s[indexEnd] = endIntegralTime;
-    double[] expas = new double[indexEnd + 1];
-    for (int loopperiod = 0; loopperiod < indexEnd + 1; loopperiod++) {
+    int indexStart = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), startIntegralTime) + 1);
+    // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), endIntegralTime) + 1);
+    // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startIntegralTime;
+    System.arraycopy(parameters.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endIntegralTime;
+    double[] expas = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
       expas[loopperiod] = Math.exp(kappa * s[loopperiod]);
     }
     double term1 = 0.0d;
     double term2 = 0.0d;
     double factor1 = 1.0d / kappa;
-    for (int loopperiod = 0; loopperiod < indexEnd; loopperiod++) {
-      double eta = parameters.getVolatility().get(loopperiod);
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      double eta = parameters.getVolatility().get(loopperiod + indexStart - 1);
       term1 += eta * (s[loopperiod + 1] - s[loopperiod]);
       term2 += eta * (expas[loopperiod + 1] - expas[loopperiod]);
     }

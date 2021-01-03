@@ -139,6 +139,10 @@ public class G2ppPiecewiseConstantParameters
   public double relativeTime(ZonedDateTime dateTime) {
     return timeMeasure.relativeTime(valuationDateTime, dateTime);
   }
+
+  public double relativeTime(LocalDate date) {
+    return timeMeasure.relativeTime(valuationDateTime, date);
+  }
   
   @Override
   public int getParameterCount() {
