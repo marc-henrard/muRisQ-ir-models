@@ -240,10 +240,10 @@ public final class OisFutures
   public String toString() {
     StringBuilder buf = new StringBuilder(192);
     buf.append("OisFutures{");
-    buf.append("securityId").append('=').append(securityId).append(',').append(' ');
-    buf.append("underlying").append('=').append(underlying).append(',').append(' ');
-    buf.append("accrualFactor").append('=').append(accrualFactor).append(',').append(' ');
-    buf.append("notional").append('=').append(notional).append(',').append(' ');
+    buf.append("securityId").append('=').append(JodaBeanUtils.toString(securityId)).append(',').append(' ');
+    buf.append("underlying").append('=').append(JodaBeanUtils.toString(underlying)).append(',').append(' ');
+    buf.append("accrualFactor").append('=').append(JodaBeanUtils.toString(accrualFactor)).append(',').append(' ');
+    buf.append("notional").append('=').append(JodaBeanUtils.toString(notional)).append(',').append(' ');
     buf.append("lastTradeDate").append('=').append(JodaBeanUtils.toString(lastTradeDate));
     buf.append('}');
     return buf.toString();

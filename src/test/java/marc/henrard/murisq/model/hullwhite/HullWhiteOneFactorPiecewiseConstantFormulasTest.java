@@ -345,37 +345,37 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
   /* Cross terms for variance compare to alpha. */
   @Test
   public void varianceCrossTermCashAccount_alpha() {
-    double endIntegralTime1 = 3.0;
-    double endIntegralTime2 = 5.0;
+    double startIntegralTime = 3.0;
+    double endIntegralTime = 5.0;
     double u1 = 10.0;
     double alphaComputed = FORMULAS
-        .alphaCashAccount(MODEL_PARAMETERS, 0, Math.min(endIntegralTime1, endIntegralTime2), u1);
+        .alphaCashAccount(MODEL_PARAMETERS, startIntegralTime, endIntegralTime, u1);
     double crossComputed = FORMULAS
-        .varianceCrossTermCashAccount(MODEL_PARAMETERS, MODEL_PARAMETERS, endIntegralTime1, endIntegralTime2, u1, u1);
+        .varianceCrossTermCashAccount(MODEL_PARAMETERS, MODEL_PARAMETERS, startIntegralTime, endIntegralTime, u1, u1);
     assertThat(alphaComputed * alphaComputed).isEqualTo(crossComputed, TOLERANCE_VARIANCE);
   }
 
   /* Cross terms for variance with constant vol. Local formula. */
   @Test
   public void varianceCrossTermCashAccount_HWConstVol() {
-    double endIntegralTime1 = 3.0;
-    double endIntegralTime2 = 5.0;
-    double minEndIntegralTime = Math.min(endIntegralTime1, endIntegralTime2);
+    double startIntegralTime = 3.0;
+    double endIntegralTime = 5.0;
     double u1 = 10.0;
     double u2 = 12.0;
     double crossComputed = FORMULAS
-        .varianceCrossTermCashAccount(MODEL_CST_PARAMETERS, MODEL_CST_2_PARAMETERS, endIntegralTime1, endIntegralTime2,
-            u1, u2);
+        .varianceCrossTermCashAccount(MODEL_CST_PARAMETERS, MODEL_CST_2_PARAMETERS, 
+            startIntegralTime, endIntegralTime, u1, u2);
     double factor1 = 1.0 / (MEAN_REVERSION * MEAN_REVERSION_2);
     double volProduct = VOLATILITY_CST.get(0) * VOLATILITY_CST_2.get(0);
-    double term1 = volProduct * minEndIntegralTime;
+    double term1 = volProduct * (endIntegralTime - startIntegralTime);
     double term2 = -1.0 / MEAN_REVERSION * Math.exp(-MEAN_REVERSION * u1) * volProduct *
-        (Math.exp(MEAN_REVERSION * minEndIntegralTime) - 1);
+        (Math.exp(MEAN_REVERSION * endIntegralTime) - Math.exp(MEAN_REVERSION * startIntegralTime));
     double term3 = -1.0 / MEAN_REVERSION_2 * Math.exp(-MEAN_REVERSION_2 * u2) * volProduct *
-        (Math.exp(MEAN_REVERSION_2 * minEndIntegralTime) - 1);
+        (Math.exp(MEAN_REVERSION_2 * endIntegralTime) - Math.exp(MEAN_REVERSION_2 * startIntegralTime));
     double term4 = 1/(MEAN_REVERSION + MEAN_REVERSION_2) * 
         Math.exp(-MEAN_REVERSION * u1 -MEAN_REVERSION_2 * u2) * volProduct *
-        (Math.exp((MEAN_REVERSION + MEAN_REVERSION_2) * minEndIntegralTime) - 1);
+        (Math.exp((MEAN_REVERSION + MEAN_REVERSION_2) * endIntegralTime) 
+            - Math.exp((MEAN_REVERSION + MEAN_REVERSION_2) * startIntegralTime));
     double crossExpected = factor1 * (term1 + term2 + term3 + term4);
     assertThat(crossExpected).isEqualTo(crossComputed, TOLERANCE_VARIANCE);
   }
@@ -386,7 +386,7 @@ public class HullWhiteOneFactorPiecewiseConstantFormulasTest {
     double endIntegralTime = 3.0;
     double u1 = 10.0;
     double crossComputed = FORMULAS
-        .varianceCrossTermConstantVolCashAccount(MODEL_CST_PARAMETERS, endIntegralTime, u1);
+        .varianceCrossTermConstantVolCashAccount(MODEL_CST_PARAMETERS, 0, endIntegralTime, u1);
     double factor1 = 1.0 / MEAN_REVERSION ;
     double volProduct = VOLATILITY_CST.get(0);
     double term1 = volProduct * endIntegralTime;

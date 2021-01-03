@@ -253,10 +253,10 @@ implements LmmdddMonteCarloEuropeanPricer<CmsPeriodResolved>, ImmutableBean, Ser
   public String toString() {
     StringBuilder buf = new StringBuilder(192);
     buf.append("LmmdddCmsPeriodMonteCarloPricer{");
-    buf.append("nbPaths").append('=').append(nbPaths).append(',').append(' ');
-    buf.append("pathNumberBlock").append('=').append(pathNumberBlock).append(',').append(' ');
-    buf.append("model").append('=').append(model).append(',').append(' ');
-    buf.append("numberGenerator").append('=').append(numberGenerator).append(',').append(' ');
+    buf.append("nbPaths").append('=').append(JodaBeanUtils.toString(nbPaths)).append(',').append(' ');
+    buf.append("pathNumberBlock").append('=').append(JodaBeanUtils.toString(pathNumberBlock)).append(',').append(' ');
+    buf.append("model").append('=').append(JodaBeanUtils.toString(model)).append(',').append(' ');
+    buf.append("numberGenerator").append('=').append(JodaBeanUtils.toString(numberGenerator)).append(',').append(' ');
     buf.append("evolution").append('=').append(JodaBeanUtils.toString(evolution));
     buf.append('}');
     return buf.toString();

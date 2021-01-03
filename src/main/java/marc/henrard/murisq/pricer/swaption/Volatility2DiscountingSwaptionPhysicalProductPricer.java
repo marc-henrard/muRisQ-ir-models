@@ -12,6 +12,7 @@ import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
+import com.opengamma.strata.pricer.swaption.SabrSwaptionVolatilities;
 import com.opengamma.strata.pricer.swaption.SwaptionVolatilities;
 import com.opengamma.strata.product.common.PutCall;
 import com.opengamma.strata.product.common.SettlementType;
@@ -67,20 +68,20 @@ public class Volatility2DiscountingSwaptionPhysicalProductPricer {
    * The result is expressed using the currency of the swaption.
    * 
    * @param swaption  the swaption
-   * @param ratesProvider  the rates provider used to compute the value at expiry
+   * @param discountFactorsBeforeSwitch  the discount factors used to compute discounting from today to switch
    * @param switchDate  the date for the collateral rate switch
-   * @param discountFactors  the discount factors used to compute discounting from expiry to today
+   * @param ratesProviderAfterSwitch  the rates provider used to compute the value at expiry
    * @param swaptionVolatilities  the volatilities
    * @return the present value
    */
   public CurrencyAmount presentValue(
       ResolvedSwaption swaption,
-      RatesProvider ratesProvider,
+      DiscountFactors discountFactorsBeforeSwitch,
       LocalDate switchDate,
-      DiscountFactors discountFactors,
-      SwaptionVolatilities swaptionVolatilities) {
+      RatesProvider ratesProviderAfterSwitch,
+      SabrSwaptionVolatilities swaptionVolatilities) {
 
-    validate(swaption, ratesProvider, swaptionVolatilities);
+    validate(swaption, ratesProviderAfterSwitch, swaptionVolatilities);
     double expiry = swaptionVolatilities.relativeTime(swaption.getExpiry());
     ResolvedSwap underlying = swaption.getUnderlying();
     ResolvedSwapLeg fixedLeg = fixedLeg(underlying);
@@ -88,15 +89,15 @@ public class Volatility2DiscountingSwaptionPhysicalProductPricer {
     if (expiry < 0d) { // Option has expired already
       return CurrencyAmount.of(ccy, 0d);
     }
-    double forward = swapPricer.parRate(underlying, ratesProvider);
-    double pvbp = swapPricer.getLegPricer().pvbp(fixedLeg, ratesProvider);
-    double strike = swapPricer.getLegPricer().couponEquivalent(fixedLeg, ratesProvider, pvbp);
+    double forward = swapPricer.parRate(underlying, ratesProviderAfterSwitch);
+    double pvbp = swapPricer.getLegPricer().pvbp(fixedLeg, ratesProviderAfterSwitch);
+    double strike = swapPricer.getLegPricer().couponEquivalent(fixedLeg, ratesProviderAfterSwitch, pvbp);
     double tenor = swaptionVolatilities.tenor(fixedLeg.getStartDate(), fixedLeg.getEndDate());
     double volatility = swaptionVolatilities.volatility(expiry, tenor, strike, forward);
     PutCall putCall = PutCall.ofPut(fixedLeg.getPayReceive().isReceive());
     double price = Math.abs(pvbp) * swaptionVolatilities.price(expiry, tenor, putCall, strike, forward, volatility);
-    double df1 = discountFactors.discountFactor(switchDate);
-    double df2 = ratesProvider.discountFactor(ccy, switchDate);
+    double df1 = discountFactorsBeforeSwitch.discountFactor(switchDate);
+    double df2 = ratesProviderAfterSwitch.discountFactor(ccy, switchDate);
     return CurrencyAmount.of(ccy, df1 / df2 * price * swaption.getLongShort().sign());
   }
   

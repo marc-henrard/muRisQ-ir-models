@@ -75,7 +75,7 @@ public class G2ppSwaptionPhysicalProductExplicitApproxPricer
       t[loopcf] = g2pp.getTimeMeasure().relativeTime(g2pp.getValuationDate(), cf.getPaymentDate());
     }
     double rhog2pp = g2pp.getCorrelation();
-    double[][] ht0 = FORMULAS_G2PP.volatilityMaturityPart(g2pp, t[0], t);
+    double[][] ht0 = FORMULAS_G2PP.volatilityMaturityPartRatioDiscountFactors(g2pp, t[0], t);
     double[] dfswap = new double[nbCf];
     double[] p0 = new double[nbCf];
     double[] cP = new double[nbCf];
@@ -96,7 +96,7 @@ public class G2ppSwaptionPhysicalProductExplicitApproxPricer
       beta0[0] += alpha0[loopcf] * ht0[0][loopcf + 1];
       beta0[1] += alpha0[loopcf] * ht0[1][loopcf + 1];
     }
-    double[][] gamma = FORMULAS_G2PP.gamma(g2pp, 0, g2pp.relativeTime(swaption.getExpiry()));
+    double[][] gamma = FORMULAS_G2PP.gammaRatioDiscountFactors(g2pp, 0, g2pp.relativeTime(swaption.getExpiry()));
     double[] tau = new double[nbCf];
     for (int loopcf = 0; loopcf < nbCf; loopcf++) {
       tau[loopcf] = gamma[0][0] * ht0[0][loopcf] * ht0[0][loopcf] + gamma[1][1] * ht0[1][loopcf] * ht0[1][loopcf] +

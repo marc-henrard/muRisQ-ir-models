@@ -195,8 +195,8 @@ public final class GenericParameterDateCurve
   public String toString() {
     StringBuilder buf = new StringBuilder(128);
     buf.append("GenericParameterDateCurve{");
-    buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
-    buf.append("underlying").append('=').append(underlying).append(',').append(' ');
+    buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
+    buf.append("underlying").append('=').append(JodaBeanUtils.toString(underlying)).append(',').append(' ');
     buf.append("valuationDate").append('=').append(JodaBeanUtils.toString(valuationDate));
     buf.append('}');
     return buf.toString();

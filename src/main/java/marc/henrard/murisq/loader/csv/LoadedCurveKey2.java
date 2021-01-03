@@ -128,7 +128,7 @@ final class LoadedCurveKey2
   public String toString() {
     StringBuilder buf = new StringBuilder(96);
     buf.append("LoadedCurveKey2{");
-    buf.append("curveDate").append('=').append(curveDate).append(',').append(' ');
+    buf.append("curveDate").append('=').append(JodaBeanUtils.toString(curveDate)).append(',').append(' ');
     buf.append("curveName").append('=').append(JodaBeanUtils.toString(curveName));
     buf.append('}');
     return buf.toString();

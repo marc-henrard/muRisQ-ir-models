@@ -100,8 +100,8 @@ public class G2ppSwaptionPhysicalProductNumericalIntegration2DPricer
       discountedCashFlow[loopcf] = df[loopcf] * cf.getPaymentAmount().getAmount();
     }
     double rhog2pp = g2pp.getCorrelation();
-    double[][] htheta = FORMULAS_G2PP.volatilityMaturityPart(g2pp, theta, t);
-    double[][] gamma = FORMULAS_G2PP.gamma(g2pp, 0, theta);
+    double[][] htheta = FORMULAS_G2PP.volatilityMaturityPartRatioDiscountFactors(g2pp, theta, t);
+    double[][] gamma = FORMULAS_G2PP.gammaRatioDiscountFactors(g2pp, 0, theta);
     double[][] alpha = new double[2][nbCf];
     double[] tau2 = new double[nbCf];
     for (int loopcf = 0; loopcf < nbCf; loopcf++) {

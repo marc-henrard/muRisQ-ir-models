@@ -277,9 +277,9 @@ public final class IborRatchetRateComputation
   public String toString() {
     StringBuilder buf = new StringBuilder(160);
     buf.append("IborRatchetRateComputation{");
-    buf.append("observation").append('=').append(observation).append(',').append(' ');
-    buf.append("mainCoefficients").append('=').append(mainCoefficients).append(',').append(' ');
-    buf.append("floorCoefficients").append('=').append(floorCoefficients).append(',').append(' ');
+    buf.append("observation").append('=').append(JodaBeanUtils.toString(observation)).append(',').append(' ');
+    buf.append("mainCoefficients").append('=').append(JodaBeanUtils.toString(mainCoefficients)).append(',').append(' ');
+    buf.append("floorCoefficients").append('=').append(JodaBeanUtils.toString(floorCoefficients)).append(',').append(' ');
     buf.append("capCoefficients").append('=').append(JodaBeanUtils.toString(capCoefficients));
     buf.append('}');
     return buf.toString();

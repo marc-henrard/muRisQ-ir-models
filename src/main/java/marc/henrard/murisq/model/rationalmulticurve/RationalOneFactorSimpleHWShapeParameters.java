@@ -487,13 +487,13 @@ public final class RationalOneFactorSimpleHWShapeParameters
   public String toString() {
     StringBuilder buf = new StringBuilder(288);
     buf.append("RationalOneFactorSimpleHWShapeParameters{");
-    buf.append("a").append('=').append(a).append(',').append(' ');
-    buf.append("b00").append('=').append(b00).append(',').append(' ');
-    buf.append("eta").append('=').append(eta).append(',').append(' ');
-    buf.append("kappa").append('=').append(kappa).append(',').append(' ');
-    buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
-    buf.append("discountFactors").append('=').append(discountFactors).append(',').append(' ');
-    buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
+    buf.append("a").append('=').append(JodaBeanUtils.toString(a)).append(',').append(' ');
+    buf.append("b00").append('=').append(JodaBeanUtils.toString(b00)).append(',').append(' ');
+    buf.append("eta").append('=').append(JodaBeanUtils.toString(eta)).append(',').append(' ');
+    buf.append("kappa").append('=').append(JodaBeanUtils.toString(kappa)).append(',').append(' ');
+    buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
+    buf.append("discountFactors").append('=').append(JodaBeanUtils.toString(discountFactors)).append(',').append(' ');
+    buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');
     buf.append("valuationZone").append('=').append(JodaBeanUtils.toString(valuationZone));
     buf.append('}');
     return buf.toString();

@@ -282,8 +282,8 @@ public final class IborIndexRatesImpliedForward
   public String toString() {
     StringBuilder buf = new StringBuilder(128);
     buf.append("IborIndexRatesImpliedForward{");
-    buf.append("underlying").append('=').append(underlying).append(',').append(' ');
-    buf.append("valuationDate").append('=').append(valuationDate).append(',').append(' ');
+    buf.append("underlying").append('=').append(JodaBeanUtils.toString(underlying)).append(',').append(' ');
+    buf.append("valuationDate").append('=').append(JodaBeanUtils.toString(valuationDate)).append(',').append(' ');
     buf.append("fixings").append('=').append(JodaBeanUtils.toString(fixings));
     buf.append('}');
     return buf.toString();

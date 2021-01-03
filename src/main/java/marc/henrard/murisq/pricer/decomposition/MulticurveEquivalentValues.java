@@ -166,8 +166,8 @@ public final class MulticurveEquivalentValues
   public String toString() {
     StringBuilder buf = new StringBuilder(128);
     buf.append("MulticurveEquivalentValues{");
-    buf.append("discountFactors").append('=').append(discountFactors).append(',').append(' ');
-    buf.append("iborRates").append('=').append(iborRates).append(',').append(' ');
+    buf.append("discountFactors").append('=').append(JodaBeanUtils.toString(discountFactors)).append(',').append(' ');
+    buf.append("iborRates").append('=').append(JodaBeanUtils.toString(iborRates)).append(',').append(' ');
     buf.append("onRates").append('=').append(JodaBeanUtils.toString(onRates));
     buf.append('}');
     return buf.toString();

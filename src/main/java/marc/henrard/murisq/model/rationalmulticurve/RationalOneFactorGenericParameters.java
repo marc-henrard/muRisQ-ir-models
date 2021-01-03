@@ -391,14 +391,14 @@ public final class RationalOneFactorGenericParameters
   public String toString() {
     StringBuilder buf = new StringBuilder(320);
     buf.append("RationalOneFactorGenericParameters{");
-    buf.append("currency").append('=').append(currency).append(',').append(' ');
-    buf.append("a").append('=').append(a).append(',').append(' ');
-    buf.append("b0").append('=').append(b0).append(',').append(' ');
-    buf.append("indices").append('=').append(indices).append(',').append(' ');
-    buf.append("b1").append('=').append(b1).append(',').append(' ');
-    buf.append("timeMeasure").append('=').append(timeMeasure).append(',').append(' ');
-    buf.append("valuationDate").append('=').append(valuationDate).append(',').append(' ');
-    buf.append("valuationTime").append('=').append(valuationTime).append(',').append(' ');
+    buf.append("currency").append('=').append(JodaBeanUtils.toString(currency)).append(',').append(' ');
+    buf.append("a").append('=').append(JodaBeanUtils.toString(a)).append(',').append(' ');
+    buf.append("b0").append('=').append(JodaBeanUtils.toString(b0)).append(',').append(' ');
+    buf.append("indices").append('=').append(JodaBeanUtils.toString(indices)).append(',').append(' ');
+    buf.append("b1").append('=').append(JodaBeanUtils.toString(b1)).append(',').append(' ');
+    buf.append("timeMeasure").append('=').append(JodaBeanUtils.toString(timeMeasure)).append(',').append(' ');
+    buf.append("valuationDate").append('=').append(JodaBeanUtils.toString(valuationDate)).append(',').append(' ');
+    buf.append("valuationTime").append('=').append(JodaBeanUtils.toString(valuationTime)).append(',').append(' ');
     buf.append("valuationZone").append('=').append(JodaBeanUtils.toString(valuationZone));
     buf.append('}');
     return buf.toString();

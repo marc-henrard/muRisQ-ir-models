@@ -285,11 +285,11 @@ public final class MulticurveEquivalent
   public String toString() {
     StringBuilder buf = new StringBuilder(224);
     buf.append("MulticurveEquivalent{");
-    buf.append("decisionTime").append('=').append(decisionTime).append(',').append(' ');
-    buf.append("discountFactorPayments").append('=').append(discountFactorPayments).append(',').append(' ');
-    buf.append("iborComputations").append('=').append(iborComputations).append(',').append(' ');
-    buf.append("iborPayments").append('=').append(iborPayments).append(',').append(' ');
-    buf.append("onComputations").append('=').append(onComputations).append(',').append(' ');
+    buf.append("decisionTime").append('=').append(JodaBeanUtils.toString(decisionTime)).append(',').append(' ');
+    buf.append("discountFactorPayments").append('=').append(JodaBeanUtils.toString(discountFactorPayments)).append(',').append(' ');
+    buf.append("iborComputations").append('=').append(JodaBeanUtils.toString(iborComputations)).append(',').append(' ');
+    buf.append("iborPayments").append('=').append(JodaBeanUtils.toString(iborPayments)).append(',').append(' ');
+    buf.append("onComputations").append('=').append(JodaBeanUtils.toString(onComputations)).append(',').append(' ');
     buf.append("onPayments").append('=').append(JodaBeanUtils.toString(onPayments));
     buf.append('}');
     return buf.toString();
