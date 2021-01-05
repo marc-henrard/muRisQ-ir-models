@@ -22,10 +22,13 @@ import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.basics.date.DayCounts;
 import com.opengamma.strata.basics.date.HolidayCalendar;
 import com.opengamma.strata.collect.array.DoubleArray;
+import com.opengamma.strata.market.param.CurrencyParameterSensitivities;
+import com.opengamma.strata.market.sensitivity.PointSensitivityBuilder;
 import com.opengamma.strata.pricer.DiscountingPaymentPricer;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParametersProvider;
 import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
+import com.opengamma.strata.pricer.sensitivity.RatesFiniteDifferenceSensitivityCalculator;
 import com.opengamma.strata.product.cms.CmsPeriod;
 import com.opengamma.strata.product.cms.CmsPeriodType;
 import com.opengamma.strata.product.common.BuySell;
@@ -177,6 +180,42 @@ public class HullWhiteCmsPeriodExplicitPricerTest {
         }
       }
     }
+  }
+  
+  /* Coupon: present value sensitivity versus finite difference. */
+  @Test
+  public void coupon_sensitivity_v_fd() {
+    
+    RatesFiniteDifferenceSensitivityCalculator fdCalculator = RatesFiniteDifferenceSensitivityCalculator.DEFAULT;
+    FixedIborSwapConvention convention = FixedIborSwapConventions.EUR_FIXED_1Y_LIBOR_6M;
+    for(int loopindex = 0; loopindex<NB_INDICES; loopindex++) {
+      for(int loopexp=0; loopexp<NB_EXPIRIES; loopexp++) {
+        for(int looplag = 0; looplag<NB_PAY_LAG; looplag++) {
+          LocalDate fixingDate = EUTA_IMPL.nextOrSame(VALUATION_DATE.plus(EXPIRIES[loopexp]));
+          LocalDate startDate = convention.calculateSpotDateFromTradeDate(fixingDate, REF_DATA);
+          LocalDate endDate = EUTA_IMPL.nextOrSame(startDate.plusMonths(6));
+          LocalDate paymentDate = EUTA_IMPL.nextOrSame(startDate.plus(PAYMENT_LAG[looplag]));
+          ResolvedSwap underlyingSwap = 
+              INDICES[loopindex].getTemplate().createTrade(fixingDate, BuySell.BUY, 1.0d, 1.0d, REF_DATA)
+              .resolve(REF_DATA)
+              .getProduct();
+          CmsPeriod cms = cmsPeriod(fixingDate, startDate, endDate, paymentDate, INDICES[loopindex], underlyingSwap, 
+              CmsPeriodType.COUPON, 0.0);
+          
+//          CurrencyAmount pvApprox = PRICER_CMS_EXPL.presentValue(cms, MULTICURVE, HW_PROVIDER);
+          PointSensitivityBuilder pts = PRICER_CMS_EXPL.presentValueSensitivityRates(cms, MULTICURVE, HW_PROVIDER);
+          CurrencyParameterSensitivities psApprox = MULTICURVE.parameterSensitivity(pts.build());
+          CurrencyParameterSensitivities psFd = 
+              fdCalculator.sensitivity(MULTICURVE, (p) -> PRICER_CMS_EXPL.presentValue(cms, p, HW_PROVIDER));
+          System.out.println(psApprox);
+          System.out.println(psFd);
+          assertThat(psApprox.equalWithTolerance(psFd, 1.0E+4)).isTrue();
+//          System.out.println(INDICES[loopindex].toString() + EXPIRIES[loopexp] + PAYMENT_LAG[looplag] 
+//              + " Explicit, " + pvExp + ", Diff, " + (pvExp.minus(pvNIn)));
+        }
+      }
+    }
+    
   }
   
   private CmsPeriod cmsPeriod(LocalDate fixingDate, LocalDate startDate, LocalDate endDate, LocalDate paymentDate,
