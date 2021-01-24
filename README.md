@@ -52,6 +52,9 @@ Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition. Associated t
 ### 2. Multiply curve
 Curve description as the multiplication of two underlying curves. Used for intra-month seasonal adjustment in overnight-curves.
 
+### 3. Collateral cheapest-to-deliver
+Curve construction with intrinsic value of the cheapest-to-deliver. Option time value is not incorporated in this implementation. The construction provided the curve itself and the Jacobian to the underlying curves.
+
 ## Models
 
 ### 1. Bachelier Formula
@@ -146,35 +149,36 @@ Some recent public courses:
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), 23-24 September 2019.
 * Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. The 15th Quantitative Finance Conference - WBS (Italy, Rome), 16 October 2019.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 4-5 November 2019.
-* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. RiskMinds (Amsterdam, The Netherlands), 6 December 2019.
-* Workshop *The future of LIBOR: Quantitative perspective on benchmarks, transition, fallback and regulation*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
-* Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. In-house course, International Financial Organisation (on-line), April 2020.
-* Course *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS course (London, UK), May 2020.
-* *Martingales and Fixed Income Valuation*, CQF Module 6. CQF Institute (London, UK), May 2020.
-* Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc.
+* Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
+* Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), May 2020 and June 2020.
+* Course *Martingales and Fixed Income Valuation, CQF Module 5*. CQF Institute (London, UK), May 2020 and November 2020.
+* Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc. We have provided public and in-house workshops/courses/seminars in Africa, America, Asia, Europe, and Oceania (special discount for any client base in Antarctica!). 
 
 
 ## Advisory
-
+ 
+* Support
+	* *Dispute*: e.g. analysis for valuation and Variation Margin
+	* *White paper*: Independent assessment of new products and services.
+	* *Expert witness*
 * Developments
     * *Multi-curve and collateral framework*. Collateral discounting, impact of CSA, multi-curve calibration, new benchmarks, cheapest-to-deliver
+    * *Benchmarks*: valuation of instruments indexed on new benchmarks, LIBOR transition and discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, CCP discounting switch, valuation impacts, risk management, ALM, cost of protocol, discounting big bang. Some of our tools related to LIBOR fallback and LIBOR discontinuation are described in our [Fallback Transformers pages] (https://murisq.blogspot.com/2018/10/libor-fallback-transformers.html).
     * *Interest rate models*: Term structure models, smile, negative rates, stochastic spreads.
     * *Exchange traded instruments*: Development of exchanged traded instruments, detailed term sheet, regulatory approval, CCP's risk management procedures.
     * *Margin methodologies*: Variation and Initial Margin methodologies design. Review and implementation of methodologies used by CCPs (replication). Bilateral margin methodologies.
     * *Simulation*: Model implementation for efficient simulation, xVA underlying models 
-    * *Benchmarks*: valuation of instruments indexed on new benchmarks, benchmarks transition and discontinuation, LIBOR fallback analysis and solutions, overnight benchmarks (RFR) transition, CCP discounting switch, valuation impacts, risk management, ALM, cost of protocol, discounting big bang
     * *Code*: Large quant libraries available to price and risk manage interest rate books
 * Risk management
 	* Hedging strategies (design and back testing)
 	* Value-at-Risk
 	* Variation Margin efficient implementation
-	* Initial margin models 
+	* Initial margin models (CCP and bilateral): replication, attribution, MVA
 * Model validation
-	* Flow instruments: Multi-curve framework, collateral impact, CSA review.
+	* Flow instruments: Multi-curve framework, collateral impact, CSA review, CSA negotiation, benchmark transition.
 	* Term structure: Multi-factors models; stochastic spreads.
 	* VaR: Parametric, historical, Monte Carlo.
 	* Smile: Swaption, cap/floor, negative rates, extrapolation.
-	* White paper: Independent assessment of new products and services.
 * Regulatory impacts
     * *Assessments*: Impact assessments for derivative users.
     * *Bilateral margins*: Quantitative impacts of uncleared margin regulation (UMR), bilateral margin methodologies, ISDA and regulatory SIMM computations.
