@@ -3,7 +3,7 @@
  */
 
 /**
- * Package with classes related to the multi-curve framework.
+ * Package with classes related to the multi-curve and collateral framework.
  */
 package marc.henrard.murisq.model.multicurve;
 
