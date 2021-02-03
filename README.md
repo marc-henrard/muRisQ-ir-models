@@ -80,7 +80,7 @@ Explicit formula for implicit volatility.
 
 ### 4. Swaption with 2 collateral
 
-Pricing of swaptions when two collateral rates are used: one for the swaption itself up to a given date before expiry and one other from that date on, including for the delivered swap.
+Pricing of swaps and swaptions when two collateral rates are used: one for the swaption itself up to a given date before expiry and one other from that date on, including for the delivered swap. Swaption pricing with shifted SABR for physical delivery and par yield cash settlement.
 
 ### 5. LIBOR/Forward Market Model
 
@@ -153,7 +153,6 @@ Some recent public courses:
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), May 2020 and June 2020.
 * Course *Martingales and Fixed Income Valuation, CQF Module 5*. CQF Institute (London, UK), May 2020 and November 2020.
 * Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc. We have provided public and in-house workshops/courses/seminars in Africa, America, Asia, Europe, and Oceania (special discount for any client base in Antarctica!). 
-
 
 ## Advisory
  
