@@ -31,12 +31,13 @@ import com.opengamma.strata.pricer.rate.ImmutableRatesProvider;
 import com.opengamma.strata.pricer.sensitivity.RatesFiniteDifferenceSensitivityCalculator;
 import com.opengamma.strata.pricer.swap.DiscountingSwapProductPricer;
 import com.opengamma.strata.pricer.swaption.SabrParametersSwaptionVolatilities;
-import com.opengamma.strata.pricer.swaption.SabrSwaptionPhysicalProductPricer;
+import com.opengamma.strata.pricer.swaption.SabrSwaptionCashParYieldProductPricer;
 import com.opengamma.strata.product.common.BuySell;
 import com.opengamma.strata.product.common.LongShort;
 import com.opengamma.strata.product.swap.ResolvedSwapTrade;
 import com.opengamma.strata.product.swap.SwapTrade;
-import com.opengamma.strata.product.swaption.PhysicalSwaptionSettlement;
+import com.opengamma.strata.product.swaption.CashSwaptionSettlement;
+import com.opengamma.strata.product.swaption.CashSwaptionSettlementMethod;
 import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import com.opengamma.strata.product.swaption.Swaption;
 
@@ -44,12 +45,12 @@ import marc.henrard.murisq.dataset.MulticurveEur20151120DataSet;
 import marc.henrard.murisq.dataset.SabrSwaptionEurDataSet;
 
 /**
- * Tests {@link Volatility2DiscountingSwaptionPhysicalProductPricer} 
- * and {@link Sabr2DiscountingSwaptionPhysicalProductPricer}.
+ * Tests {@link Volatility2DiscountingSwaptionCashParYieldProductPricer} 
+ * and {@link Sabr2DiscountingSwaptionCashParYieldProductPricer}.
  * 
  * @author Marc Henrard
  */
-public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
+public class Sabr2DiscountingSwaptionCashParYieldProductPricerTest {
 
   private static final ReferenceData REF_DATA = ReferenceData.standard();
   private static final HolidayCalendar EUTA_IMPL = REF_DATA.getValue(EUR_EURIBOR_3M.getFixingCalendar());
@@ -73,10 +74,10 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
   /* Pricers */
   private static final DiscountingSwapProductPricer PRICER_SWAP =
       DiscountingSwapProductPricer.DEFAULT;
-  private static final Sabr2DiscountingSwaptionPhysicalProductPricer PRICER_SWPT_SABR_2 =
-      Sabr2DiscountingSwaptionPhysicalProductPricer.DEFAULT;
-  private static final SabrSwaptionPhysicalProductPricer PRICER_SWPT_SABR_1 =
-      SabrSwaptionPhysicalProductPricer.DEFAULT;
+  private static final Sabr2DiscountingSwaptionCashParYieldProductPricer PRICER_SWPT_SABR_2 =
+      Sabr2DiscountingSwaptionCashParYieldProductPricer.DEFAULT;
+  private static final SabrSwaptionCashParYieldProductPricer PRICER_SWPT_SABR_1 =
+      SabrSwaptionCashParYieldProductPricer.DEFAULT;
   private static final RatesFiniteDifferenceSensitivityCalculator FD_CALC =
       new RatesFiniteDifferenceSensitivityCalculator(1.0E-7); // Better precision
 
@@ -102,10 +103,13 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
             .createTrade(expiryDate, tenor,
                 (loopPayRec == 0) ? BuySell.BUY : BuySell.SELL, NOTIONAL, parRate + moneyness,
                 REF_DATA);
+
         Swaption swaptionPayLong = Swaption.builder()
             .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(EXERCISE_TIME).expiryZone(EXERCISE_ZONE)
             .longShort((loopShortLong == 0) ? LongShort.LONG : LongShort.SHORT)
-            .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
+            .swaptionSettlement(
+                CashSwaptionSettlement.of(swap.getProduct().getStartDate().getUnadjusted(),
+                    CashSwaptionSettlementMethod.PAR_YIELD))
             .underlying(swap.getProduct()).build();
         ResolvedSwaption swaptionResolved = swaptionPayLong.resolve(REF_DATA);
         CurrencyAmount pv1 = PRICER_SWPT_SABR_1
@@ -143,7 +147,9 @@ public class Sabr2DiscountingSwaptionPhysicalProductPricerTest {
         Swaption swaptionPayLong = Swaption.builder()
             .expiryDate(AdjustableDate.of(expiryDate)).expiryTime(EXERCISE_TIME).expiryZone(EXERCISE_ZONE)
             .longShort((loopShortLong == 0) ? LongShort.LONG : LongShort.SHORT)
-            .swaptionSettlement(PhysicalSwaptionSettlement.DEFAULT)
+            .swaptionSettlement(
+                CashSwaptionSettlement.of(swap.getProduct().getStartDate().getUnadjusted(),
+                    CashSwaptionSettlementMethod.PAR_YIELD))
             .underlying(swap.getProduct()).build();
         ResolvedSwaption swaptionResolved = swaptionPayLong.resolve(REF_DATA);
         CurrencyAmount pv = PRICER_SWPT_SABR_2
