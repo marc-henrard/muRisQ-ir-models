@@ -12,7 +12,6 @@ import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.math.impl.integration.IntegratorRepeated2D;
 import com.opengamma.strata.math.impl.integration.RungeKuttaIntegrator1D;
 import com.opengamma.strata.pricer.DiscountFactors;
-import com.opengamma.strata.pricer.impl.rate.swap.CashFlowEquivalentCalculator;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.swap.NotionalExchange;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
@@ -22,10 +21,14 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import marc.henrard.murisq.model.g2pp.G2ppPiecewiseConstantFormulas;
 import marc.henrard.murisq.model.g2pp.G2ppPiecewiseConstantParameters;
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
+import marc.henrard.murisq.pricer.swap.CashFlowEquivalentCalculator;
 import marc.henrard.murisq.pricer.swap.CashFlowEquivalentUtils;
 
 /**
- * Pricing of European physical settlement swaptions in the G2++ with deterministic multiplicative spread.
+ * Pricing of European physical settlement swaptions in the G2++ with deterministic multiplicative spread
+ * between LIBOR and discounting.
+ * <p>
+ * Based on cash flow equivalent, works for LIBOR and OIS swaptions.
  * <p>
  * Pricing by numerical integration.
  * Implementation reference:
