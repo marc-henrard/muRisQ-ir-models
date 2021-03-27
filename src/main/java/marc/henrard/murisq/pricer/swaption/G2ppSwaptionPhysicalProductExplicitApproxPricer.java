@@ -8,7 +8,6 @@ import com.opengamma.strata.basics.currency.CurrencyAmount;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.DiscountFactors;
 import com.opengamma.strata.pricer.impl.option.BlackFormulaRepository;
-import com.opengamma.strata.pricer.impl.rate.swap.CashFlowEquivalentCalculator;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.swap.NotionalExchange;
 import com.opengamma.strata.product.swap.ResolvedSwapLeg;
@@ -18,6 +17,7 @@ import com.opengamma.strata.product.swaption.ResolvedSwaption;
 import marc.henrard.murisq.model.g2pp.G2ppPiecewiseConstantFormulas;
 import marc.henrard.murisq.model.g2pp.G2ppPiecewiseConstantParameters;
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
+import marc.henrard.murisq.pricer.swap.CashFlowEquivalentCalculator;
 import marc.henrard.murisq.pricer.swap.CashFlowEquivalentUtils;
 
 /**
