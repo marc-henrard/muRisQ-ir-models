@@ -55,6 +55,9 @@ Curve description as the multiplication of two underlying curves. Used for intra
 ### 3. Collateral cheapest-to-deliver
 Curve construction with intrinsic value of the cheapest-to-deliver. Option time value is not incorporated in this implementation. The construction provided the curve itself and the Jacobian to the underlying curves.
 
+### 4. Cash flow equivalent
+Extend the Strata calculator to cover overnight compounded in arrears payments.
+
 ## Models
 
 ### 1. Bachelier Formula
@@ -70,6 +73,7 @@ Explicit formula for implicit volatility.
 * Pricing of compounded overnight futures. Reference: Henrard, Marc. (2018) Overnight based futures: convexity adjustment estimation. Available at (https://ssrn.com/abstract=3134346).
 * Different formulas for cross-terms: same model parameters (Asian options) or different model parameters (discounting transition)
 * Pricing of CMS coupons/caplets/floorlets by efficient approximation.
+* Pricing of Swaption with Par Yield cash settlement using an efficient (third order) approximation.
 
 ### 3. G2++
 
@@ -152,6 +156,7 @@ Some recent public courses:
 * Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), May 2020 and June 2020.
 * Course *Martingales and Fixed Income Valuation, CQF Module 5*. CQF Institute (London, UK), May 2020 and November 2020.
+* Planned: Workshop on *Benchmarks in transition*. CQF Institute (London, UK), May 2021.
 * Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc. We have provided public and in-house workshops/courses/seminars in Africa, America, Asia, Europe, and Oceania (special discount for any client base in Antarctica!). 
 
 ## Advisory
