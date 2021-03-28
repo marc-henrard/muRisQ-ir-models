@@ -1,41 +1,41 @@
 /**
  * Copyright (C) 2017 - present by Marc Henrard.
  */
-package marc.henrard.murisq.pricer.capfloor;
+package marc.henrard.murisq.pricer.swaption;
 
 import com.opengamma.strata.basics.currency.CurrencyAmount;
-import com.opengamma.strata.basics.currency.MultiCurrencyAmount;
 import com.opengamma.strata.basics.currency.Payment;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.DiscountingPaymentPricer;
 import com.opengamma.strata.pricer.rate.RatesProvider;
 import com.opengamma.strata.product.capfloor.ResolvedIborCapFloor;
-import com.opengamma.strata.product.capfloor.ResolvedIborCapFloorTrade;
+import com.opengamma.strata.product.swaption.ResolvedSwaption;
+import com.opengamma.strata.product.swaption.ResolvedSwaptionTrade;
 
 import marc.henrard.murisq.model.generic.SingleCurrencyModelParameters;
 
 /**
- * Price of cap/floor trades in a single currency model.
+ * Price of swaption trades in a single currency model.
  * 
  * @author Marc Henrard
  */
-public class SingleCurrencyModelCapFloorTradePricer {
+public class SingleCurrencyModelSwaptionPhysicalTradePricer {
   
   /** The pricer for the {@link ResolvedIborCapFloor}. */
-  private final SingleCurrencyModelCapFloorProductPricer capFloorProductPricer;
+  private final SingleCurrencyModelSwaptionPhysicalProductPricer swaptionProductPricer;
   /** Pricer for {@link Payment}. */
   private final DiscountingPaymentPricer paymentPricer;
 
   /**
    * Creates and instance of the trade pricer.
    * 
-   * @param capFloorProductPricer  the pricer for the {@link ResolvedIborCapFloor}
+   * @param swaptionProductPricer  the pricer for the {@link ResolvedSwaption}
    * @param paymentPricer  the pricer for the premium
    */
-  public SingleCurrencyModelCapFloorTradePricer(
-      SingleCurrencyModelCapFloorProductPricer capFloorProductPricer,
+  public SingleCurrencyModelSwaptionPhysicalTradePricer(
+      SingleCurrencyModelSwaptionPhysicalProductPricer swaptionProductPricer,
       DiscountingPaymentPricer paymentPricer) {
-    this.capFloorProductPricer = ArgChecker.notNull(capFloorProductPricer, "product pricer");;
+    this.swaptionProductPricer = ArgChecker.notNull(swaptionProductPricer, "product pricer");;
     this.paymentPricer = ArgChecker.notNull(paymentPricer, "payment pricer");
   }
   
@@ -44,8 +44,8 @@ public class SingleCurrencyModelCapFloorTradePricer {
    * 
    * @return the pricer
    */
-  public SingleCurrencyModelCapFloorProductPricer getProductPricer() {
-    return capFloorProductPricer;
+  public SingleCurrencyModelSwaptionPhysicalProductPricer getProductPricer() {
+    return swaptionProductPricer;
   }
   
   /**
@@ -62,24 +62,20 @@ public class SingleCurrencyModelCapFloorTradePricer {
    * <p>
    * The result is expressed using the currency of each leg and the premium.
    * 
-   * @param trade  the Ibor cap/floor trade
+   * @param trade  the swaption trade
    * @param multicurve  the rates provider
    * @param model  the model parameters
    * @return the present value
    */
-  public MultiCurrencyAmount presentValue(
-      ResolvedIborCapFloorTrade trade,
+  public CurrencyAmount presentValue(
+      ResolvedSwaptionTrade trade,
       RatesProvider multicurve,
       SingleCurrencyModelParameters model) {
 
-    MultiCurrencyAmount pvProduct = 
-        capFloorProductPricer.presentValue(trade.getProduct(), multicurve, model);
-    if (!trade.getPremium().isPresent()) {
-      return pvProduct;
-    }
-    CurrencyAmount pvPremium = paymentPricer.presentValue(trade.getPremium().get(), multicurve);
+    CurrencyAmount pvProduct = 
+        swaptionProductPricer.presentValue(trade.getProduct(), multicurve, model);
+    CurrencyAmount pvPremium = paymentPricer.presentValue(trade.getPremium(), multicurve);
     return pvProduct.plus(pvPremium);
   }
-  
 
 }

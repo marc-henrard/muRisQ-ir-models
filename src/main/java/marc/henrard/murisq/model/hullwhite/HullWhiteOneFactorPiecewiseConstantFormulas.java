@@ -5,11 +5,14 @@ package marc.henrard.murisq.model.hullwhite;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.collect.array.DoubleArray;
 import com.opengamma.strata.collect.tuple.Pair;
+import com.opengamma.strata.math.impl.rootfinding.BracketRoot;
+import com.opengamma.strata.math.impl.rootfinding.RidderSingleRootFinder;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParameters;
 
 /**
@@ -72,6 +75,77 @@ public class HullWhiteOneFactorPiecewiseConstantFormulas {
       factor3_2 += eta2 * (s[loopperiod + 1] - s[loopperiod]);
     }
     return Math.sqrt(factor1_1 * factor1_2 + factor2_1 * factor2_2 + factor3_2) / kappa;
+  }
+
+  /**
+   * Calculates the volatility of the (zero-coupon) bond scaled by another (zero-coupon) bond, 
+   * i.e. alpha, for a given period.
+   * 
+   * @param parameters  the Hull-White model parameters
+   * @param startExpiry the start time of the expiry period
+   * @param endExpiry  the end time of the expiry period
+   * @param denominatorBondMaturity  the time to maturity for the bond at the denominator, often the numeraire
+   * @param numeratorBondMaturity the time to maturity for the bond
+   * @return the re-based bond volatility
+   */
+  public double alphaRatioDiscountFactors(
+      HullWhiteOneFactorPiecewiseConstantParameters parameters,
+      double startExpiry,
+      double endExpiry,
+      double denominatorBondMaturity,
+      double numeratorBondMaturity) {
+
+    double factor1 = Math.exp(-parameters.getMeanReversion() * denominatorBondMaturity) -
+        Math.exp(-parameters.getMeanReversion() * numeratorBondMaturity);
+    double numerator = 2 * parameters.getMeanReversion() * parameters.getMeanReversion() * parameters.getMeanReversion();
+    int indexStart = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), startExpiry) + 1);
+    // Period in which the time startExpiry is; volatilityTime.get(i-1) <= startExpiry < volatilityTime.get(i);
+    int indexEnd = Math.abs(Arrays.binarySearch(parameters.getVolatilityTime().toArray(), endExpiry) + 1);
+    // Period in which the time endExpiry is; volatilityTime.get(i-1) <= endExpiry < volatilityTime.get(i);
+    int sLen = indexEnd - indexStart + 1;
+    double[] s = new double[sLen + 1];
+    s[0] = startExpiry;
+    System.arraycopy(parameters.getVolatilityTime().toArray(), indexStart, s, 1, sLen - 1);
+    s[sLen] = endExpiry;
+    double factor2 = 0d;
+    double[] exp2as = new double[sLen + 1];
+    for (int loopperiod = 0; loopperiod < sLen + 1; loopperiod++) {
+      exp2as[loopperiod] = Math.exp(2 * parameters.getMeanReversion() * s[loopperiod]);
+    }
+    for (int loopperiod = 0; loopperiod < sLen; loopperiod++) {
+      factor2 += parameters.getVolatility().get(loopperiod + indexStart - 1) *
+          parameters.getVolatility().get(loopperiod + indexStart - 1) * (exp2as[loopperiod + 1] - exp2as[loopperiod]);
+    }
+    return factor1 * Math.sqrt(factor2 / numerator);
+  }
+
+  /**
+   * Calculates the exercise boundary for swaptions.
+   * <p>
+   * Reference: Henrard, M. (2003). "Explicit bond option and swaption formula in Heath-Jarrow-Morton one-factor model". 
+   * International Journal of Theoretical and Applied Finance, 6(1):57--72.
+   * 
+   * @param discountedCashFlow  the cash flow equivalent discounted to today
+   * @param alpha  the zero-coupon bond volatilities
+   * @return the exercise boundary
+   */
+  public double kappa(DoubleArray discountedCashFlow, DoubleArray alpha) {
+    final Function<Double, Double> swapValue = new Function<Double, Double>() {
+      @Override
+      public Double apply(Double x) {
+        double error = 0.0;
+        for (int loopcf = 0; loopcf < alpha.size(); loopcf++) {
+          error += discountedCashFlow.get(loopcf) *
+              Math.exp(-0.5 * alpha.get(loopcf) * alpha.get(loopcf) - (alpha.get(loopcf) - alpha.get(0)) * x);
+        }
+        return error;
+      }
+    };
+    BracketRoot bracketer = new BracketRoot();
+    double accuracy = 1.0E-8;
+    RidderSingleRootFinder rootFinder = new RidderSingleRootFinder(accuracy);
+    double[] range = bracketer.getBracketedPoints(swapValue, -2.0, 2.0);
+    return rootFinder.getRoot(swapValue, range[0], range[1]);
   }
   
   /**
