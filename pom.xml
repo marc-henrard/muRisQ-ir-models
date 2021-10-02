@@ -118,7 +118,7 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>2021.03.1</murisq-basics.version>
+    <murisq-basics.version>2021.10.1</murisq-basics.version>
     <og-strata.version>2.9.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>2.1.1</joda-convert.version>
