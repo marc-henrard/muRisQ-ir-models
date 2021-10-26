@@ -36,7 +36,7 @@ Description of an innovative futures design.
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). Risk-Based Overnight-Linked Futures Design. Market infrastructure analysis, muRisQ Advisory, August 2018. Available at SSRN: (https://ssrn.com/abstract=3238640)
 
 ### 3. LIBOR Fallback analysis
-LIBOR fallback options analysis. Value transfer, convexity adjustments and risk management. Compounding setting in arrears fixing computation.
+LIBOR fallback options analysis. Value transfer, convexity adjustments and risk management. Compounding setting in arrears fixing computation. ICE Swap Rate fallback formulas.
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).
@@ -49,13 +49,15 @@ Description of CMS spread fields and payoff. CMS spread coupons, caplets and flo
 ### 1. Overnight-Overnight conventions and nodes
 Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition. Associated template and nodes to calibrate curves.
 
-### 2. Multiply curve
+### 2. FX Swap overnight nodes. To deal with the very short end of the FX curves. ON and TN specific market conventions in term of quotation.
+
+### 3. Multiply curve
 Curve description as the multiplication of two underlying curves. Used for intra-month seasonal adjustment in overnight-curves.
 
-### 3. Collateral cheapest-to-deliver
+### 4. Collateral cheapest-to-deliver
 Curve construction with intrinsic value of the cheapest-to-deliver. Option time value is not incorporated in this implementation. The construction provided the curve itself and the Jacobian to the underlying curves.
 
-### 4. Cash flow equivalent
+### 5. Cash flow equivalent
 Extend the Strata calculator to cover overnight compounded in arrears payments.
 
 ## Models
@@ -155,8 +157,11 @@ Some recent public courses:
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (Singapore), 4-5 November 2019.
 * Workshop *Benchmarks in transition: Quantitative perspective on benchmarks, transition, fallback and regulation.*. Interest Rate Reform Conference (A Quant Perspective) - WBS (London, UK), 4 March 2020.
 * Workshop *Interest Rate Modelling in the Multi-curve Framework: Collateral and Regulatory Requirements*. LFS Workshop (London, UK), May 2020 and June 2020.
-* Course *Martingales and Fixed Income Valuation, CQF Module 5*. CQF Institute (London, UK), May 2020 and November 2020.
-* Planned: Workshop on *Benchmarks in transition*. CQF Institute (London, UK), May 2021.
+* Course *Martingales and Fixed Income Valuation, CQF Module 5*. CQF Institute (London, UK), May 2020, November 2020, and June 2021.
+* Workshop on *Benchmarks in transition*. CQF Institute (London, UK), May 2021.
+* Workshop on *Benchmarks in transition*. CEETA (Warsaw, Poland), 6 September 2021.
+* Workshop on *Benchmarks in transition*. CQF Institute (London, UK), 6-7 October 2021.
+* Workshop *LIBOR transition: almost there and so much to do for quants*. WBS Interest Rate reform conference (London, UK), 19-21 October 2021.
 * Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc. We have provided public and in-house workshops/courses/seminars in Africa, America, Asia, Europe, and Oceania (special discount for any client base in Antarctica!). 
 
 ## Advisory
