@@ -46,7 +46,7 @@ import com.opengamma.strata.product.fx.type.FxSwapTemplate;
 import com.opengamma.strata.product.fx.type.ImmutableFxSwapConvention;
 
 /**
- * Test {@link FxSwapOnCurveNode}.
+ * Tests {@link FxSwapOnCurveNode}.
  */
 public class FxSwapOnCurveNodeTest {
 
@@ -94,6 +94,7 @@ public class FxSwapOnCurveNodeTest {
     assertThat(test.getTemplate()).isEqualTo(TEMPLATE_TN);
     assertThat(test.getDate()).isEqualTo(CurveNodeDate.LAST_FIXING);
   }
+
   @Test
   public void test_builder_on() {
     FxSwapOnCurveNode test = FxSwapOnCurveNode.builder()
@@ -153,7 +154,7 @@ public class FxSwapOnCurveNodeTest {
     assertThat(test.getFarForwardPointsId().isPresent()).isFalse();
     assertThat(test.getTemplate()).isEqualTo(TEMPLATE_ON);
   }
-  
+
   @Test
   public void test_requirements_on() {
     FxSwapOnCurveNode test = FxSwapOnCurveNode.ofOn(TEMPLATE_ON, QUOTE_ID_PTS_ON, QUOTE_ID_PTS_TN);
@@ -163,7 +164,7 @@ public class FxSwapOnCurveNodeTest {
     assertThat(set.contains(QUOTE_ID_PTS_ON)).isTrue();
     assertThat(set.contains(QUOTE_ID_PTS_TN)).isTrue();
   }
-  
+
   @Test
   public void test_requirements_tn() {
     FxSwapOnCurveNode test = FxSwapOnCurveNode.ofTn(TEMPLATE_ON, QUOTE_ID_PTS_TN);
@@ -208,7 +209,8 @@ public class FxSwapOnCurveNodeTest {
     FxSwapOnCurveNode node = FxSwapOnCurveNode.ofTn(TEMPLATE_TN, QUOTE_ID_PTS_TN);
     LocalDate valuationDate = LocalDate.of(2015, 1, 22);
     ResolvedFxSwapTrade trade = node.sampleResolvedTrade(valuationDate, SPOT_RATE, REF_DATA);
-    ResolvedFxSwapTrade expected = TEMPLATE_TN.createTrade(valuationDate, BuySell.BUY, 1d, SPOT_RATE.fxRate(EUR_USD), 0d, REF_DATA).resolve(REF_DATA);
+    ResolvedFxSwapTrade expected = TEMPLATE_TN
+        .createTrade(valuationDate, BuySell.BUY, 1d, SPOT_RATE.fxRate(EUR_USD), 0d, REF_DATA).resolve(REF_DATA);
     assertThat(trade).isEqualTo(expected);
   }
 
@@ -253,7 +255,7 @@ public class FxSwapOnCurveNodeTest {
     coverImmutableBean(test);
     FxSwapOnCurveNode test2 = FxSwapOnCurveNode.builder()
         .label(LABEL)
-        .template(FxSwapTemplate.of(Period.ofMonths(1), Period.ofMonths(2), 
+        .template(FxSwapTemplate.of(Period.ofMonths(1), Period.ofMonths(2),
             ImmutableFxSwapConvention.of(CurrencyPair.of(Currency.EUR, Currency.ARS), ON_ADJ)))
         .fxRateId(FxRateId.of(CurrencyPair.of(Currency.EUR, Currency.ARS)))
         .farForwardPointsId(QuoteId.of(StandardId.of("muRisQ-Ticker", "blah-blah")))
