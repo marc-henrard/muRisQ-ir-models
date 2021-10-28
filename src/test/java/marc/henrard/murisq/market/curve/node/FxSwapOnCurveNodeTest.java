@@ -146,9 +146,32 @@ public class FxSwapOnCurveNodeTest {
   }
 
   @Test
+  public void test_ofOn_label() {
+    String label = "EUR-USD-ON";
+    FxSwapOnCurveNode test = FxSwapOnCurveNode.ofOn(TEMPLATE_ON, QUOTE_ID_PTS_ON, QUOTE_ID_PTS_TN, label);
+    assertThat(test.getLabel()).isEqualTo(label);
+    assertThat(test.getFxRateId()).isEqualTo(FX_RATE_ID);
+    assertThat(test.getNearForwardPointsIds()).isEqualTo(ImmutableList.of(QUOTE_ID_PTS_ON, QUOTE_ID_PTS_TN));
+    assertThat(test.getFarForwardPointsId().isPresent()).isTrue();
+    assertThat(test.getFarForwardPointsId().get()).isEqualTo(QUOTE_ID_PTS_TN);
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE_ON);
+  }
+
+  @Test
   public void test_ofTn() {
     FxSwapOnCurveNode test = FxSwapOnCurveNode.ofTn(TEMPLATE_ON, QUOTE_ID_PTS_TN);
     assertThat(test.getLabel()).isEqualTo(LABEL_AUTO);
+    assertThat(test.getFxRateId()).isEqualTo(FX_RATE_ID);
+    assertThat(test.getNearForwardPointsIds()).isEqualTo(ImmutableList.of(QUOTE_ID_PTS_TN));
+    assertThat(test.getFarForwardPointsId().isPresent()).isFalse();
+    assertThat(test.getTemplate()).isEqualTo(TEMPLATE_ON);
+  }
+
+  @Test
+  public void test_ofTn_label() {
+    String label = "EUR-USD-TN";
+    FxSwapOnCurveNode test = FxSwapOnCurveNode.ofTn(TEMPLATE_ON, QUOTE_ID_PTS_TN, label);
+    assertThat(test.getLabel()).isEqualTo(label);
     assertThat(test.getFxRateId()).isEqualTo(FX_RATE_ID);
     assertThat(test.getNearForwardPointsIds()).isEqualTo(ImmutableList.of(QUOTE_ID_PTS_TN));
     assertThat(test.getFarForwardPointsId().isPresent()).isFalse();
