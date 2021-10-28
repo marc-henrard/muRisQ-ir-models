@@ -111,17 +111,42 @@ public class FxSwapOnCurveNode
    * A suitable default label will be created.
    *
    * @param template  the template used for building the instrument for the node
-   * @param farForwardPointsId  the identifier of the FX points at the far date
+   * @param onForwardPointsId  the identifier of the ON FX swap points
+   * @param tnForwardPointsId  the identifier of the TN FX swap points
    * @return a node whose instrument is built from the template using a market rate
    */
   public static FxSwapOnCurveNode ofOn(
       FxSwapTemplate template, 
       ObservableId onForwardPointsId, 
       ObservableId tnForwardPointsId) {
+    
     return builder()
         .template(template)
         .nearForwardPointsIds(ImmutableList.of(onForwardPointsId, tnForwardPointsId))
         .farForwardPointsId(tnForwardPointsId)
+        .build();
+  }  
+  
+  /**
+   * Returns a curve node for an Overnight FX Swap using the specified instrument template and keys.
+   *
+   * @param template  the template used for building the instrument for the node
+   * @param onForwardPointsId  the identifier of the ON FX points
+   * @param tnForwardPointsId  the identifier of the TN FX points
+   * @param label  the node label
+   * @return a node whose instrument is built from the template using a market rate
+   */
+  public static FxSwapOnCurveNode ofOn(
+      FxSwapTemplate template, 
+      ObservableId onForwardPointsId, 
+      ObservableId tnForwardPointsId, 
+      String label) {
+    
+    return builder()
+        .template(template)
+        .nearForwardPointsIds(ImmutableList.of(onForwardPointsId, tnForwardPointsId))
+        .farForwardPointsId(tnForwardPointsId)
+        .label(label)
         .build();
   }
   
@@ -132,12 +157,28 @@ public class FxSwapOnCurveNode
    *
    * @param template  the template used for building the instrument for the node
    * @param farForwardPointsId  the identifier of the FX points at the far date
+   * @param label  the node label
    * @return a node whose instrument is built from the template using a market rate
    */
   public static FxSwapOnCurveNode ofTn(FxSwapTemplate template, ObservableId tnForwardPointsId) {
     return builder()
         .template(template)
         .nearForwardPointsIds(ImmutableList.of(tnForwardPointsId))
+        .build();
+  }
+  
+  /**
+   * Returns a curve node for an Tom/NextFX Swap using the specified instrument template and keys.
+   *
+   * @param template  the template used for building the instrument for the node
+   * @param farForwardPointsId  the identifier of the FX points at the far date
+   * @return a node whose instrument is built from the template using a market rate
+   */
+  public static FxSwapOnCurveNode ofTn(FxSwapTemplate template, ObservableId tnForwardPointsId, String label) {
+    return builder()
+        .template(template)
+        .nearForwardPointsIds(ImmutableList.of(tnForwardPointsId))
+        .label(label)
         .build();
   }
 

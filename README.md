@@ -49,7 +49,8 @@ Description of CMS spread fields and payoff. CMS spread coupons, caplets and flo
 ### 1. Overnight-Overnight conventions and nodes
 Swap conventions to deal with EFFR-SOFR and EONIA-ESTER transition. Associated template and nodes to calibrate curves.
 
-### 2. FX Swap overnight nodes. To deal with the very short end of the FX curves. ON and TN specific market conventions in term of quotation.
+### 2. FX Swap overnight nodes. 
+To deal with the very short end of the FX curves. ON and TN specific market conventions in term of quotation.
 
 ### 3. Multiply curve
 Curve description as the multiplication of two underlying curves. Used for intra-month seasonal adjustment in overnight-curves.
