@@ -23,12 +23,12 @@ import com.opengamma.strata.market.observable.IndexQuoteId;
 import com.opengamma.strata.product.rate.OvernightCompoundedRateComputation;
 
 /**
- * Tests {@link FallbackUtils}.
+ * Tests {@link FallbackIborUtils}.
  * 
  * @author Marc Henrard
  */
 @Test
-public class FallbackUtilsTest {
+public class FallbackIborUtilsTest {
   
   private static final ReferenceData REF_DATA = ReferenceData.standard();
 
@@ -48,7 +48,7 @@ public class FallbackUtilsTest {
   public void compoundedInArrears() {
     OvernightCompoundedRateComputation computation = 
         OvernightCompoundedRateComputation.of(ON_INDEX, START_DATE, END_DATE, REF_DATA);
-    double rateComputed = FallbackUtils.compoundedInArrears(ON_TS, computation);
+    double rateComputed = FallbackIborUtils.compoundedInArrears(ON_TS, computation);
     LocalDate currentFixingOn = START_DATE;
     double compositionFactor = 1.0d;
     while (currentFixingOn.isBefore(computation.getEndDate())) {
