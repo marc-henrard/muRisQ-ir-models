@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.opengamma.strata.basics.currency.Currency;
+import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.pricer.model.HullWhiteOneFactorPiecewiseConstantParametersProvider;
 import com.opengamma.strata.pricer.rate.RatesProvider;
+import com.opengamma.strata.product.index.ResolvedOvernightFuture;
+import com.opengamma.strata.product.rate.OvernightCompoundedRateComputation;
 
 import marc.henrard.murisq.model.hullwhite.HullWhiteOneFactorPiecewiseConstantFormulas;
 import marc.henrard.murisq.product.futures.CompoundedOvernightFuturesResolved;
@@ -44,17 +47,30 @@ public class HullWhiteOneFactorCompoundedOvernightFuturesProductPricer {
    * @return  the price
    */
   public double price(
-      CompoundedOvernightFuturesResolved futures,
+      ResolvedOvernightFuture futures,
       RatesProvider ratesProvider,
       HullWhiteOneFactorPiecewiseConstantParametersProvider hwProvider) {
 
     Currency ccy = futures.getCurrency();
+    LocalDate startAccrualDate = futures.getOvernightRate().getStartDate();
+    LocalDate endAccrualDate = futures.getOvernightRate().getEndDate();
+    ArgChecker.isTrue(futures.getOvernightRate() instanceof OvernightCompoundedRateComputation, 
+        "the futures should be based on compounded overnight rate");
+    
+
+    List<LocalDate> onDates = new ArrayList<>();
+    LocalDate currentDate = startAccrualDate;
+    while (!currentDate.isAfter(endAccrualDate)) {
+      onDates.add(currentDate);
+      currentDate = calendar.next(currentDate);
+    }
+    
+    
     List<LocalDate> onDates = futures.getOnDates();
     int nbOnDates = onDates.size();
-    double delta = futures.getIndex().getDayCount()
-        .yearFraction(futures.getStartAccrualDate(), futures.getEndAccrualDate()); // index AF
-    double PcTs = ratesProvider.discountFactor(ccy, futures.getStartAccrualDate());
-    double PcTe = ratesProvider.discountFactor(ccy, futures.getEndAccrualDate());
+    double delta = futures.getIndex().getDayCount().yearFraction(startAccrualDate, endAccrualDate); // index AF
+    double PcTs = ratesProvider.discountFactor(ccy, startAccrualDate);
+    double PcTe = ratesProvider.discountFactor(ccy, endAccrualDate);
     List<Double> ti = new ArrayList<>();
     ti.add(0.0d);
     for (int i = 0; i < nbOnDates; i++) {

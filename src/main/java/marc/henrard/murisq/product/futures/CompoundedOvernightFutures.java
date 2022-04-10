@@ -31,6 +31,7 @@ import com.opengamma.strata.basics.index.OvernightIndex;
 import com.opengamma.strata.collect.ArgChecker;
 import com.opengamma.strata.product.SecuritizedProduct;
 import com.opengamma.strata.product.SecurityId;
+import com.opengamma.strata.product.index.OvernightFuture;
 
 /**
  * Description of a futures contract based on an overnight index with composition similar to OIS.
@@ -40,7 +41,9 @@ import com.opengamma.strata.product.SecurityId;
  * using the benchmark conventions. The Exchange Delivery Settlement Price is given by 100% - above rate.
  * 
  * @author Marc Henrard
+ * @deprecated Use {@link OvernightFuture} from Strata instead.
  */
+@Deprecated
 @BeanDefinition
 public final class CompoundedOvernightFutures
     implements SecuritizedProduct, Resolvable<CompoundedOvernightFuturesResolved>, ImmutableBean, Serializable {
