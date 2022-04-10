@@ -36,7 +36,11 @@ Description of an innovative futures design.
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2018). Risk-Based Overnight-Linked Futures Design. Market infrastructure analysis, muRisQ Advisory, August 2018. Available at SSRN: (https://ssrn.com/abstract=3238640)
 
 ### 3. LIBOR Fallback analysis
-LIBOR fallback options analysis. Value transfer, convexity adjustments and risk management. Compounding setting in arrears fixing computation. ICE Swap Rate fallback formulas.
+* LIBOR fallback options analysis. 
+* Value transfer, convexity adjustments and risk management.  
+* Compounding setting in arrears fixing computation.
+* LIBOR fallback spreads
+* Swap Rate fallback formulas.
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).

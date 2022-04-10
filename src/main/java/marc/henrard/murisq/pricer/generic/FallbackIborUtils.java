@@ -16,7 +16,24 @@ import com.opengamma.strata.product.rate.OvernightCompoundedRateComputation;
  * 
  * @author Marc Henrard
  */
-public class FallbackUtils {
+public class FallbackIborUtils {
+  
+  /**
+   * The ISDA fallback spread for USD-LIBOR-3M.
+   */
+  public static final double USD_LIBOR_3M_SPREAD = 0.0026161;
+  /**
+   * The ISDA fallback spread for USD-LIBOR-3M.
+   */
+  public static final double GBP_LIBOR_3M_SPREAD = 0.001193;
+  /**
+   * The ISDA fallback spread for USD-LIBOR-3M.
+   */
+  public static final double GBP_LIBOR_6M_SPREAD = 0.002766;
+  /**
+   * The ISDA fallback spread for JPY-LIBOR-6M.
+   */
+  public static final double JPY_LIBOR_6M_SPREAD = 0.0005809;
   
   /**
    * Computes the compounded in arrears rate for an overnight compounded rate from a time series of 
@@ -24,12 +41,13 @@ public class FallbackUtils {
    * <p>
    * Rate cut-off days are not taken into account.
    * Throws an exception if one of the fixing is not available in the time series.
+   * <p>
+   * Note: rounding may be required for production
    * 
    * @param timeSeries  the time series
    * @param computation  the overnight compounded computation
    * @return the compounded rate
    */
-  // Note: rounding may be required for production
   public static double compoundedInArrears(
       LocalDateDoubleTimeSeries timeSeries,
       OvernightCompoundedRateComputation computation) {

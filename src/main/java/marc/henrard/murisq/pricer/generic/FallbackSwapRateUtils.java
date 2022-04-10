@@ -12,23 +12,27 @@ import com.opengamma.strata.math.impl.rootfinding.BrentSingleRootFinder;
 import com.opengamma.strata.math.impl.rootfinding.RealSingleRootFinder;
 
 /**
- * Utilities related to ICE Swap Rate fallback as proposed by WGSRFRR and ARRC.
+ * Utilities related to ICE Swap Rate and JPY LIBOR Tokyo Swap Rate fallback as proposed by WGSRFRR, ARRC and Refinitiv.
  * 
  * @author Marc Henrard
  */
-public class FallbackIsrUtils {
+public class FallbackSwapRateUtils {
   /**
    * The ISDA fallback spread for USD-LIBOR-3M.
    */
-  private static final double USD_LIBOR_3M_SPREAD = 0.0026161;
+  private static final double USD_LIBOR_3M_SPREAD = FallbackIborUtils.USD_LIBOR_3M_SPREAD;
   /**
    * The ISDA fallback spread for USD-LIBOR-3M.
    */
-  private static final double GBP_LIBOR_3M_SPREAD = 0.001193;
+  private static final double GBP_LIBOR_3M_SPREAD = FallbackIborUtils.GBP_LIBOR_3M_SPREAD;
   /**
    * The ISDA fallback spread for USD-LIBOR-3M.
    */
-  private static final double GBP_LIBOR_6M_SPREAD = 0.002766;
+  private static final double GBP_LIBOR_6M_SPREAD = FallbackIborUtils.GBP_LIBOR_6M_SPREAD;
+  /**
+   * The ISDA fallback spread for JPY-LIBOR-6M adjusted for the day-count.
+   */
+  private static final double JPY_LIBOR_6M_SPREAD = FallbackIborUtils.JPY_LIBOR_6M_SPREAD * 365.0d / 360.0d;
   /**
    * Root finder for solving the OIS rate equivalent by fallback to original IRS rate.
    */
@@ -68,6 +72,16 @@ public class FallbackIsrUtils {
    */
   public static double fallbackMechanismGbpPlus1Y(double rateOis) {
     return 2.0d * (Math.sqrt(1 + rateOis) - 1) + GBP_LIBOR_6M_SPREAD;
+  }
+
+  /**
+   * Refinitiv proposed fallback mechanism for JPY LIBOR Tokyo Swap Rate.
+   * 
+   * @param rateOis  the OIS-linked benchmark rate
+   * @return the fallback rate
+   */
+  public static double fallbackMechanismJpy(double rateOis) {
+    return 2.0d * (Math.sqrt(1 + rateOis) - 1) + JPY_LIBOR_6M_SPREAD;
   }
 
   /**
@@ -139,6 +153,25 @@ public class FallbackIsrUtils {
   }
 
   /**
+   * Refinitiv proposed fallback mechanism for JPY LIBOR Tokyo Swap Rate
+   * and the derivative of the fallback function.
+   * 
+   * @param rateOis  the OIS-linked benchmark rate
+   * @return the fallback rate and its derivatives of order 1 to 3 at the given OIS rate.
+   */
+  public static ValueDerivatives fallbackMechanismJpyAD(double rateOis) {
+    double r12 = Math.sqrt(1 + rateOis);
+    double f = 2.0d * (r12 - 1) + JPY_LIBOR_6M_SPREAD;
+    double r12p = 0.5d / r12;
+    double fp = 2.0d * r12p;
+    double r12pp = -0.5d * r12p / (1 + rateOis);
+    double fpp = 2.0d * r12pp;
+    double r12ppp = -3.0d / 2.0d * r12pp / (1 + rateOis);
+    double fppp = 2.0d * r12ppp;
+    return ValueDerivatives.of(f, DoubleArray.of(fp, fpp, fppp));
+  }
+
+  /**
    * Returns the OIS rate equivalent by fallback to original IRS rate (USD).
    * 
    * @param rateIrs  the IRS rate
@@ -184,6 +217,17 @@ public class FallbackIsrUtils {
     double[] bracket = BRACKET_ROOT.getBracketedPoints(f, xLower, xUpper);
     double adjusted = ROOT_FINDER.getRoot(f, bracket[0], bracket[1]);
     return adjusted;
+  }
+
+  /**
+   * Returns the OIS rate equivalent by fallback to original IRS rate (JPY).
+   * 
+   * @param rateIrs  the IRS rate
+   * @return the adjusted strike
+   */
+  public static double fallbackEquivalentRateJpy(double rateIrs) {
+    double factor1 = 0.5 * (rateIrs - JPY_LIBOR_6M_SPREAD) + 1.0d;
+    return factor1 * factor1 - 1;
   }
 
 }
