@@ -23,7 +23,7 @@ Comments and suggestions for improvements are welcome.
 
 ## Foundations
 
-Some code proposed in this repository is based on OpenGamma Strata (version 2.6.0) library: http://strata.opengamma.io/
+Some code proposed in this repository is based on OpenGamma Strata (version 2.12.0) library: http://strata.opengamma.io/
 
 ## Products
 
@@ -44,6 +44,8 @@ Description of an innovative futures design.
 #### References
 * [Henrard, M.](http://multi-curve-framework.blogspot.com) (2019). A Quant Perspective on IBOR Fallback Consultation Results. Market infrastructure analysis, muRisQ Advisory, January 2019.
 Available at (https://ssrn.com/abstract=3308766).
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2022) Swap Rate: swaptions in the fallback. *Risk.Net*. Published on-line 1 July 2022.
+* [Henrard, M.](http://multi-curve-framework.blogspot.com) (2022) Swap Rate fallback: unreasonable effectiveness of approximations and alternatives Model Development, muRisQ Advisory. Available at (https://ssrn.com/abstract=4130090).
 
 ### 4. CMS spread periods
 Description of CMS spread fields and payoff. CMS spread coupons, caplets and floorlets. Generalized payoff: w1 * rate1 - w2 * rate2
@@ -167,6 +169,8 @@ Some recent public courses:
 * Workshop on *Benchmarks in transition*. CEETA (Warsaw, Poland), 6 September 2021.
 * Workshop on *Benchmarks in transition*. CQF Institute (London, UK), 6-7 October 2021.
 * Workshop *LIBOR transition: almost there and so much to do for quants*. WBS Interest Rate reform conference (London, UK), 19-21 October 2021.
+* Workshop *Benchmarks in transition*. CEETA (Warsaw, Poland), 20 June 2022.
+* 
 * Multiple in-house courses for commercial banks, central banks, hedge funds, international financial organisations, etc. We have provided public and in-house workshops/courses/seminars in Africa, America, Asia, Europe, and Oceania (special discount for any client base in Antarctica!). 
 
 ## Advisory
@@ -193,6 +197,7 @@ Some recent public courses:
 	* Term structure: Multi-factors models; stochastic spreads.
 	* VaR: Parametric, historical, Monte Carlo.
 	* Smile: Swaption, cap/floor, negative rates, extrapolation.
+	* CMS-like products: Full Term Structure and market smile consistent valuation.
 * Regulatory impacts
     * *Assessments*: Impact assessments for derivative users.
     * *Bilateral margins*: Quantitative impacts of uncleared margin regulation (UMR), bilateral margin methodologies, ISDA and regulatory SIMM computations.
