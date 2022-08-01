@@ -49,8 +49,7 @@ public class FallbackSwapRateUtils {
    * @return the fallback rate
    */
   public static double fallbackMechanismUsd(double rateOis) {
-    return 365.25d / 360.00d *
-        (2 * (Math.sqrt(1 + rateOis) - 1) + USD_LIBOR_3M_SPREAD * 0.5 * (Math.pow(1 + rateOis, 0.25) + 1));
+    return 365.25d / 360.00d * (2.0d * f2Minus(rateOis) + USD_LIBOR_3M_SPREAD * 0.5 * f4Plus(rateOis));
   }
 
   /**
@@ -60,8 +59,7 @@ public class FallbackSwapRateUtils {
    * @return the fallback rate
    */
   public static double fallbackMechanismGbp1Y(double rateOis) {
-    return rateOis +
-        GBP_LIBOR_3M_SPREAD * 0.25d * (Math.pow(1 + rateOis, 0.25) + 1) * (Math.sqrt(1 + rateOis) + 1);
+    return rateOis + GBP_LIBOR_3M_SPREAD * 0.25d * f4Plus(rateOis) * f2Plus(rateOis);
   }
 
   /**
@@ -71,7 +69,7 @@ public class FallbackSwapRateUtils {
    * @return the fallback rate
    */
   public static double fallbackMechanismGbpPlus1Y(double rateOis) {
-    return 2.0d * (Math.sqrt(1 + rateOis) - 1) + GBP_LIBOR_6M_SPREAD;
+    return 2.0d * f2Minus(rateOis) + GBP_LIBOR_6M_SPREAD;
   }
 
   /**
@@ -81,7 +79,46 @@ public class FallbackSwapRateUtils {
    * @return the fallback rate
    */
   public static double fallbackMechanismJpy(double rateOis) {
-    return 2.0d * (Math.sqrt(1 + rateOis) - 1) + JPY_LIBOR_6M_SPREAD;
+    return 2.0d * f2Minus(rateOis) + JPY_LIBOR_6M_SPREAD;
+  }
+  
+  /**
+   * Intermediary function based on square root (annual to semi-annual)
+   * @param rateOis  the OIS-linked benchmark rate
+   * @return the function of the rate
+   */
+  public static double f2Plus(double rateOis) {
+    return Math.sqrt(1 + rateOis) + 1;
+  }
+  
+  public static ValueDerivatives f2PlusAd(double rateOis) {
+    double f = Math.sqrt(1 + rateOis);
+    double fp = 0.5 / f;
+    return ValueDerivatives.of(f + 1, DoubleArray.of(fp));
+  }
+  
+  /**
+   * Intermediary function based on square root (annual to semi-annual)
+   * @param rateOis  the OIS-linked benchmark rate
+   * @return the function of the rate
+   */
+  public static double f2Minus(double rateOis) {
+    return Math.sqrt(1 + rateOis) - 1;
+  }
+  
+  /**
+   * Intermediary function based on 4th root (annual to quarterly)
+   * @param rateOis  the OIS-linked benchmark rate
+   * @return the function of the rate
+   */
+  public static double f4Plus(double rateOis) {
+    return Math.pow(1 + rateOis, 0.25) + 1;
+  }
+  
+  public static ValueDerivatives f4PlusAd(double rateOis) {
+    double f = Math.pow(1 + rateOis, 0.25);
+    double fp = 0.25 * f / (1 + rateOis);
+    return ValueDerivatives.of(f + 1, DoubleArray.of(fp));
   }
 
   /**
