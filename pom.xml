@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>marc.henrard</groupId>
   <artifactId>murisq-ir-models</artifactId>
-  <version>2021.02.2-SNAPSHOT</version>
+  <version>2022.08.0</version>
   <name>muRisQ IR Models</name>
   <description>muRisQ Advisory libraries - Interest rate derivatives pricing implementations</description>
   
@@ -118,8 +118,8 @@
 
   <!-- ==================================================================== -->
   <properties>
-    <murisq-basics.version>2021.10.1</murisq-basics.version>
-    <og-strata.version>2.9.0</og-strata.version>
+    <murisq-basics.version>2022.08.01</murisq-basics.version>
+    <og-strata.version>2.12.0</og-strata.version>
     <opencsv.version>2.3</opencsv.version>
     <joda-convert.version>2.1.1</joda-convert.version>
     <joda-beans.version>2.3</joda-beans.version>
